@@ -1,5 +1,11 @@
 # (functional) changelog
 
+## 2026-09-19
+```
+- fixed styling on mobile screens
+- added font size scaling with screen size 
+```
+
 ## 2026-09-13
 ```
 - added tags editing to pix page (you won't see it)

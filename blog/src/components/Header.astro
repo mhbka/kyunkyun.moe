@@ -12,7 +12,7 @@ const { isLoggedIn = false } = Astro.props;
 
 <header class="site-header">
 	<nav>
-		<div class="internal-links">
+		<div class="primary-links">
 			<HeaderLink href="/">home</HeaderLink>
 			<HeaderLink href="/me">me</HeaderLink>
 			<HeaderLink href="/blog">blog</HeaderLink>
@@ -23,6 +23,8 @@ const { isLoggedIn = false } = Astro.props;
 					<HeaderLink href="/nonsense/pix">pix</HeaderLink>
 				</div>
 			</details>
+		</div>
+		<div class="nav-actions">
 			<ThemeSelector />
 			<LoginButton isLoggedIn={isLoggedIn} />
 		</div>
@@ -52,25 +54,59 @@ const { isLoggedIn = false } = Astro.props;
 	nav a:hover {
 		font-weight: 700;
 	}
-	.internal-links {
+	.primary-links,
+	.nav-actions {
 		display: grid;
 		gap: 0.75rem;
 	}
 	.nav-dropdown summary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		list-style: none;
+		white-space: nowrap;
 		cursor: pointer;
 		color: var(--color-heading);
 	}
+	.nav-dropdown summary::-webkit-details-marker { display: none; }
+	.nav-dropdown summary::after {
+		content: '▸';
+		display: inline-block;
+		font-size: 0.8em;
+		transition: transform 120ms ease;
+	}
+	.nav-dropdown[open] summary::after { transform: rotate(90deg); }
 	.nav-dropdown__items {
 		display: grid;
 		gap: 0.75rem;
 		margin-top: 0.75rem;
 		padding-left: 1rem;
 	}
-	@media (max-width: 720px) {
+	@media (max-width: 800px) {
 		header { padding: 1em; }
-		nav { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.5rem; }
-		.internal-links { display: flex; gap: 0.75rem; }
+		nav { display: grid; gap: 0.75rem; }
+		.primary-links,
+		.nav-actions {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem 0.75rem;
+		}
+		.primary-links :global(a) { padding: 0.5rem 0.25rem; }
 		.nav-dropdown { position: relative; }
-		.nav-dropdown__items { position: absolute; z-index: 1; min-width: max-content; padding: 0.75rem; margin-top: 0.5rem; background: var(--color-surface); box-shadow: var(--shadow-header); }
+		.nav-dropdown__items {
+			position: absolute;
+			z-index: 1;
+			left: 50%;
+			width: max-content;
+			max-width: calc(100vw - 2rem);
+			box-sizing: border-box;
+			padding: 0.75rem;
+			margin-top: 0.5rem;
+			background: var(--color-surface);
+			box-shadow: var(--shadow-header);
+			transform: translateX(-50%);
+		}
 	}
 </style>
