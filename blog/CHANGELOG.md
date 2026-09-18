@@ -4,6 +4,8 @@
 ```
 - fixed styling on mobile screens
 - added font size scaling with screen size 
+- added pix thumbnail size scaling with screen size
+- fixed crepe editor overflow on smaller screen (you won't see it)
 ```
 
 ## 2026-09-13

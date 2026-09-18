@@ -26,10 +26,20 @@
 }
 
 .editor-surface {
+	min-width: 0;
+	max-width: 100%;
 	background: var(--color-surface);
 }
 
+.editor-surface .milkdown {
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+}
+
 .editor-surface .milkdown .ProseMirror {
+	min-width: 0;
+	max-width: 100%;
 	min-height: 24rem;
 	padding: 2.5rem 0;
 }
