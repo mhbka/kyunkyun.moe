@@ -76,7 +76,7 @@ const { images, nextBefore, hasMore, tag, isPix, accessToken } = Astro.props;
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 	.moe-tag-editor[hidden] { display: none; }
-	.moe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 0.75rem; }
+	.moe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(8rem, 7.5vw, 12rem)), 1fr)); gap: 0.75rem; }
 	.moe-load-more[hidden] { display: none; }
 	:global(.moe-thumbnail) { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); }
 	:global(.moe-thumbnail img) { display: block; width: 100%; height: 100%; border-radius: 0; object-fit: cover; }
@@ -89,5 +89,4 @@ const { images, nextBefore, hasMore, tag, isPix, accessToken } = Astro.props;
 	.moe-portal__close { padding: 0.35rem 0.65rem; }
 	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.8rem; text-align: right; }
 	.moe-portal__info :empty { display: none; }
-	@media (max-width: 720px) { .moe-grid { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); } }
 </style>
