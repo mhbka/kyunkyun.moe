@@ -7,6 +7,7 @@ fn uses_default_pagination_values() {
             page: None,
             size: None,
             tag: None,
+            tags: None,
         }
         .pagination()
         .unwrap(),
@@ -21,6 +22,7 @@ fn calculates_offset_for_requested_page() {
             page: Some(3),
             size: Some(20),
             tag: None,
+            tags: None,
         }
         .pagination()
         .unwrap(),
@@ -34,6 +36,7 @@ fn rejects_invalid_pagination_values() {
         page: Some(0),
         size: Some(20),
         tag: None,
+        tags: None,
     }
     .pagination()
     .is_err());
@@ -41,6 +44,7 @@ fn rejects_invalid_pagination_values() {
         page: Some(1),
         size: Some(101),
         tag: None,
+        tags: None,
     }
     .pagination()
     .is_err());
@@ -56,18 +60,5 @@ fn normalizes_and_deduplicates_tags() {
             " ".to_string(),
         ]),
         vec!["astro", "javascript"],
-    );
-}
-
-#[test]
-fn normalizes_the_tag_filter() {
-    assert_eq!(
-        ListPostsQuery {
-            page: None,
-            size: None,
-            tag: Some("Java Script".to_string())
-        }
-        .tag(),
-        Some("javascript".to_string())
     );
 }

@@ -140,7 +140,7 @@ export function initPixGallery(gallery: HTMLElement) {
 		if (!grid || gallery.dataset.hasMore !== 'true' || !gallery.dataset.nextBefore) return;
 		loadMore.disabled = true;
 		try {
-			const page = await blogApi.listPix(60, gallery.dataset.nextBefore, gallery.dataset.tag || undefined);
+			const page = await blogApi.listPix(60, gallery.dataset.nextBefore, JSON.parse(gallery.dataset.tags ?? '[]') as string[]);
 			page.images.forEach((image) => grid.append(createThumbnail(image)));
 			renderSelection();
 			gallery.dataset.nextBefore = page.nextBefore ?? '';

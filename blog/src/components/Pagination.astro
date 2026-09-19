@@ -4,26 +4,25 @@ import Link from './ui/Link.astro';
 interface Props {
 	page: number;
 	hasNext: boolean;
-	tag?: string;
+	tags: string[];
 }
 
-const { page, hasNext, tag } = Astro.props;
+const { page, hasNext, tags } = Astro.props;
 const pageUrl = (value: number) => {
 	const query = new URLSearchParams();
 	if (value > 1) query.set('page', String(value));
-	if (tag) query.set('tag', tag);
+	tags.forEach(tag => query.append('tag', tag));
 	return query.size ? `/blog/?${query}` : '/blog/';
 };
 ---
 
-{(page > 1 || hasNext) && (
-	<nav class="pagination" aria-label="Blog pages">
-		{page > 1 && <Link class="ui-button" href={pageUrl(page - 1)}>newer posts</Link>}
-		{hasNext && <Link class="ui-button" href={pageUrl(page + 1)}>older posts</Link>}
-	</nav>
-)}
+<nav hidden={page <= 1 && !hasNext} class="pagination" aria-label="Blog pages">
+	{page > 1 && <Link class="ui-button" href={pageUrl(page - 1)}>newer posts</Link>}
+	{hasNext && <Link class="ui-button" href={pageUrl(page + 1)}>older posts</Link>}
+</nav>
 
 <style>
+	.pagination[hidden] { display: none; }
 	.pagination { display: flex; justify-content: space-between; gap: 0.75rem; margin-top: 2rem; }
 	.pagination :last-child { margin-left: auto; }
 </style>

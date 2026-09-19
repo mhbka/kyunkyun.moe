@@ -10,14 +10,14 @@ import { blogApi } from '../../lib/api.ts';
 import { fetchResult } from '../../lib/fetch-result.ts';
 import { getPageAuth } from '../../lib/page-auth.ts';
 import { parsePage } from '../../lib/pagination.ts';
-import { normalizeTag } from '../../lib/tags.ts';
+import { readTagFilters } from '../../lib/tags.ts';
 
 const pageSize = 20;
 const page = parsePage(Astro.url.searchParams.get('page'));
-const selectedTag = normalizeTag(Astro.url.searchParams.get('tag') ?? '') || undefined;
+const selectedTags = readTagFilters(Astro.url.searchParams);
 const [result, tagsResult] = await Promise.all([
 	fetchResult(
-	() => blogApi.listPosts(page, pageSize + 1, selectedTag),
+	() => blogApi.listPosts(page, pageSize + 1, selectedTags),
 	'We could not load the blog posts. Please try again shortly.',
 ),
 	fetchResult(
@@ -49,9 +49,9 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 				<FetchError message={result.error} />
 			) : (
 				<>
-					<TagFilter tags={tags} selectedTag={selectedTag} />
+					<TagFilter tags={tags} selectedTags={selectedTags} />
 					<PostList posts={posts} variant="published" isAuthor={isAuthor} pageSize={pageSize} />
-				<Pagination page={page} hasNext={hasNext} tag={selectedTag} />
+				<Pagination page={page} hasNext={hasNext} tags={selectedTags} />
 				</>
 			)}
 		</PageLayout>

@@ -223,3 +223,18 @@ test('throws an ApiError that includes the response status and body', async () =
 		return true;
 	});
 });
+
+
+test('preserves all selected tags when paging posts and pix', async () => {
+	const mock = createFetchSequence([Response.json([]), Response.json({ images: [], hasMore: false, nextBefore: null })]);
+	const api = createBlogApi({ baseUrl: 'https://api.example.test', fetch: mock.fetch });
+	const tags = ['astro', 'a,b', 'c++'];
+	await api.listPosts(2, 20, tags);
+	await api.listPix(60, 'cursor', tags);
+	const posts = new URL(mock.calls[0][0]);
+	const pix = new URL(mock.calls[1][0]);
+	assert.deepEqual(JSON.parse(posts.searchParams.get('tags')!), tags);
+	assert.deepEqual(JSON.parse(pix.searchParams.get('tags')!), tags);
+	assert.equal(posts.searchParams.get('page'), '2');
+	assert.equal(pix.searchParams.get('before'), 'cursor');
+});

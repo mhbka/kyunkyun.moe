@@ -5,9 +5,10 @@ import type { CreatePostInput, DraftPostSummary, Post, PostSummary, UpdatePostIn
 export function createPostsApi(request: ApiRequest) {
 	return {
 		getAuthorStatus: (token: string) => request<{ isAuthor: boolean }>('/users/is-author', {}, token),
-		listPosts: (page = 1, size = 50, tag?: string) => {
+		listPosts: (page = 1, size = 50, tag?: string | string[]) => {
 			const query = new URLSearchParams({ page: String(page), size: String(size) });
-			if (tag) query.set('tag', tag);
+			if (Array.isArray(tag)) query.set('tags', JSON.stringify(tag));
+			else if (tag) query.set('tag', tag);
 			return request<PostSummary[]>(`/posts?${query}`);
 		},
 		listDrafts: (token: string) => request<DraftPostSummary[]>('/posts/drafts', {}, token),

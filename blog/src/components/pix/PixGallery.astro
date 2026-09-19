@@ -9,15 +9,15 @@ interface Props {
 	images: Pix[];
 	nextBefore: string | null;
 	hasMore: boolean;
-	tag?: string;
+	tags: string[];
 	isPix: boolean;
 	accessToken?: string;
 }
 
-const { images, nextBefore, hasMore, tag, isPix, accessToken } = Astro.props;
+const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 ---
 
-<section class="moe-gallery" data-moe-gallery data-next-before={nextBefore ?? ''} data-has-more={hasMore ? 'true' : 'false'} data-tag={tag ?? ''} data-token={accessToken ?? ''} data-can-edit={isPix ? 'true' : 'false'}>
+<section class="moe-gallery" data-moe-gallery data-next-before={nextBefore ?? ''} data-has-more={hasMore ? 'true' : 'false'} data-tags={JSON.stringify(tags)} data-token={accessToken ?? ''} data-can-edit={isPix ? 'true' : 'false'}>
 	{isPix && (
 		<div class="moe-upload" data-moe-upload>
 			<label class="moe-dropzone" for="moe-image" data-moe-dropzone>

@@ -1,21 +1,22 @@
 ---
+import { toggleTagUrl } from '../lib/tags.ts';
 import Link from './ui/Link.astro';
 import type { TagSummary } from '../lib/models/tags.ts';
 
 interface Props {
 	tags: TagSummary[];
-	selectedTag?: string;
+	selectedTags: string[];
 	basePath?: string;
 }
 
-const { tags, selectedTag, basePath = '/blog/' } = Astro.props;
+const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 ---
 
 {tags.length > 0 && (
 	<nav class="tag-filter" aria-label="Filter posts by tag" data-tag-filter data-client-filter={basePath === '/blog/' ? 'true' : 'false'}>
-		<Link class:list={['tag-filter__tag', !selectedTag && 'tag-filter__tag--selected']} href={basePath} data-tag="">all</Link>
+		<Link class:list={['tag-filter__tag', !selectedTags.length && 'tag-filter__tag--selected']} href={basePath} data-tag="">all</Link>
 		{tags.map(({ tag, count }) => (
-			<Link class:list={['tag-filter__tag', selectedTag === tag && 'tag-filter__tag--selected']} href={`${basePath}?tag=${encodeURIComponent(tag)}`} data-tag={tag}>
+			<Link class:list={['tag-filter__tag', selectedTags.includes(tag) && 'tag-filter__tag--selected']} href={toggleTagUrl(basePath, selectedTags, tag)} data-tag={tag} aria-current={selectedTags.includes(tag) ? "true" : undefined}>
 				#{tag} <span aria-label={`${count} posts`}>({count})</span>
 			</Link>
 		))}
@@ -23,21 +24,25 @@ const { tags, selectedTag, basePath = '/blog/' } = Astro.props;
 )}
 
 <script>
+	import { readTagFilters, toggleTagUrl } from '../lib/tags.ts';
 	const filter = document.querySelector<HTMLElement>('[data-tag-filter]');
 
 	function currentTag() {
-		return new URL(window.location.href).searchParams.get('tag') ?? undefined;
+		return readTagFilters(new URL(window.location.href).searchParams);
 	}
 
-	function updateSelection(tag: string | undefined) {
+	function updateSelection(tags: string[]) {
 		filter?.querySelectorAll<HTMLAnchorElement>('[data-tag]').forEach((link) => {
-			link.classList.toggle('tag-filter__tag--selected', (link.dataset.tag || undefined) === tag);
+			link.classList.toggle('tag-filter__tag--selected', link.dataset.tag ? tags.includes(link.dataset.tag) : tags.length === 0);
+			link.href = toggleTagUrl(window.location.pathname, tags, link.dataset.tag ?? '');
+			if (link.dataset.tag && tags.includes(link.dataset.tag)) link.setAttribute('aria-current', 'true');
+			else link.removeAttribute('aria-current');
 		});
 	}
 
-	function filterPosts(tag: string | undefined) {
-		updateSelection(tag);
-		document.dispatchEvent(new CustomEvent('posts:filter', { detail: tag }));
+	function filterPosts(tags: string[]) {
+		updateSelection(tags);
+		document.dispatchEvent(new CustomEvent('posts:filter', { detail: tags }));
 	}
 
 	filter?.addEventListener('click', (event) => {
@@ -48,7 +53,7 @@ const { tags, selectedTag, basePath = '/blog/' } = Astro.props;
 		event.preventDefault();
 		const url = new URL(link.href);
 		window.history.pushState(null, '', url);
-		filterPosts(link.dataset.tag || undefined);
+		filterPosts(readTagFilters(url.searchParams));
 	});
 
 	window.addEventListener('popstate', () => filterPosts(currentTag()));

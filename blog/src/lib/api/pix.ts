@@ -5,10 +5,11 @@ import type { Pix, PixPage, PixTagUpdate, PixUpload } from '../models/pix.ts';
 export function createPixApi(request: ApiRequest, upload: typeof globalThis.fetch = globalThis.fetch) {
 	return {
 		getPixStatus: (token: string) => request<{ isPix: boolean }>('/users/is-pix', {}, token),
-		listPix: (limit = 60, before?: string, tag?: string) => {
+		listPix: (limit = 60, before?: string, tag?: string | string[]) => {
 			const query = new URLSearchParams({ limit: String(limit) });
 			if (before) query.set('before', before);
-			if (tag) query.set('tag', tag);
+			if (Array.isArray(tag)) query.set('tags', JSON.stringify(tag));
+			else if (tag) query.set('tag', tag);
 			return request<PixPage>(`/pix?${query}`);
 		},
 		listPixTags: () => request<Array<{ tag: string; count: number }>>('/pix/tags'),

@@ -135,7 +135,7 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 			return item;
 		}
 
-		function renderPagination(tag: string | undefined, hasNext: boolean) {
+		function renderPagination(tags: string[], hasNext: boolean) {
 			const pagination = document.querySelector<HTMLElement>('.pagination');
 			if (!pagination) return;
 
@@ -144,24 +144,28 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 			const link = document.createElement('a');
 			link.className = 'ui-link ui-button';
 			const query = new URLSearchParams({ page: '2' });
-			if (tag) query.set('tag', tag);
+			tags.forEach(tag => query.append('tag', tag));
 			link.href = `/blog/?${query}`;
 			link.textContent = 'older posts';
 			pagination.replaceChildren(link);
 		}
 
+		let filterRequest = 0;
 		document.addEventListener('posts:filter', async (event) => {
 			if (!list) return;
-			const tag = (event as CustomEvent<string | undefined>).detail;
+			const tag = (event as CustomEvent<string[]>).detail;
+			const request = ++filterRequest;
 			list.setAttribute('aria-busy', 'true');
 			try {
 				const posts = await blogApi.listPosts(1, pageSize, tag);
+				if (request !== filterRequest) return;
 				list.replaceChildren(...posts.slice(0, pageSize - 1).map(renderPost));
 				renderPagination(tag, posts.length === pageSize);
 			} catch {
+				if (request !== filterRequest) return;
 				window.alert('Unable to filter posts. Please try again shortly.');
 			} finally {
-				list.removeAttribute('aria-busy');
+				if (request === filterRequest) list.removeAttribute('aria-busy');
 			}
 		});
 	</script>

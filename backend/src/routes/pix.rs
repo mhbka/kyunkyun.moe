@@ -35,6 +35,7 @@ struct ListImagesQuery {
     limit: Option<i64>,
     before: Option<Uuid>,
     tag: Option<String>,
+    tags: Option<String>,
 }
 
 /// Returns a page of completed Pix images.
@@ -50,13 +51,13 @@ async fn list_images(
         "select id, public_url, tags, created_at
          from pix
          where uploaded_at is not null
-           and ($2::text is null or tags @> array[$2])
+           and tags @> $2::text[]
            and ($1::uuid is null or (created_at, id) < (select created_at, id from pix where id = $1))
          order by created_at desc, id desc
          limit $3",
     )
     .bind(query.before)
-    .bind(query.tag)
+    .bind(super::tags::parse_filters(query.tag.as_deref(), query.tags.as_deref())?)
     .bind(limit + 1)
     .fetch_all(&app_state.pool)
     .await?;

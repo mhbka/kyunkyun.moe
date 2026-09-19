@@ -50,6 +50,7 @@ struct ListPostsQuery {
     page: Option<u32>,
     size: Option<u32>,
     tag: Option<String>,
+    tags: Option<String>,
 }
 
 impl ListPostsQuery {
@@ -68,14 +69,6 @@ impl ListPostsQuery {
         let offset = u64::from(page - 1) * u64::from(size);
         Ok((i64::from(size), offset as i64))
     }
-
-    /// Normalizes a non-empty tag filter for the database query.
-    fn tag(&self) -> Option<String> {
-        self.tag
-            .as_ref()
-            .map(|tag| normalize_tag(tag))
-            .filter(|tag| !tag.is_empty())
-    }
 }
 
 /// Lists published posts using the requested pagination and tag filter.
@@ -84,14 +77,14 @@ async fn list_posts(
     OptionalAuthUser(_user): OptionalAuthUser,
     Query(query): Query<ListPostsQuery>,
 ) -> RouteResult<Json<Vec<PostSummary>>> {
-    let tag = query.tag();
+    let tag = super::tags::parse_filters(query.tag.as_deref(), query.tags.as_deref())?;
     let (size, offset) = query.pagination()?;
     let posts = sqlx::query_as::<_, PostSummary>(
         r#"
         select id, title, slug, thumbnail_url, tags, published_at
         from posts
         where status = 'published' and published_at <= now() and deleted_at is null
-          and ($1::text is null or tags @> array[$1::text])
+          and tags @> $1::text[]
         order by published_at desc
         limit $2 offset $3
         "#,

@@ -1,5 +1,10 @@
 # (functional) changelog
 
+## 2026-09-20
+```
+- add selecting multiple tags for pix and posts
+```
+
 ## 2026-09-19
 ```
 - fixed styling on mobile screens
