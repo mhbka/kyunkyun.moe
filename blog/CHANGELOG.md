@@ -3,6 +3,7 @@
 ## 2026-09-20
 ```
 - add selecting multiple tags for pix and posts
+- fix up visuals
 ```
 
 ## 2026-09-19

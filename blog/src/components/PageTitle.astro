@@ -6,14 +6,23 @@ interface Props {
 
 const { title, className } = Astro.props;
 const hasWave = className?.split(/\s+/).includes('title-wave');
-const letters = Array.from(title);
+let letterIndex = 0;
+const titleParts = title.split(/(\s+)/).map((text) => ({
+	isWhitespace: /^\s+$/.test(text),
+	text,
+	letters: Array.from(text, (letter) => ({ letter, index: letterIndex++ })),
+}));
 ---
 
 <h1 class:list={['page-title', className]} aria-label={hasWave ? title : undefined}>
 	{hasWave ? (
-		letters.map((letter, index) => (
-			<span class="title-wave-letter" aria-hidden="true" style={`--letter-index: ${index}`}>
-				{letter === ' ' ? '\u00a0' : letter}
+		titleParts.map((part) => part.isWhitespace ? part.text : (
+			<span class="title-wave-word" aria-hidden="true">
+				{part.letters.map(({ letter, index }) => (
+					<span class="title-wave-letter" style={`--letter-index: ${index}`}>
+						{letter}
+					</span>
+				))}
 			</span>
 		))
 	) : title}
