@@ -14,7 +14,7 @@ post-contents :is(.ui-link, .ui-button):hover { color: var(--color-accent); }
 .post-page :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 2rem; }
 post-contents .contents-toggle { display: none; }
 post-contents [aria-current="location"] { color: var(--color-accent); font-weight: 700; }
-@media (max-width: 1199px) {
+@media (max-width: 800px) {
 	.site-sidebar.site-sidebar-right { position: sticky; top: 0; z-index: 10; }
 	post-contents { position: relative; }
 	post-contents .contents-toggle {

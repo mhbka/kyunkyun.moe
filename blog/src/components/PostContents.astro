@@ -34,7 +34,7 @@ const { target, editable = false } = Astro.props;
 			const { signal } = this.controller;
 			const toggle = this.querySelector<HTMLButtonElement>('.contents-toggle')!;
 			const current = this.querySelector<HTMLElement>('[data-current-section]')!;
-			const mobile = window.matchMedia('(max-width: 1199px)');
+			const mobile = window.matchMedia('(max-width: 800px)');
 			const close = (restoreFocus = false) => {
 				toggle.setAttribute('aria-expanded', 'false');
 				if (restoreFocus) toggle.focus({ preventScroll: true });

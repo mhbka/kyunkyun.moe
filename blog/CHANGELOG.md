@@ -3,6 +3,7 @@
 ## 2026-09-20
 ```
 - add selecting multiple tags for pix and posts
+- add a table of contents on the right side (top for mobile)
 - fix up visuals
 ```
 

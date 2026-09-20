@@ -200,7 +200,7 @@ export default function Comments({ postId }: Props) {
 			<p className="comment-status" aria-live="polite">{status}</p>
 			<form className="comment-form" onSubmit={submitNewComment}>
 				<Textarea id="new-comment" name="body" rows={4} maxLength={5000} required />
-				<Button type="submit">Post comment</Button>
+				<Button type="submit">post</Button>
 			</form>
 			<div className="comment-list">
 				{roots.length ? roots.map((comment) => (
