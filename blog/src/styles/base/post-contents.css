@@ -1,0 +1,37 @@
+post-contents { display: block; min-width: 0; }
+post-contents[hidden] { display: none; }
+.contents-title { margin: 0 0 0.75rem; color: var(--color-heading); font-weight: var(--font-weight-heading); }
+post-contents ol { list-style: none; padding: 0; margin: 0; }
+post-contents li { padding-inline-start: calc(var(--heading-depth) * 0.7rem); }
+post-contents :is(.ui-link, .ui-button) {
+	display: block; width: 100%; box-sizing: border-box; padding: 0.3rem 0;
+	border: 0; border-radius: 0; background: transparent; box-shadow: none;
+	color: var(--color-muted); font: inherit; font-size: 0.85rem; line-height: 1.5;
+	text-align: left; text-transform: lowercase; white-space: normal; overflow-wrap: anywhere;
+	cursor: pointer; text-decoration: none;
+}
+post-contents :is(.ui-link, .ui-button):hover { color: var(--color-accent); }
+.post-page :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 2rem; }
+post-contents .contents-toggle { display: none; }
+post-contents [aria-current="location"] { color: var(--color-accent); font-weight: 700; }
+@media (max-width: 1199px) {
+	.site-sidebar.site-sidebar-right { position: sticky; top: 0; z-index: 10; }
+	post-contents { position: relative; }
+	post-contents .contents-toggle {
+		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+		min-height: 3rem; padding: 0.65rem 1rem;
+		background: var(--color-surface); color: var(--color-heading); box-shadow: var(--shadow-header);
+	}
+	.contents-toggle > span:first-child { flex-shrink: 0; }
+	.contents-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }
+	.contents-chevron { display: inline-block; }
+	.contents-toggle[aria-expanded="true"] .contents-chevron { transform: rotate(180deg); }
+	post-contents .contents-panel {
+		display: none; position: absolute; inset: 100% 0 auto;
+		max-height: min(60dvh, 28rem); overflow-y: auto; overscroll-behavior: contain;
+	}
+	.contents-toggle[aria-expanded="true"] + .contents-panel { display: block; }
+	.contents-panel .contents-title { display: none; }
+	.contents-panel :is(.ui-link, .ui-button) { min-height: 2.75rem; padding-block: 0.65rem; }
+	.post-page :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 4rem; }
+}

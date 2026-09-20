@@ -7,6 +7,7 @@ import Comments from '../components/Comments.astro';
 import MoveToDraftButton from '../components/MoveToDraftButton.astro';
 import PageTitle from '../components/PageTitle.astro';
 import Link from '../components/ui/Link.astro';
+import PostContents from '../components/PostContents.astro';
 
 interface Props {
 	title: string;
@@ -47,6 +48,7 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} mainClass="post-page">
+			<PostContents slot="right-sidebar" target="post-content" />
 			{errorMessage ? (
 				<div><FetchError message={errorMessage} /></div>
 			) : (
@@ -70,7 +72,7 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 						</div>
 						<hr />
 					</div>
-					{content && <div class="markdown-content" set:html={content} />}
+					{content && <div id="post-content" class="markdown-content" set:html={content} />}
 					{postId && <Comments postId={postId} />}
 				</div>
 			</article>

@@ -1,0 +1,7 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import '../../styles/base/side-content.css';
+type Props = HTMLAttributes<'div'> & { as?: 'div' | 'header' | 'section' | 'nav' | 'aside' };
+const { as: Tag = 'div', class: className, ...props } = Astro.props;
+---
+<Tag class:list={['side-content', className]} {...props}><slot /></Tag>

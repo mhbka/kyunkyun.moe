@@ -2,6 +2,7 @@
 import HeaderLink from './HeaderLink.astro';
 import LoginButton from './LoginButton.astro';
 import ThemeSelector from './ThemeSelector.astro';
+import SideContent from './ui/SideContent.astro';
 
 interface Props {
 	isLoggedIn?: boolean;
@@ -10,7 +11,7 @@ interface Props {
 const { isLoggedIn = false } = Astro.props;
 ---
 
-<header class="site-header">
+<SideContent as="header" class="site-header">
 	<nav>
 		<div class="primary-links">
 			<HeaderLink href="/">home</HeaderLink>
@@ -29,13 +30,8 @@ const { isLoggedIn = false } = Astro.props;
 			<LoginButton isLoggedIn={isLoggedIn} />
 		</div>
 	</nav>
-</header>
+</SideContent>
 <style>
-	header {
-		padding: 1.5em 1em;
-		background: var(--color-surface);
-		box-shadow: var(--shadow-header);
-	}
 	nav {
 		display: flex;
 		flex-direction: column;
@@ -83,7 +79,6 @@ const { isLoggedIn = false } = Astro.props;
 		padding-left: 1rem;
 	}
 	@media (max-width: 800px) {
-		header { padding: 1em; }
 		nav { display: grid; gap: 0.75rem; }
 		.primary-links,
 		.nav-actions {

@@ -19,12 +19,25 @@ body {
 .page-main { padding: 1.5em 1em; }
 .page-heading, .page-body { margin-bottom: 2rem; }
 
+.site-sidebar-right { grid-column: 2; grid-row: 1; position: static; }
+.site-sidebar-right:not(:has(> :not([hidden]))) { display: none; }
+.site-layout:has(.site-sidebar-right > :not([hidden])) .page-content { grid-row: 2; }
+@media (min-width: 1200px) {
+	.site-layout:has(.site-sidebar-right > :not([hidden])) {
+		grid-template-columns: minmax(12rem, 16rem) minmax(30rem, 45vw) minmax(12rem, 16rem);
+	}
+	.site-sidebar-right { grid-column: 3; position: sticky; max-height: calc(100dvh - 4rem); overflow-y: auto; }
+	.site-layout:has(.site-sidebar-right > :not([hidden])) .page-content { grid-row: 1; }
+}
+
 @media (max-width: 800px) {
 	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 0; }
 	.site-sidebar { grid-column: 1; gap: 1rem; width: 100%; margin: 0; position: static; }
 	.page-content { grid-column: 1; width: 100%; }
 	.page-top { min-height: 0rem; }
 	.page-main { padding: 1em; }
+	.site-sidebar-right { grid-row: 2; }
+	.site-layout:has(.site-sidebar-right > :not([hidden])) .page-content { grid-row: 3; }
 }
 
 .sr-only { border: 0; padding: 0; margin: 0; position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px 1px 1px 1px); clip: rect(1px, 1px, 1px, 1px); clip-path: inset(50%); white-space: nowrap; }

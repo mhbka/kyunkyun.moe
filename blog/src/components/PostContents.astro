@@ -1,0 +1,118 @@
+---
+import Button from './ui/Button.astro';
+import Link from './ui/Link.astro';
+import SideContent from './ui/SideContent.astro';
+import '../styles/base/post-contents.css';
+interface Props { target: string; editable?: boolean; }
+const { target, editable = false } = Astro.props;
+---
+	<post-contents data-target={target} data-editable={String(editable)} hidden>
+		<Button class="contents-toggle" type="button" aria-expanded="false" aria-controls={`${target}-contents`}>
+			<span>on this page <span class="contents-chevron" aria-hidden="true">▾</span></span>
+			<span class="contents-current" data-current-section></span>
+		</Button>
+		<SideContent class="contents-panel" id={`${target}-contents`}>
+		<nav aria-label="table of contents">
+			<p class="contents-title">on this page</p>
+			<ol></ol>
+		</nav>
+		</SideContent>
+		<template><li>{editable ? <Button type="button" /> : <Link />}</li></template>
+	</post-contents>
+<script>
+	class PostContents extends HTMLElement {
+		observer?: MutationObserver;
+		frame = 0;
+		scrollFrame = 0;
+		controller?: AbortController;
+		connectedCallback() {
+			const root = document.getElementById(this.dataset.target ?? '');
+			const list = this.querySelector('ol');
+			const template = this.querySelector('template');
+			if (!root || !list || !template) return;
+			this.controller = new AbortController();
+			const { signal } = this.controller;
+			const toggle = this.querySelector<HTMLButtonElement>('.contents-toggle')!;
+			const current = this.querySelector<HTMLElement>('[data-current-section]')!;
+			const mobile = window.matchMedia('(max-width: 1199px)');
+			const close = (restoreFocus = false) => {
+				toggle.setAttribute('aria-expanded', 'false');
+				if (restoreFocus) toggle.focus({ preventScroll: true });
+			};
+			toggle.addEventListener('click', () => {
+				toggle.setAttribute('aria-expanded', String(toggle.getAttribute('aria-expanded') !== 'true'));
+			}, { signal });
+			document.addEventListener('click', (event) => {
+				if (!this.contains(event.target as Node)) close();
+			}, { signal });
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') close(true);
+			}, { signal });
+			this.addEventListener('focusout', (event) => {
+				if (event.relatedTarget && !this.contains(event.relatedTarget as Node)) close();
+			}, { signal });
+			mobile.addEventListener('change', () => close(), { signal });
+			let headings: HTMLElement[] = [];
+			const updateCurrent = () => {
+				const offset = mobile.matches ? toggle.offsetHeight + 20 : 40;
+				let active = -1;
+				for (let index = 0; index < headings.length; index++) {
+					if (headings[index].getBoundingClientRect().top <= offset) active = index;
+					else break;
+				}
+				current.textContent = headings[active]?.textContent?.trim() ?? '';
+				list.querySelectorAll('a, button').forEach((control, index) => {
+					if (index === active) control.setAttribute('aria-current', 'location');
+					else control.removeAttribute('aria-current');
+				});
+			};
+			const scheduleCurrent = () => {
+				cancelAnimationFrame(this.scrollFrame);
+				this.scrollFrame = requestAnimationFrame(updateCurrent);
+			};
+			window.addEventListener('scroll', scheduleCurrent, { passive: true, signal });
+			window.addEventListener('resize', scheduleCurrent, { signal });
+			const editable = this.dataset.editable === 'true';
+			const render = () => {
+				headings = Array.from(root.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')).filter((heading) => heading.textContent?.trim());
+				const depth = Math.min(...headings.map((heading) => Number(heading.tagName[1])));
+				list.replaceChildren(...headings.map((heading, index) => {
+					const item = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+					const control = item.firstElementChild as HTMLElement;
+					control.textContent = heading.textContent!.trim();
+					item.style.setProperty('--heading-depth', String(Number(heading.tagName[1]) - depth));
+					control.addEventListener('click', () => {
+						close(mobile.matches);
+					});
+					if (editable) {
+						control.addEventListener('click', () => heading.scrollIntoView({ block: 'start' }));
+					} else {
+						if (!heading.id) {
+							let id = `${root.id}-section-${index + 1}`;
+							while (document.getElementById(id)) id += '-';
+							heading.id = id;
+						}
+						control.setAttribute('href', `#${encodeURIComponent(heading.id)}`);
+					}
+					return item;
+				}));
+				this.hidden = headings.length === 0;
+				if (this.hidden) close();
+				updateCurrent();
+			};
+			render();
+			this.observer = new MutationObserver(() => {
+				cancelAnimationFrame(this.frame);
+				this.frame = requestAnimationFrame(render);
+			});
+			this.observer.observe(root, { childList: true, subtree: true, characterData: true });
+		}
+		disconnectedCallback() {
+			this.observer?.disconnect();
+			this.controller?.abort();
+			cancelAnimationFrame(this.frame);
+			cancelAnimationFrame(this.scrollFrame);
+		}
+	}
+	customElements.define('post-contents', PostContents);
+</script>

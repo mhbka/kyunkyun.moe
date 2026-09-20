@@ -2,6 +2,7 @@
 import BaseHead from '../../../components/BaseHead.astro';
 import PageLayout from '../../../components/PageLayout.astro';
 import PostEditor from '../../../components/editor/PostEditor.astro';
+import PostContents from '../../../components/PostContents.astro';
 import { blogApi } from '../../../lib/api.ts';
 import { getPageAuth } from '../../../lib/page-auth.ts';
 import type { Post } from '../../../lib/models/posts.ts';
@@ -25,6 +26,7 @@ if (isAuthor && accessToken) {
 	</head>
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} mainClass="post-page">
+			<PostContents slot="right-sidebar" target="post-content" editable />
 			{post ? <PostEditor post={post} /> : <p>This post could not be found or you do not have access to edit it.</p>}
 		</PageLayout>
 	</body>

@@ -38,4 +38,9 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 		</main>
 		<Footer renderQuote={renderQuote} />
 	</div>
+	{Astro.slots.has('right-sidebar') && (
+		<aside class="site-sidebar site-sidebar-right" aria-label="page navigation">
+			<slot name="right-sidebar" />
+		</aside>
+	)}
 </div>
