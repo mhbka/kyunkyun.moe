@@ -1,0 +1,133 @@
+---
+import { WALKERS } from '../consts';
+---
+
+<img
+	class="walker"
+	src={WALKERS[0].standSrc}
+	alt=""
+	aria-hidden="true"
+/>
+
+
+<script>
+	import { DEFAULT_WALKER_ID, WALKERS } from '../consts';
+	import { getWalkerImage } from './walker/assets';
+	import { moveTowardsCursor, shouldRestartWalking } from './walker/movement';
+
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const walkerStorageKey = 'site-walker';
+	const savedWalker = localStorage.getItem(walkerStorageKey);
+	const savedWalkerId = savedWalker === 'sweep' ? 'sweep_tosho' : savedWalker;
+	const activeWalker = WALKERS.find((walker) => walker.id === savedWalkerId)?.id ?? DEFAULT_WALKER_ID;
+
+	// Finds the image pair for the selected walker.
+	function getWalker(id: string) {
+		return WALKERS.find((walker) => walker.id === id) ?? WALKERS[0];
+	}
+
+	document.querySelectorAll<HTMLImageElement>('.walker').forEach((walker) => {
+		let selectedWalker = getWalker(activeWalker);
+		let position = window.innerWidth / 2;
+		let target = position;
+		let previousTime = 0;
+		let animationFrame = 0;
+		let isHovered = false;
+		let isWalking = false;
+		let walkingDirection: -1 | 1 = -1;
+		let displayedSrc = '';
+		let isMirrored = false;
+
+		// Updates the image only when its source or orientation changes.
+		function showImage(image: { src: string; mirrored: boolean }) {
+			if (displayedSrc === image.src && isMirrored === image.mirrored) return;
+
+			displayedSrc = image.src;
+			isMirrored = image.mirrored;
+			walker.src = image.src;
+			walker.style.setProperty('--walker-mirror', image.mirrored ? '-1' : '1');
+		}
+
+		// Shows the image that matches the walker's current state.
+		function showCurrentImage() {
+			showImage(getWalkerImage(selectedWalker, isWalking, isHovered, walkingDirection));
+		}
+
+		showCurrentImage();
+
+		// Switches between walking and standing images.
+		function setWalking(walking: boolean, direction?: -1 | 1) {
+			isWalking = walking;
+			if (direction) walkingDirection = direction;
+			showCurrentImage();
+		}
+
+		// Applies a newly selected walker without interrupting its movement.
+		function selectWalker(id: string) {
+			selectedWalker = getWalker(id);
+			showCurrentImage();
+		}
+
+		// Updates the walker position once per paint while it follows the cursor.
+		function walk(time: number) {
+			const elapsedSeconds = Math.min((time - previousTime) / 1000, 0.1);
+			previousTime = time;
+
+			const step = moveTowardsCursor(position, target, elapsedSeconds);
+			position = step.position;
+			walker.style.setProperty('--walker-x', `${position}px`);
+
+			if (step.direction === 0) {
+				setWalking(false);
+				animationFrame = 0;
+				return;
+			}
+
+			setWalking(true, step.direction);
+			animationFrame = requestAnimationFrame(walk);
+		}
+
+		// Sets the cursor X coordinate as the next destination.
+		document.addEventListener('pointermove', (event) => {
+			target = event.clientX;
+
+			if (!reducedMotion && animationFrame === 0 && shouldRestartWalking(position, target)) {
+				previousTime = performance.now();
+				animationFrame = requestAnimationFrame(walk);
+			}
+		});
+
+		// Shows a character's pose while the pointer is over it.
+		walker.addEventListener('pointerenter', () => {
+			isHovered = true;
+			showCurrentImage();
+		});
+
+		// Restores the standing or walking image after hover ends.
+		walker.addEventListener('pointerleave', () => {
+			isHovered = false;
+			showCurrentImage();
+		});
+
+		window.addEventListener('walkerchange', (event) => {
+			if (event instanceof CustomEvent && typeof event.detail === 'string') {
+				selectWalker(event.detail);
+			}
+		});
+	});
+</script>
+
+<style>
+	.walker {
+		--walker-mirror: 1;
+		--walker-x: 50vw;
+		position: fixed;
+		bottom: 0;
+		left: var(--walker-x);
+		z-index: 10;
+		width: min(12rem, 30vw);
+		height: auto;
+		pointer-events: auto;
+		transform: translateX(-50%) scaleX(var(--walker-mirror));
+	}
+</style>

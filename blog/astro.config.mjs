@@ -5,12 +5,19 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
+import { generateWalkerManifest } from './scripts/generate-walker-manifest.mjs';
 
 import node from '@astrojs/node';
 
 const exposedEnvPrefixes = ['PUBLIC_', 'SUPABASE_', 'BACKEND_'];
 const isBuild = process.argv.includes('build');
+
+generateWalkerManifest({
+	publicDirectory: fileURLToPath(new URL('./public', import.meta.url)),
+	outputFile: fileURLToPath(new URL('./src/generated/walkers.ts', import.meta.url)),
+});
 
 function loadBuildEnv() {
 	const env = parseEnv(readFileSync(new URL('./.env', import.meta.url), 'utf8'));

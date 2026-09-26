@@ -2,6 +2,7 @@
 import HeaderLink from './HeaderLink.astro';
 import LoginButton from './LoginButton.astro';
 import ThemeSelector from './ThemeSelector.astro';
+import WalkerSelector from './WalkerSelector.astro';
 import SideContent from './ui/SideContent.astro';
 
 interface Props {
@@ -28,6 +29,7 @@ const { isLoggedIn = false } = Astro.props;
 		</div>
 		<div class="nav-actions">
 			<ThemeSelector />
+			<WalkerSelector />
 			<LoginButton isLoggedIn={isLoggedIn} />
 		</div>
 	</nav>

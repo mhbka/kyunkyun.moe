@@ -2,7 +2,7 @@
 
 ## 2026-09-26
 ```
-- added crawling bocchi
+- added some walkers at bottom of screen -- thx to umamusume website: https://hachamecha-umamusume.jp/
 - added tweets section (name and functionality still wip for now)
 - added preview side panel on home page
 - moved pix out of nonsense subsection

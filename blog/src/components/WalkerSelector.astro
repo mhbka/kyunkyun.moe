@@ -1,0 +1,48 @@
+---
+import { WALKERS } from '../consts';
+import Select from './ui/Select.astro';
+---
+
+<label class="walker-selector">
+	<span class="sr-only">Walker</span>
+	<Select data-walker-selector aria-label="Walker">
+		{WALKERS.map((walker) => <option value={walker.id}>{walker.label}</option>)}
+	</Select>
+</label>
+
+
+<script>
+	import { DEFAULT_WALKER_ID, WALKERS } from '../consts';
+
+	const walkerSelector = document.querySelector('[data-walker-selector]');
+	const walkerStorageKey = 'site-walker';
+	const savedWalker = localStorage.getItem(walkerStorageKey);
+	const savedWalkerId = savedWalker === 'sweep' ? 'sweep_tosho' : savedWalker;
+	const activeWalker = WALKERS.find((walker) => walker.id === savedWalkerId)?.id ?? DEFAULT_WALKER_ID;
+
+	if (walkerSelector instanceof HTMLSelectElement) {
+		walkerSelector.value = activeWalker;
+		walkerSelector.addEventListener('change', () => {
+			localStorage.setItem(walkerStorageKey, walkerSelector.value);
+			window.dispatchEvent(new CustomEvent('walkerchange', { detail: walkerSelector.value }));
+		});
+	}
+</script>
+
+<style>
+	.walker-selector {
+		display: block;
+		position: relative;
+	}
+	.walker-selector :global(.ui-select) {
+		appearance: none;
+		background-image:
+			linear-gradient(45deg, transparent 50%, var(--color-surface) 50%),
+			linear-gradient(135deg, var(--color-surface) 50%, transparent 50%);
+		background-position:
+			calc(100% - 1.2rem) 50%,
+			calc(100% - 0.85rem) 50%;
+		background-repeat: no-repeat;
+		background-size: 0.35rem 0.35rem;
+	}
+</style>
