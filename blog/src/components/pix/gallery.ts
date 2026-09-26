@@ -2,6 +2,7 @@ import { blogApi, type Pix } from '../../lib/api.ts';
 import { restoreScrollPosition, type ScrollPosition } from './scroll.ts';
 import { savePixTagEdits, type PixTagOperation } from './tag-edit.ts';
 import { uploadPixFiles } from './upload.ts';
+import { initFileDropzone } from '../ui/file-dropzone.ts';
 
 type PixImage = Pick<Pix, 'id' | 'publicUrl' | 'tags' | 'createdAt'>;
 
@@ -14,9 +15,8 @@ export function initPixGallery(gallery: HTMLElement) {
 	const portalCreatedAt = gallery.querySelector<HTMLTimeElement>('[data-moe-portal-created-at]');
 	const portalTags = gallery.querySelector<HTMLElement>('[data-moe-portal-tags]');
 	const status = gallery.querySelector<HTMLElement>('[data-moe-status]');
-	const uploader = gallery.querySelector<HTMLElement>('[data-moe-upload]');
-	const dropzone = gallery.querySelector<HTMLLabelElement>('[data-moe-dropzone]');
-	const fileInput = gallery.querySelector<HTMLInputElement>('#moe-image');
+	const dropzone = gallery.querySelector<HTMLElement>('[data-file-dropzone]');
+	const fileInput = gallery.querySelector<HTMLInputElement>('[data-file-dropzone-input]');
 	const tagsInput = gallery.querySelector<HTMLInputElement>('[data-tag-value]');
 	const selectToggle = gallery.querySelector<HTMLButtonElement>('[data-moe-select-toggle]');
 	const tagEditor = gallery.querySelector<HTMLElement>('[data-moe-tag-editor]');
@@ -63,7 +63,7 @@ export function initPixGallery(gallery: HTMLElement) {
 		if (selectedCount) selectedCount.textContent = `${selectedImageIds.size} selected`;
 		if (selectToggle) {
 			selectToggle.ariaPressed = String(isSelecting);
-			selectToggle.textContent = isSelecting ? 'cancel selection' : 'select images';
+			selectToggle.textContent = isSelecting ? 'cancel selection' : 'select images to modify';
 		}
 		grid?.querySelectorAll<HTMLButtonElement>('[data-image-id]').forEach((thumbnail) => {
 			const isSelected = selectedImageIds.has(thumbnail.dataset.imageId ?? '');
@@ -164,7 +164,7 @@ export function initPixGallery(gallery: HTMLElement) {
 		}
 		if (!token || fileInput?.disabled) return;
 		if (fileInput) fileInput.disabled = true;
-		uploader?.setAttribute('aria-busy', 'true');
+		dropzone?.setAttribute('aria-busy', 'true');
 		try {
 			const result = await uploadPixFiles({
 				files: selectedFiles,
@@ -183,26 +183,9 @@ export function initPixGallery(gallery: HTMLElement) {
 		} catch { if (status) status.textContent = 'upload failed. please try again.'; }
 		finally {
 			if (fileInput) fileInput.disabled = false;
-			uploader?.removeAttribute('aria-busy');
+			dropzone?.removeAttribute('aria-busy');
 		}
 	}
 
-	fileInput?.addEventListener('change', () => {
-		if (fileInput.files?.length) void uploadFiles(fileInput.files);
-	});
-	for (const eventName of ['dragenter', 'dragover']) {
-		dropzone?.addEventListener(eventName, (event) => {
-			event.preventDefault();
-			dropzone.classList.add('is-dragging');
-		});
-	}
-	for (const eventName of ['dragleave', 'drop']) {
-		dropzone?.addEventListener(eventName, (event) => {
-			event.preventDefault();
-			dropzone.classList.remove('is-dragging');
-		});
-	}
-	dropzone?.addEventListener('drop', (event) => {
-		if (event.dataTransfer?.files.length) void uploadFiles(event.dataTransfer.files);
-	});
+	if (dropzone) initFileDropzone(dropzone, (files) => void uploadFiles(files));
 }

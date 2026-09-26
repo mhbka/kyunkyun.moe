@@ -1,9 +1,9 @@
 ---
 import type { Pix } from '../../lib/models/pix.ts';
 import Button from '../ui/Button.astro';
-import Input from '../ui/Input.astro';
 import Select from '../ui/Select.astro';
 import TagInput from '../TagInput.astro';
+import FileDropzone from '../ui/FileDropzone.astro';
 
 interface Props {
 	images: Pix[];
@@ -20,12 +20,9 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <section class="moe-gallery" data-moe-gallery data-next-before={nextBefore ?? ''} data-has-more={hasMore ? 'true' : 'false'} data-tags={JSON.stringify(tags)} data-token={accessToken ?? ''} data-can-edit={isPix ? 'true' : 'false'}>
 	{isPix && (
 		<div class="moe-upload" data-moe-upload>
-			<label class="moe-dropzone" for="moe-image" data-moe-dropzone>
-				<span><i>upload pix...</i></span>
-			</label>
-			<Input class="moe-file-input" id="moe-image" name="images" type="file" accept="image/avif,image/gif,image/jpeg,image/png,image/webp" multiple />
+			<FileDropzone id="moe-image" name="images" accept="image/avif,image/gif,image/jpeg,image/png,image/webp" label="upload pix..." />
 			<TagInput id="pix-tags" name="tags" label="tags" />
-			<Button class="moe-select-toggle" type="button" data-moe-select-toggle aria-pressed="false">select images</Button>
+			<Button class="moe-select-toggle" type="button" data-moe-select-toggle aria-pressed="false">select images to modify</Button>
 			<div class="moe-tag-editor" data-moe-tag-editor hidden>
 				<span data-moe-selected-count></span>
 				<Select data-moe-tag-operation aria-label="tag operation">
@@ -69,10 +66,6 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <style>
 	.moe-gallery { display: grid; gap: 1rem; }
 	.moe-upload { display: grid; gap: 0.5rem; }
-	.moe-dropzone { display: grid; min-height: 5rem; place-content: center; border: var(--border-width) dashed var(--color-muted); border-radius: var(--radius-control); background: var(--color-subtle); color: var(--color-heading); cursor: pointer; text-align: center; }
-	.moe-dropzone small { color: var(--color-muted); }
-	.moe-dropzone:hover, .moe-dropzone.is-dragging, .moe-upload[aria-busy="true"] .moe-dropzone { border-color: var(--color-accent); background: var(--color-page-background); }
-	.moe-file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 	.moe-tag-editor[hidden] { display: none; }

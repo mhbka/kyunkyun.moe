@@ -1,0 +1,25 @@
+---
+import Input from './Input.astro';
+
+interface Props {
+	id: string;
+	name: string;
+	accept: string;
+	label: string;
+}
+
+const { id, name, accept, label } = Astro.props;
+---
+
+<div class="file-dropzone" data-file-dropzone>
+	<label class="file-dropzone__target" for={id} data-file-dropzone-target>
+		<span><i>{label}</i></span>
+	</label>
+	<Input class="file-dropzone__input" id={id} name={name} type="file" accept={accept} multiple data-file-dropzone-input />
+</div>
+
+<style>
+	.file-dropzone__target { display: grid; min-height: 5rem; padding: 0 1rem; place-content: center; border: var(--border-width) dashed var(--color-muted); border-radius: var(--radius-control); background: var(--color-subtle); color: var(--color-heading); cursor: pointer; text-align: center; }
+	.file-dropzone__target:hover, .file-dropzone.is-dragging .file-dropzone__target, .file-dropzone[aria-busy="true"] .file-dropzone__target { border-color: var(--color-accent); background: var(--color-page-background); }
+	.file-dropzone__input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+</style>

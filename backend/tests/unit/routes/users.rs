@@ -1,4 +1,4 @@
-use super::{AuthorStatus, PixStatus};
+use super::{AuthorStatus, PixStatus, TweetStatus};
 
 #[test]
 fn serializes_author_status_as_camel_case() {
@@ -12,4 +12,10 @@ fn serializes_pix_status_as_camel_case() {
     let status = serde_json::to_value(PixStatus { is_pix: true }).unwrap();
 
     assert_eq!(status, serde_json::json!({ "isPix": true }));
+}
+
+#[test]
+fn serializes_tweet_status_as_camel_case() {
+    let status = serde_json::to_value(TweetStatus { is_tweet: true }).unwrap();
+    assert_eq!(status, serde_json::json!({ "isTweet": true }));
 }

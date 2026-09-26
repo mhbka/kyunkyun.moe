@@ -1,0 +1,102 @@
+---
+import FormattedDate from '../FormattedDate.astro';
+import TagInput from '../TagInput.astro';
+import Button from '../ui/Button.astro';
+import Link from '../ui/Link.astro';
+import FileDropzone from '../ui/FileDropzone.astro';
+import { Textarea } from '../ui/react/Textarea.tsx';
+import type { Tweet } from '../../lib/models/tweets.ts';
+
+interface Props {
+	tweets: Tweet[];
+	isTweet: boolean;
+	accessToken?: string;
+	userId?: string;
+	nextBefore: string | null;
+	hasMore: boolean;
+	tags: string[];
+	before?: string;
+}
+
+const { tweets, isTweet, accessToken, userId, nextBefore, hasMore, tags, before } = Astro.props;
+const pageUrl = (cursor?: string) => {
+	const query = new URLSearchParams();
+	if (cursor) query.set('before', cursor);
+	tags.forEach((tag) => query.append('tag', tag));
+	return query.size ? `/nonsense/tweets/?${query}` : '/nonsense/tweets/';
+};
+---
+
+<section class="tweet-timeline" data-tweet-timeline data-token={accessToken ?? ''}>
+	{isTweet && (
+		<form class="tweet-composer" data-tweet-composer>
+			<Textarea client:load data-tweet-body maxLength={500} placeholder="what's happening?" aria-label="tweet text" />
+			<div class="tweet-composer__controls">
+				<FileDropzone id="tweet-media" name="media" accept="image/avif,image/gif,image/jpeg,image/png,image/webp,video/mp4,video/webm" label="attach media..." />
+				<span data-tweet-count>0/500</span>
+			</div>
+			<TagInput id="tweet-tags" name="tags" label="tags" />
+			<div class="tweet-previews" data-tweet-previews></div>
+			<div class="tweet-composer__actions">
+				<Button type="submit" data-tweet-submit>post</Button>
+				<p data-tweet-status role="status"></p>
+			</div>
+		</form>
+	)}
+	<div class="tweet-list" data-tweet-list>
+		{tweets.map((tweet) => (
+			<article class="tweet" data-tweet-id={tweet.id}>
+				<div class="tweet__meta">
+					<div class="tweet__details">
+						<FormattedDate date={new Date(tweet.createdAt)} includeTime />
+						{tweet.tags.length > 0 && <p class="tweet__tags">{tweet.tags.map((tag) => <span>#{tag} </span>)}</p>}
+					</div>
+					{tweet.authorId === userId && <Button class="tweet__delete" type="button" data-tweet-delete>delete</Button>}
+				</div>
+				{tweet.body && <p class="tweet__body">{tweet.body}</p>}
+				{tweet.media.length > 0 && <div class="tweet__media">
+					{tweet.media.map((media) => media.mediaKind === 'video'
+						? <Button class="tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>
+						: <Button class="tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img src={media.publicUrl} alt="" loading="lazy" /></Button>
+					)}
+				</div>}
+			</article>
+		))}
+	</div>
+	<nav class="tweet-pagination" aria-label="Tweet pages">
+		{before && <Link class="ui-button" href={pageUrl()}>newer tweets</Link>}
+		{hasMore && <Link class="ui-button" href={pageUrl(nextBefore ?? undefined)}>older tweets</Link>}
+	</nav>
+	<dialog class="tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><Button class="tweet-viewer__close" type="button" data-tweet-viewer-close>close</Button><img data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
+</section>
+
+<script>
+	import { initTweetTimeline } from './timeline.ts';
+	const timeline = document.querySelector<HTMLElement>('[data-tweet-timeline]');
+	if (timeline) initTweetTimeline(timeline);
+</script>
+
+<style>
+	.tweet-timeline, .tweet-composer { display: grid; }
+	.tweet-list { display: grid; gap: 0; }
+	.tweet-composer { padding-bottom: 1rem; gap: 1rem; border-bottom: var(--border-width) solid var(--color-muted); }
+	.tweet-composer__controls, .tweet-composer__actions, .tweet__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+	.tweet-composer__controls span, .tweet-composer__actions p, .tweet__meta, .tweet__tags { color: var(--color-muted); font-size: .85rem; }
+	.tweet-composer__actions p { min-height: 1lh; margin: 0; }
+	.tweet__details { display: grid; gap: .1rem; }
+	.tweet-previews, .tweet__media { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8rem), 1fr)); gap: .5rem; }
+	.tweet-previews :global(img), .tweet-previews :global(video) { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+	:global(.tweet__thumbnail) { display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); }
+	:global(.tweet__thumbnail img), :global(.tweet__thumbnail video) { display: block; width: 100%; height: 100%; object-fit: cover; }
+	.tweet { display: grid; gap: .35rem; padding: .65rem 0; border-bottom: var(--border-width) solid var(--color-muted); }
+	.tweet__meta { justify-content: space-between; }
+	:global(.tweet__delete) { padding: .25rem .55rem; }
+	.tweet__body, .tweet__tags { margin: 0; line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere; }
+	.tweet-pagination { display: flex; justify-content: space-between; gap: .75rem; }
+	.tweet-pagination :last-child { margin-left: auto; }
+	.tweet-viewer { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); max-width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); padding: 0; border: 0; background: transparent; overflow: hidden; }
+	.tweet-viewer::backdrop { background: var(--color-overlay); }
+	.tweet-viewer img, .tweet-viewer video { display: none; max-width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); }
+	.tweet-viewer.is-image img, .tweet-viewer.is-video video { display: block; }
+	:global(.tweet-viewer__close) { position: fixed; z-index: 1; top: .5rem; right: .5rem; }
+</style>

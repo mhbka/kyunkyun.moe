@@ -4,17 +4,19 @@ import Changelog from './Changelog.astro';
 import Header from './Header.astro';
 import PageTop from './PageTop.astro';
 import PageTitle from './PageTitle.astro';
+import SlimeCrawler from './SlimeCrawler.astro';
 
 interface Props {
 	isLoggedIn?: boolean;
 	mainClass?: string;
 	renderChangelog?: boolean;
 	renderQuote?: boolean;
+	renderSlime?: boolean;
 	title?: string;
 	titleClass?: string;
 }
 
-const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = true, title, titleClass } = Astro.props;
+const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = true, renderSlime = true, title, titleClass } = Astro.props;
 ---
 
 <div class="site-layout">
@@ -44,3 +46,4 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 		</aside>
 	)}
 </div>
+{renderSlime && <SlimeCrawler />}

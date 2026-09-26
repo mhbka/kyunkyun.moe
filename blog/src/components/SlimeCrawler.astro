@@ -1,0 +1,80 @@
+---
+---
+
+<img
+	class="slime-crawler"
+	src="/images/bocchiSlime.png"
+	data-static-src="/images/bocchiSlime.png"
+	data-animated-src="/images/bocchiSlime.gif"
+	alt=""
+	aria-hidden="true"
+/>
+
+<script>
+	import { moveTowardsCursor } from './slime/movement';
+
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (!reducedMotion) {
+		document.querySelectorAll<HTMLImageElement>('.slime-crawler').forEach((slime) => {
+			let position = window.innerWidth / 2;
+			let target = position;
+			let previousTime = 0;
+			let animationFrame = 0;
+			let isCrawling = false;
+
+			// Switches between the animated GIF and its still first frame.
+			function setCrawling(crawling: boolean) {
+				if (isCrawling === crawling) return;
+
+				isCrawling = crawling;
+				slime.src = crawling ? slime.dataset.animatedSrc! : slime.dataset.staticSrc!;
+			}
+
+			// Updates the slime position once per paint while it follows the cursor.
+			function crawl(time: number) {
+				const elapsedSeconds = Math.min((time - previousTime) / 1000, 0.1);
+				previousTime = time;
+
+				const step = moveTowardsCursor(position, target, elapsedSeconds);
+				position = step.position;
+				slime.style.setProperty('--slime-x', `${position}px`);
+
+				if (step.direction === 0) {
+					setCrawling(false);
+					animationFrame = 0;
+					return;
+				}
+
+				slime.style.setProperty('--slime-direction', `${step.direction === 1 ? -1 : 1}`);
+				setCrawling(true);
+				animationFrame = requestAnimationFrame(crawl);
+			}
+
+			// Sets the cursor X coordinate as the next destination.
+			document.addEventListener('pointermove', (event) => {
+				target = event.clientX;
+
+				if (animationFrame === 0) {
+					previousTime = performance.now();
+					animationFrame = requestAnimationFrame(crawl);
+				}
+			});
+	});
+}
+</script>
+
+<style>
+	.slime-crawler {
+		--slime-direction: 1;
+		--slime-x: 50vw;
+		position: fixed;
+		bottom: 0;
+		left: var(--slime-x);
+		z-index: 10;
+		width: min(10rem, 26vw);
+		height: auto;
+		pointer-events: none;
+		transform: translateX(-50%) scaleX(var(--slime-direction));
+	}
+</style>

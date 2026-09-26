@@ -12,6 +12,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/is-author", get(is_author_status))
         .route("/is-pix", get(is_pix_status))
+        .route("/is-tweet", get(is_tweet_status))
 }
 
 /// Checks whether a user has Pix gallery access.
@@ -34,6 +35,16 @@ pub async fn is_author(pool: &PgPool, user_id: Uuid) -> Result<bool, sqlx::Error
     .await
 }
 
+/// Checks whether a user can publish tweets.
+pub async fn is_tweet(pool: &PgPool, user_id: Uuid) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar::<_, bool>(
+        "select exists(select 1 from profiles where user_id = $1 and is_tweet)",
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await
+}
+
 /// Returns the authenticated user's author permission.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -46,6 +57,13 @@ struct AuthorStatus {
 #[serde(rename_all = "camelCase")]
 struct PixStatus {
     is_pix: bool,
+}
+
+/// Returns the authenticated user's tweet permission.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TweetStatus {
+    is_tweet: bool,
 }
 
 /// GET /users/is-author — returns whether the authenticated user can author posts.
@@ -66,6 +84,16 @@ async fn is_pix_status(
     let is_pix = is_pix(&app_state.pool, user.id).await?;
     tracing::info!(user_id = %user.id, is_pix, "Pix permission checked");
     Ok(Json(PixStatus { is_pix }))
+}
+
+/// Returns whether the authenticated user can publish tweets.
+async fn is_tweet_status(
+    State(app_state): State<AppState>,
+    user: AuthUser,
+) -> RouteResult<Json<TweetStatus>> {
+    let is_tweet = is_tweet(&app_state.pool, user.id).await?;
+    tracing::info!(user_id = %user.id, is_tweet, "tweet permission checked");
+    Ok(Json(TweetStatus { is_tweet }))
 }
 
 #[cfg(test)]

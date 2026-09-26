@@ -1,4 +1,1 @@
-# my
-## web
-### site
-@ [kyunkyun.moe](https://kyunkyun.moe)
+![me](blog/public/favicon.svg)

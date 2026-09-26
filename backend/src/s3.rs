@@ -16,6 +16,8 @@ pub struct S3 {
     pub blogpost_bucket_url: String,
     pub pix_bucket_name: String,
     pub pix_bucket_url: String,
+    pub tweet_bucket_name: String,
+    pub tweet_bucket_url: String,
 }
 
 impl S3 {
@@ -28,6 +30,8 @@ impl S3 {
         s3_blogpost_bucket_url: String,
         s3_pix_bucket_name: String,
         s3_pix_bucket_url: String,
+        s3_tweet_bucket_name: String,
+        s3_tweet_bucket_url: String,
     ) -> Self {
         tracing::info!("initializing object storage client");
         let client = init_s3_client(s3_account_id, s3_access_key_id, s3_access_key_secret).await;
@@ -37,6 +41,58 @@ impl S3 {
             blogpost_bucket_url: s3_blogpost_bucket_url,
             pix_bucket_name: s3_pix_bucket_name,
             pix_bucket_url: s3_pix_bucket_url,
+            tweet_bucket_name: s3_tweet_bucket_name,
+            tweet_bucket_url: s3_tweet_bucket_url,
+        }
+    }
+
+    /// Creates upload and public URLs for a pending tweet attachment.
+    pub async fn generate_presigned_tweet_upload_url(
+        &self,
+        media_id: Uuid,
+        content_type: &str,
+    ) -> Result<(String, UploadUrls), anyhow::Error> {
+        let extension =
+            tweet_media_extension(content_type).ok_or(anyhow!("unsupported content type"))?;
+        let key = format!("media/{media_id}.{extension}");
+        let presigning_config = PresigningConfig::expires_in(BLOGPOST_MEDIA_PRESIGNED_URL_EXPIRY)?;
+        let upload_url = self
+            .client
+            .put_object()
+            .bucket(&self.tweet_bucket_name)
+            .key(&key)
+            .content_type(content_type)
+            .presigned(presigning_config)
+            .await
+            .map(|r| r.uri().to_string())?;
+        Ok((
+            key.clone(),
+            UploadUrls {
+                upload_url,
+                public_url: format!("{}/{}", self.tweet_bucket_url.trim_end_matches('/'), key),
+            },
+        ))
+    }
+
+    /// Returns the byte length of a completed tweet attachment when it exists.
+    pub async fn tweet_size(&self, key: &str) -> Result<Option<i64>, anyhow::Error> {
+        match self
+            .client
+            .head_object()
+            .bucket(&self.tweet_bucket_name)
+            .key(key)
+            .send()
+            .await
+        {
+            Ok(object) => Ok(object.content_length()),
+            Err(error)
+                if error
+                    .as_service_error()
+                    .is_some_and(|service| service.is_not_found()) =>
+            {
+                Ok(None)
+            }
+            Err(error) => Err(error.into()),
         }
     }
 
@@ -163,4 +219,13 @@ pub fn image_extension(content_type: &str) -> Option<&'static str> {
         "image/webp" => Some("webp"),
         _ => None,
     }
+}
+
+/// Maps accepted tweet image and video MIME types to filename extensions.
+pub fn tweet_media_extension(content_type: &str) -> Option<&'static str> {
+    image_extension(content_type).or(match content_type {
+        "video/mp4" => Some("mp4"),
+        "video/webm" => Some("webm"),
+        _ => None,
+    })
 }

@@ -1,10 +1,16 @@
 # (functional) changelog
 
+## 2026-09-26
+```
+- added crawling slime
+- added tweets section (name and functionality still wip for now)
+```
+
 ## 2026-09-20
 ```
-- add selecting multiple tags for pix and posts
-- add a table of contents on the right side (top for mobile)
-- fix up visuals
+- added selecting multiple tags for pix and posts
+- added a table of contents on the right side (top for mobile)
+- fixed up visuals
 ```
 
 ## 2026-09-19

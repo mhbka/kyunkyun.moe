@@ -1,0 +1,31 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import FetchError from '../../components/FetchError.astro';
+import PageLayout from '../../components/PageLayout.astro';
+import TagFilter from '../../components/TagFilter.astro';
+import TweetTimeline from '../../components/tweets/TweetTimeline.astro';
+import { blogApi } from '../../lib/api.ts';
+import { getPageAuth } from '../../lib/page-auth.ts';
+import { readTagFilters } from '../../lib/tags.ts';
+
+const { isLoggedIn, isTweet, accessToken, userId } = await getPageAuth(Astro.request, Astro.cookies, { includeTweet: true });
+const selectedTags = readTagFilters(Astro.url.searchParams);
+const before = Astro.url.searchParams.get('before') ?? undefined;
+const [tags, result] = await Promise.all([
+	blogApi.listTweetTags().catch(() => []),
+	blogApi.listTweets(30, before, selectedTags).then((tweets) => ({ tweets })).catch((error) => ({ error })),
+]);
+---
+
+<!doctype html>
+<html lang="en">
+	<head><BaseHead title="tweets" /></head>
+	<body>
+		<PageLayout isLoggedIn={isLoggedIn} title="tweets">
+			{'error' in result ? <FetchError message="couldn't load the tweets :(" /> : <>
+				<TagFilter tags={tags} selectedTags={selectedTags} basePath="/nonsense/tweets/" />
+				<TweetTimeline tweets={result.tweets.tweets} nextBefore={result.tweets.nextBefore} hasMore={result.tweets.hasMore} tags={selectedTags} before={before} isTweet={isTweet} accessToken={accessToken} userId={userId} />
+			</>}
+		</PageLayout>
+	</body>
+</html>

@@ -1,4 +1,4 @@
-use super::UploadUrls;
+use super::{tweet_media_extension, UploadUrls};
 
 #[test]
 fn serializes_upload_urls_as_camel_case() {
@@ -14,4 +14,12 @@ fn serializes_upload_urls_as_camel_case() {
             "publicUrl": "https://images.example.test/image.png",
         })
     );
+}
+
+#[test]
+fn recognizes_supported_tweet_media_types() {
+    assert_eq!(tweet_media_extension("image/webp"), Some("webp"));
+    assert_eq!(tweet_media_extension("video/mp4"), Some("mp4"));
+    assert_eq!(tweet_media_extension("video/webm"), Some("webm"));
+    assert_eq!(tweet_media_extension("video/quicktime"), None);
 }

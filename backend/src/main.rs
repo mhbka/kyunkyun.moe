@@ -39,6 +39,10 @@ async fn main() -> anyhow::Result<()> {
         std::env::var("S3_PIX_BUCKET_NAME").expect("S3_PIX_BUCKET_NAME is in env");
     let s3_pix_bucket_url =
         std::env::var("S3_PIX_BUCKET_URL").expect("S3_PIX_BUCKET_URL is in env");
+    let s3_tweet_bucket_name =
+        std::env::var("S3_TWEET_BUCKET_NAME").expect("S3_TWEET_BUCKET_NAME is in env");
+    let s3_tweet_bucket_url =
+        std::env::var("S3_TWEET_BUCKET_URL").expect("S3_TWEET_BUCKET_URL is in env");
 
     let app_state = AppState::new(
         db::connect().await?,
@@ -49,6 +53,8 @@ async fn main() -> anyhow::Result<()> {
         s3_blogpost_bucket_url,
         s3_pix_bucket_name,
         s3_pix_bucket_url,
+        s3_tweet_bucket_name,
+        s3_tweet_bucket_url,
     )
     .await;
 
@@ -65,6 +71,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/comments", routes::comments::router())
         .nest("/media", routes::media::router())
         .nest("/pix", routes::pix::router())
+        .nest("/tweets", routes::tweets::router())
         .with_state(app_state)
         .layer(cors)
         .layer(
