@@ -11,7 +11,7 @@
 />
 
 <script>
-	import { moveTowardsCursor } from './slime/movement';
+	import { moveTowardsCursor, shouldRestartCrawling } from './slime/movement';
 
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -55,7 +55,7 @@
 			document.addEventListener('pointermove', (event) => {
 				target = event.clientX;
 
-				if (animationFrame === 0) {
+				if (animationFrame === 0 && shouldRestartCrawling(position, target)) {
 					previousTime = performance.now();
 					animationFrame = requestAnimationFrame(crawl);
 				}

@@ -23,7 +23,7 @@ const pageUrl = (cursor?: string) => {
 	const query = new URLSearchParams();
 	if (cursor) query.set('before', cursor);
 	tags.forEach((tag) => query.append('tag', tag));
-	return query.size ? `/nonsense/tweets/?${query}` : '/nonsense/tweets/';
+	return query.size ? `/tweets/?${query}` : '/tweets/';
 };
 ---
 

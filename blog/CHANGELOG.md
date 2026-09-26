@@ -2,8 +2,9 @@
 
 ## 2026-09-26
 ```
-- added crawling slime
+- added crawling bocchi
 - added tweets section (name and functionality still wip for now)
+- moved pix out of nonsense subsection
 ```
 
 ## 2026-09-20

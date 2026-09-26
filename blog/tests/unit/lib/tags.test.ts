@@ -21,6 +21,6 @@ test('reads multiple filters and preserves punctuation in tags', () => {
 test('tag links toggle individual filters and clear all filters', () => {
 	assert.equal(toggleTagUrl('/blog/', ['astro'], 'pix'), '/blog/?tag=astro&tag=pix');
 	assert.equal(toggleTagUrl('/blog/', ['astro', 'pix'], 'astro'), '/blog/?tag=pix');
-	assert.equal(toggleTagUrl('/nonsense/pix/', ['astro'], 'astro'), '/nonsense/pix/');
+	assert.equal(toggleTagUrl('/pix/', ['astro'], 'astro'), '/pix/');
 	assert.equal(toggleTagUrl('/blog/', ['astro', 'pix'], ''), '/blog/');
 });

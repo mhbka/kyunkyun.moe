@@ -12,7 +12,7 @@ body {
 	line-height: var(--line-height-body);
 }
 
-.site-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 45vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
+.site-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 40vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
 /* Keep the main column centred while sidebars use the available outer space. */
 .site-sidebar { display: grid; grid-column: 1; gap: 1.5rem; width: min(100%, 16rem); justify-self: end; align-self: start; position: sticky; top: 2rem; }
 .page-content { grid-column: 2; box-sizing: border-box; min-width: 0; background: var(--color-surface); padding: 1rem; }

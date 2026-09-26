@@ -1,12 +1,12 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import FetchError from '../../components/FetchError.astro';
-import PixGallery from '../../components/pix/PixGallery.astro';
-import TagFilter from '../../components/TagFilter.astro';
-import PageLayout from '../../components/PageLayout.astro';
-import { blogApi } from '../../lib/api.ts';
-import { getPageAuth } from '../../lib/page-auth.ts';
-import { readTagFilters } from '../../lib/tags.ts';
+import BaseHead from '../components/BaseHead.astro';
+import FetchError from '../components/FetchError.astro';
+import PixGallery from '../components/pix/PixGallery.astro';
+import TagFilter from '../components/TagFilter.astro';
+import PageLayout from '../components/PageLayout.astro';
+import { blogApi } from '../lib/api.ts';
+import { getPageAuth } from '../lib/page-auth.ts';
+import { readTagFilters } from '../lib/tags.ts';
 
 const { isLoggedIn, isPix, accessToken } = await getPageAuth(Astro.request, Astro.cookies, { includePix: true });
 const selectedTags = readTagFilters(Astro.url.searchParams);
@@ -30,7 +30,7 @@ try {
 				errorMessage 
 				? <FetchError message={errorMessage} /> 
 				: <>
-					<TagFilter tags={tags} selectedTags={selectedTags} basePath="/nonsense/pix/" />
+					<TagFilter tags={tags} selectedTags={selectedTags} basePath="/pix/" />
 					<PixGallery 
 						images={gallery?.images ?? []} 
 						nextBefore={gallery?.nextBefore ?? null} 

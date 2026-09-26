@@ -1,11 +1,17 @@
 export const CRAWL_SPEED = 52;
 export const STOP_DISTANCE = 1;
+export const RESTART_DISTANCE = 16;
 
 export type CrawlDirection = -1 | 0 | 1;
 
 export interface CrawlStep {
 	position: number;
 	direction: CrawlDirection;
+}
+
+/** Returns whether the cursor is far enough away to restart a stopped slime. */
+export function shouldRestartCrawling(position: number, target: number): boolean {
+	return Math.abs(target - position) > RESTART_DISTANCE;
 }
 
 /** Moves the slime toward the cursor without passing it. */
