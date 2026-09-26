@@ -4,6 +4,7 @@
 ```
 - added crawling bocchi
 - added tweets section (name and functionality still wip for now)
+- added preview side panel on home page
 - moved pix out of nonsense subsection
 ```
 

@@ -1,12 +1,22 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
+import HomePreviews from '../components/HomePreviews.astro';
 import PageLayout from '../components/PageLayout.astro';
+import { blogApi } from '../lib/api.ts';
 import { getPageAuth } from '../lib/page-auth.ts';
 import { renderMarkdown } from '../lib/markdown.ts';
 import homeMarkdown from '../content/index.md?raw';
 
 const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);
 const content = await renderMarkdown(homeMarkdown);
+const [pixResult, postsResult, tweetsResult] = await Promise.allSettled([
+	blogApi.listPix(4),
+	blogApi.listPosts(1, 1),
+	blogApi.listTweets(1),
+]);
+const images = pixResult.status === 'fulfilled' ? pixResult.value.images : [];
+const post = postsResult.status === 'fulfilled' ? postsResult.value[0] : undefined;
+const tweet = tweetsResult.status === 'fulfilled' ? tweetsResult.value.tweets[0] : undefined;
 ---
 
 <!doctype html>
@@ -16,6 +26,7 @@ const content = await renderMarkdown(homeMarkdown);
 	</head>
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} renderChangelog title="kyunkyun.moe" titleClass="title-wave">
+			<HomePreviews slot="right-sidebar" images={images} post={post} tweet={tweet} />
 			<div class="markdown-content" set:html={content} />
 		</PageLayout>
 	</body>

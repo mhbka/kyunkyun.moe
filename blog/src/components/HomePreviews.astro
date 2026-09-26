@@ -1,0 +1,64 @@
+---
+import type { Pix } from '../lib/models/pix.ts';
+import type { PostSummary } from '../lib/models/posts.ts';
+import type { Tweet } from '../lib/models/tweets.ts';
+import { truncatePreviewText } from '../lib/home-preview.ts';
+import Link from './ui/Link.astro';
+import SideContent from './ui/SideContent.astro';
+
+interface Props {
+	images: Pix[];
+	post?: PostSummary;
+	tweet?: Tweet;
+}
+
+const { images, post, tweet } = Astro.props;
+
+/** Formats a concise timestamp for the compact home previews. */
+function formatPreviewDate(value: string, includeTime = false) {
+	return new Date(value).toLocaleString('en-us', includeTime
+		? { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }
+		: { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+const postPreview = post ? `${formatPreviewDate(post.publishedAt)}\n${post.title}` : 'no posts yet';
+const tweetPreview = tweet
+	? `${formatPreviewDate(tweet.createdAt, true)}\n${truncatePreviewText(tweet.body) || 'media attachment'}`
+	: 'no tweets yet';
+---
+
+<SideContent as="section" class="home-previews" aria-label="latest updates">
+	<Link class="home-preview home-preview--pix" href="/pix/">
+		<h2 class="home-preview__heading">latest pix</h2>
+		{images.length > 0 && (
+			<div class="home-preview__images">
+				{images.map((image) => <img src={image.publicUrl} alt="" loading="lazy" />)}
+			</div>
+		)}
+		{images.length === 0 && <pre class="mini-code-block"><code>no pix yet</code></pre>}
+	</Link>
+
+	<Link class="home-preview" href="/blog/">
+		<h2 class="home-preview__heading">latest blog</h2>
+		<p class="home-preview__text">{postPreview}</p>
+	</Link>
+
+	<Link class="home-preview" href="/tweets/">
+		<h2 class="home-preview__heading">latest tweet</h2>
+		<p class="home-preview__text">{tweetPreview}</p>
+	</Link>
+</SideContent>
+
+<style>
+	.home-previews { display: grid; gap: .75rem; }
+	:global(.home-preview) { display: grid; gap: .35rem; min-width: 0; color: var(--color-text); text-decoration: none; }
+	.home-preview--pix { width: 100%; }
+	.home-preview__heading { margin: 0; color: var(--color-heading); font-size: .85em; }
+	.home-preview__text { margin: 0; font-size: .85em; font-weight: normal; line-height: var(--line-height-heading); white-space: pre-wrap; }
+	.home-preview :global(.mini-code-block) { height: 100%; box-sizing: border-box; }
+	.home-preview__images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; }
+	.home-preview__images img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+	:global(.home-preview:hover .home-preview__heading) { color: var(--color-accent); }
+	:global(.home-preview:hover .home-preview__text) { color: var(--color-accent); }
+	:global(.home-preview:hover .mini-code-block) { color: var(--color-accent); }
+</style>
