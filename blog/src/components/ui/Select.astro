@@ -1,11 +1,13 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
 
-type Props = HTMLAttributes<'select'>;
+interface Props extends HTMLAttributes<'select'> {
+	fullWidth?: boolean;
+}
 
-const { class: className, ...props } = Astro.props;
+const { class: className, fullWidth = false, ...props } = Astro.props;
 ---
 
-<select class:list={['ui-select', className]} {...props}>
+<select class:list={['ui-select', { 'ui-select--full-width': fullWidth }, className]} {...props}>
 	<slot />
 </select>

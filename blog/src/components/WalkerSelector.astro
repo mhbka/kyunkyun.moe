@@ -3,12 +3,9 @@ import { WALKERS } from '../consts';
 import Select from './ui/Select.astro';
 ---
 
-<label class="walker-selector">
-	<span class="sr-only">Walker</span>
-	<Select data-walker-selector aria-label="Walker">
-		{WALKERS.map((walker) => <option value={walker.id}>{walker.label}</option>)}
-	</Select>
-</label>
+<Select fullWidth data-walker-selector aria-label="Walker">
+	{WALKERS.map((walker) => <option value={walker.id}>{walker.label}</option>)}
+</Select>
 
 
 <script>
@@ -28,21 +25,3 @@ import Select from './ui/Select.astro';
 		});
 	}
 </script>
-
-<style>
-	.walker-selector {
-		display: block;
-		position: relative;
-	}
-	.walker-selector :global(.ui-select) {
-		appearance: none;
-		background-image:
-			linear-gradient(45deg, transparent 50%, var(--color-surface) 50%),
-			linear-gradient(135deg, var(--color-surface) 50%, transparent 50%);
-		background-position:
-			calc(100% - 1.2rem) 50%,
-			calc(100% - 0.85rem) 50%;
-		background-repeat: no-repeat;
-		background-size: 0.35rem 0.35rem;
-	}
-</style>
