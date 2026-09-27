@@ -19,7 +19,7 @@ const labels = getPostEditorLabels(post?.status);
 <form class="post-editor" data-post-editor data-post-id={post?.id} data-initial-tags={JSON.stringify(post?.tags ?? [])}>
 	<header class="post-header">
 		<p class="post-meta">{labels.state}</p>
-		<Input id="post-title" class="post-title" name="title" placeholder="Title" required maxlength="200" autocomplete="off" value={post?.title ?? ''} aria-label="Post title" />
+		<textarea id="post-title" class="post-title" name="title" placeholder="Title" required maxlength="200" autocomplete="off" rows="1" aria-label="Post title">{post?.title ?? ''}</textarea>
 		<div class="post-meta">
 			{createdAt && <div class="post-metadata">created on <FormattedDate date={createdAt} includeTime /></div>}
 			{updatedAt && <div class="post-metadata">last updated on <FormattedDate date={updatedAt} includeTime /></div>}

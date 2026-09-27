@@ -11,7 +11,7 @@ import { addTag, normalizeTag } from '../../lib/tags.ts';
 async function initPostEditor() {
 	const form = document.querySelector<HTMLFormElement>('[data-post-editor]');
 	const root = document.querySelector<HTMLElement>('#post-content');
-	const title = document.querySelector<HTMLInputElement>('#post-title');
+	const title = document.querySelector<HTMLTextAreaElement>('#post-title');
 	const slug = document.querySelector<HTMLInputElement>('#post-slug');
 	const tagsInput = document.querySelector<HTMLInputElement>('#post-tags');
 	const tagList = document.querySelector<HTMLUListElement>('[data-tag-list]');
@@ -22,6 +22,17 @@ async function initPostEditor() {
 	if (!form || !root || !title || !slug || !tagsInput || !tagList || !button || !status) {
 		throw new Error('Post editor is missing required elements.');
 	}
+
+	const titleInput = title;
+
+	/** Resizes the title field to fit its wrapped text. */
+	function resizeTitle() {
+		titleInput.style.height = 'auto';
+		titleInput.style.height = `${titleInput.scrollHeight}px`;
+	}
+
+	resizeTitle();
+	titleInput.addEventListener('input', resizeTitle);
 
 	const slugInput = slug;
 	const selectedTagsInput = tagsInput;
@@ -135,7 +146,7 @@ async function initPostEditor() {
 		event.preventDefault();
 		commitTag();
 		const contentMd = editor.getMarkdown().trim();
-		const postTitle = title.value.trim();
+		const postTitle = titleInput.value.trim();
 		const postSlug = slug.value.trim();
 
 		if (!postTitle || !contentMd) {
