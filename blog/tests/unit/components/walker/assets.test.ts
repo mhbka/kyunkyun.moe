@@ -33,8 +33,15 @@ test('keeps walking when a hovered walker has not reached the cursor', () => {
 	assert.deepEqual(getWalkerImage(walker, true, true, -1), { src: '/left.gif', mirrored: false });
 });
 
-test('mirrors the left-facing stand image after walking right', () => {
+test('keeps stand images unmirrored by default', () => {
 	const walker = { standSrc: '/stand.png', walkLeftSrc: '/left.gif' };
+
+	assert.deepEqual(getWalkerImage(walker, false, false, -1), { src: '/stand.png', mirrored: false });
+	assert.deepEqual(getWalkerImage(walker, false, false, 1), { src: '/stand.png', mirrored: false });
+});
+
+test('mirrors stand images after walking right when configured', () => {
+	const walker = { standSrc: '/stand.png', walkLeftSrc: '/left.gif', mirrorStandWithDirection: true };
 
 	assert.deepEqual(getWalkerImage(walker, false, false, -1), { src: '/stand.png', mirrored: false });
 	assert.deepEqual(getWalkerImage(walker, false, false, 1), { src: '/stand.png', mirrored: true });

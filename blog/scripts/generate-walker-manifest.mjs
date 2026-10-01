@@ -28,6 +28,7 @@ function findWalkers(directory, publicDirectory) {
 			id,
 			label: id,
 			standSrc: imageUrl('stand'),
+			...(id === 'slime' ? { mirrorStandWithDirection: true } : {}),
 			...(images.has('pose') ? { poseSrc: imageUrl('pose') } : {}),
 			...(images.has('walk-left') ? { walkLeftSrc: imageUrl('walk-left') } : {}),
 			...(images.has('walk-right') ? { walkRightSrc: imageUrl('walk-right') } : {}),

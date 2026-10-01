@@ -6,6 +6,7 @@ export const WALKERS = [
 		"id": "slime",
 		"label": "slime",
 		"standSrc": "/images/walkers/slime/stand.png",
+		"mirrorStandWithDirection": true,
 		"poseSrc": "/images/walkers/slime/pose.gif",
 		"walkLeftSrc": "/images/walkers/slime/walk-left.gif"
 	},

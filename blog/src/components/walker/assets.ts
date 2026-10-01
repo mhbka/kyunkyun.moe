@@ -3,6 +3,7 @@ export interface WalkerAssets {
 	poseSrc?: string;
 	walkLeftSrc?: string;
 	walkRightSrc?: string;
+	mirrorStandWithDirection?: boolean;
 }
 
 export interface WalkerDefinition extends WalkerAssets {
@@ -40,5 +41,5 @@ export function getWalkerImage(
 ): WalkerImage {
 	if (isWalking) return getWalkingImage(walker, direction);
 	if (isHovered) return getHoveredImage(walker);
-	return { src: walker.standSrc, mirrored: direction === 1 };
+	return { src: walker.standSrc, mirrored: walker.mirrorStandWithDirection === true && direction === 1 };
 }

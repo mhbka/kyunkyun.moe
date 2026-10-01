@@ -8,6 +8,7 @@ test('registers the slime and every discovered snake_case UMA walker', () => {
 		id: 'slime',
 		label: 'slime',
 		standSrc: '/images/walkers/slime/stand.png',
+		mirrorStandWithDirection: true,
 		poseSrc: '/images/walkers/slime/pose.gif',
 		walkLeftSrc: '/images/walkers/slime/walk-left.gif',
 	});
