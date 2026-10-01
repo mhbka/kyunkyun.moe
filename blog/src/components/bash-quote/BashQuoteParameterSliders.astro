@@ -21,8 +21,10 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 	import { loadBashQuoteParameters, saveBashQuoteParameters } from '../../lib/local-storage/bash-quote-parameters.ts';
 	import type { ScoreLimits, ScoreName } from '../../lib/models/bash-quotes.ts';
 
+	// Initializes sliders in the current page after each client-side navigation.
+	function bindScoreLimits() {
 	const sliders = document.querySelector<HTMLElement>('.score-limits');
-	if (!sliders) throw new Error('quote parameter sliders are missing');
+	if (!sliders) return;
 	const root = sliders;
 	const count = root.querySelector<HTMLElement>('.quote-count')!;
 
@@ -80,6 +82,9 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 
 	applySavedParameters();
 	void updateCount();
+	}
+
+	document.addEventListener('astro:page-load', bindScoreLimits);
 </script>
 
 <style>

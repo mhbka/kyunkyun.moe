@@ -14,7 +14,9 @@ const { postId } = Astro.props;
 	import { blogApi } from '../lib/api.ts';
 	import { createSupabaseBrowserClient } from '../lib/auth/supabase.ts';
 
-	document.querySelectorAll<HTMLButtonElement>('[data-move-to-draft-id]').forEach((button) => {
+	// Binds current-page controls after each client-side navigation.
+	function bindMoveToDraftButtons() {
+		document.querySelectorAll<HTMLButtonElement>('[data-move-to-draft-id]').forEach((button) => {
 		button.addEventListener('click', async () => {
 			const postId = button.dataset.moveToDraftId;
 			if (!postId) return;
@@ -30,5 +32,8 @@ const { postId } = Astro.props;
 				button.disabled = false;
 			}
 		});
-	});
+		});
+	}
+
+	document.addEventListener('astro:page-load', bindMoveToDraftButtons);
 </script>

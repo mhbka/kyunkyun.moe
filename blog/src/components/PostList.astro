@@ -57,9 +57,16 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 		import { createSupabaseBrowserClient } from '../lib/auth/supabase.ts';
 		import type { PostSummary } from '../lib/models/posts.ts';
 
-		const list = document.querySelector<HTMLUListElement>('#published-list');
-		const pageSize = Number(list?.dataset.pageSize ?? '21');
-		const isAuthor = list?.dataset.isAuthor === 'true';
+		let list: HTMLUListElement | null = null;
+		let pageSize = 21;
+		let isAuthor = false;
+
+		// Updates references to the list rendered by the current routed page.
+		function bindPublishedList() {
+			list = document.querySelector<HTMLUListElement>('#published-list');
+			pageSize = Number(list?.dataset.pageSize ?? '21');
+			isAuthor = list?.dataset.isAuthor === 'true';
+		}
 
 		function formatDate(value: string) {
 			return new Date(value).toLocaleDateString('en-us', {
@@ -151,6 +158,7 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 		}
 
 		let filterRequest = 0;
+		document.addEventListener('astro:page-load', bindPublishedList);
 		document.addEventListener('posts:filter', async (event) => {
 			if (!list) return;
 			const tag = (event as CustomEvent<string[]>).detail;

@@ -72,8 +72,11 @@ const pageUrl = (cursor?: string) => {
 
 <script>
 	import { initTweetTimeline } from './timeline.ts';
-	const timeline = document.querySelector<HTMLElement>('[data-tweet-timeline]');
-	if (timeline) initTweetTimeline(timeline);
+	// Initializes the timeline in the current page after each client-side navigation.
+	document.addEventListener('astro:page-load', () => {
+		const timeline = document.querySelector<HTMLElement>('[data-tweet-timeline]');
+		if (timeline) initTweetTimeline(timeline);
+	});
 </script>
 
 <style>

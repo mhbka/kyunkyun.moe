@@ -11,17 +11,21 @@ import Select from './ui/Select.astro';
 <script>
 	import { DEFAULT_WALKER_ID, WALKERS } from '../consts';
 
-	const walkerSelector = document.querySelector('[data-walker-selector]');
 	const walkerStorageKey = 'site-walker';
 	const savedWalker = localStorage.getItem(walkerStorageKey);
 	const savedWalkerId = savedWalker === 'sweep' ? 'sweep_tosho' : savedWalker;
 	const activeWalker = WALKERS.find((walker) => walker.id === savedWalkerId)?.id ?? DEFAULT_WALKER_ID;
 
-	if (walkerSelector instanceof HTMLSelectElement) {
+	// Binds the newly rendered selector after every client-side navigation.
+	function bindWalkerSelector() {
+		const walkerSelector = document.querySelector('[data-walker-selector]');
+		if (!(walkerSelector instanceof HTMLSelectElement)) return;
 		walkerSelector.value = activeWalker;
 		walkerSelector.addEventListener('change', () => {
 			localStorage.setItem(walkerStorageKey, walkerSelector.value);
 			window.dispatchEvent(new CustomEvent('walkerchange', { detail: walkerSelector.value }));
 		});
 	}
+
+	document.addEventListener('astro:page-load', bindWalkerSelector);
 </script>

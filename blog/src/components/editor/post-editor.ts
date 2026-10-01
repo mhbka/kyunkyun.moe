@@ -1,14 +1,16 @@
 import { Crepe } from '@milkdown/crepe';
-import '@milkdown/crepe/theme/common/style.css';
-import '@milkdown/crepe/theme/nord.css';
 
 import { blogApi } from '../../lib/api.ts';
 import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 import { uploadImage } from '../../lib/image-upload.ts';
 import { addTag, normalizeTag } from '../../lib/tags.ts';
 
+let activeEditor: Crepe | undefined;
+let navigationVersion = 0;
+
 /** Initializes the Milkdown editor and its post form controls. */
 async function initPostEditor() {
+	const currentNavigation = navigationVersion;
 	const form = document.querySelector<HTMLFormElement>('[data-post-editor]');
 	const root = document.querySelector<HTMLElement>('#post-content');
 	const title = document.querySelector<HTMLTextAreaElement>('#post-title');
@@ -19,9 +21,7 @@ async function initPostEditor() {
 	const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
 	const status = document.querySelector<HTMLElement>('[data-editor-status]');
 
-	if (!form || !root || !title || !slug || !tagsInput || !tagList || !button || !status) {
-		throw new Error('Post editor is missing required elements.');
-	}
+	if (!form || !root || !title || !slug || !tagsInput || !tagList || !button || !status) return;
 
 	const titleInput = title;
 
@@ -32,6 +32,9 @@ async function initPostEditor() {
 	}
 
 	resizeTitle();
+	// Marks the editor as dirty whenever a control or the content editor changes.
+	form.addEventListener('input', () => { form.dataset.dirty = 'true'; });
+	form.addEventListener('change', () => { form.dataset.dirty = 'true'; });
 	titleInput.addEventListener('input', resizeTitle);
 
 	const slugInput = slug;
@@ -141,6 +144,11 @@ async function initPostEditor() {
 	});
 
 	await editor.create();
+	if (currentNavigation !== navigationVersion) {
+		await editor.destroy();
+		return;
+	}
+	activeEditor = editor;
 
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
@@ -172,6 +180,7 @@ async function initPostEditor() {
 				history.replaceState(null, '', `/posts/edit/${encodeURIComponent(post.id)}`);
 				status.textContent = 'Draft created.';
 			}
+			form.dataset.dirty = 'false';
 		} catch (error) {
 			status.textContent = error instanceof Error ? error.message : 'Unable to save the post. Please try again.';
 		} finally {
@@ -180,4 +189,12 @@ async function initPostEditor() {
 	});
 }
 
-void initPostEditor();
+// Initializes the editor after each client-side navigation.
+document.addEventListener('astro:page-load', () => void initPostEditor());
+// Destroys editor-owned overlays before the router replaces its page.
+document.addEventListener('astro:before-swap', () => {
+	navigationVersion += 1;
+	const editor = activeEditor;
+	activeEditor = undefined;
+	void editor?.destroy();
+});

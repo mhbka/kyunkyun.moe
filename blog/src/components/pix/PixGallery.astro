@@ -59,8 +59,11 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <script>
 	import { initPixGallery } from './gallery.ts';
 
-	const gallery = document.querySelector<HTMLElement>('[data-moe-gallery]');
-	if (gallery) initPixGallery(gallery);
+	// Initializes the gallery in the current page after each client-side navigation.
+	document.addEventListener('astro:page-load', () => {
+		const gallery = document.querySelector<HTMLElement>('[data-moe-gallery]');
+		if (gallery) initPixGallery(gallery);
+	});
 </script>
 
 <style>

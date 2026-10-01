@@ -59,15 +59,20 @@ const titleParts = title.split(/(\s+)/).map((text) => ({
 		return Math.hypot(event.clientX - closestX, event.clientY - closestY) <= hoverRadius;
 	}
 
-	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-		document.querySelectorAll<HTMLElement>('.title-wave').forEach((title) => {
-			document.addEventListener('pointermove', (event) => {
-				if (isNearTitle(title, event)) {
-					updateLetterLifts(title, event);
-				} else {
-					resetLetterLifts(title);
-				}
+	let titleController: AbortController | undefined;
+
+	// Updates title letters for the title currently rendered by the router.
+	function bindTitleWave() {
+		titleController?.abort();
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		titleController = new AbortController();
+		document.addEventListener('pointermove', (event) => {
+			document.querySelectorAll<HTMLElement>('.title-wave').forEach((title) => {
+				if (isNearTitle(title, event)) updateLetterLifts(title, event);
+				else resetLetterLifts(title);
 			});
-	});
+		}, { signal: titleController.signal });
 	}
+
+	document.addEventListener('astro:page-load', bindTitleWave);
 </script>

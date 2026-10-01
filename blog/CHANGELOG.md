@@ -1,5 +1,10 @@
 # (functional) changelog
 
+## 2026-10-01
+```
+- added SPA-style nav with transitions
+```
+
 ## 2026-09-26
 ```
 - added some walkers at bottom of screen -- thx to umamusume website: https://hachamecha-umamusume.jp/

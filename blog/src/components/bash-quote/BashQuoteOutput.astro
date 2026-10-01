@@ -27,7 +27,9 @@ const { mini = false } = Astro.props;
 <script>
 	import { getRandomBashQuote } from '../../lib/api/bash-quotes.ts';
 
-	document.querySelectorAll<HTMLElement>('.quote-output').forEach((output) => {
+	// Initializes quotes in the current page after each client-side navigation.
+	function bindQuoteOutputs() {
+		document.querySelectorAll<HTMLElement>('.quote-output').forEach((output) => {
 		const quote = output.querySelector<HTMLElement>('.quote-text code')!;
 		const retry = output.querySelector<HTMLButtonElement>('.quote-retry')!;
 		let isLoading = false;
@@ -70,7 +72,10 @@ const { mini = false } = Astro.props;
 
 		retry.addEventListener('click', () => void updateQuote());
 		void updateQuote();
-	});
+		});
+	}
+
+	document.addEventListener('astro:page-load', bindQuoteOutputs);
 </script>
 
 <style>

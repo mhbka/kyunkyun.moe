@@ -46,4 +46,4 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 		</aside>
 	)}
 </div>
-{renderWalker && <Walker />}
+{renderWalker && <div transition:persist="site-walker"><Walker /></div>}

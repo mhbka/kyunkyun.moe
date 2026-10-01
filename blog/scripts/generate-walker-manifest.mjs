@@ -42,8 +42,8 @@ function findWalkers(directory, publicDirectory) {
 export function generateWalkerManifest({ publicDirectory, outputFile }) {
 	const walkerDirectory = join(publicDirectory, 'images', 'walkers');
 	const walkers = findWalkers(walkerDirectory, publicDirectory).sort((left, right) => {
-		if (left.id === 'slime') return -1;
-		if (right.id === 'slime') return 1;
+		if (left.id === 'slime') return 1;
+		if (right.id === 'slime') return -1;
 		return left.id.localeCompare(right.id);
 	});
 	const source = [
@@ -52,7 +52,7 @@ export function generateWalkerManifest({ publicDirectory, outputFile }) {
 		'// Generated from public/images/walkers. Do not edit manually.',
 		`export const WALKERS = ${JSON.stringify(walkers, null, '\t')} satisfies readonly WalkerDefinition[];`,
 		'',
-		'export const DEFAULT_WALKER_ID = WALKERS[0].id;',
+		"export const DEFAULT_WALKER_ID = 'seiun_sky';",
 		'',
 	].join('\n');
 

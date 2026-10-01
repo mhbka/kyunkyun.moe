@@ -25,27 +25,30 @@ const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 
 <script>
 	import { readTagFilters, toggleTagUrl } from '../lib/tags.ts';
-	const filter = document.querySelector<HTMLElement>('[data-tag-filter]');
+	let filterController: AbortController | undefined;
 
-	function currentTag() {
-		return readTagFilters(new URL(window.location.href).searchParams);
-	}
-
-	function updateSelection(tags: string[]) {
-		filter?.querySelectorAll<HTMLAnchorElement>('[data-tag]').forEach((link) => {
+	// Binds the current filter and clears listeners belonging to the previous page.
+	function bindTagFilter() {
+		filterController?.abort();
+		const filter = document.querySelector<HTMLElement>('[data-tag-filter]');
+		if (!filter) return;
+		filterController = new AbortController();
+		const { signal } = filterController;
+		const currentTag = () => readTagFilters(new URL(window.location.href).searchParams);
+		const updateSelection = (tags: string[]) => {
+		filter.querySelectorAll<HTMLAnchorElement>('[data-tag]').forEach((link) => {
 			link.classList.toggle('tag-filter__tag--selected', link.dataset.tag ? tags.includes(link.dataset.tag) : tags.length === 0);
 			link.href = toggleTagUrl(window.location.pathname, tags, link.dataset.tag ?? '');
 			if (link.dataset.tag && tags.includes(link.dataset.tag)) link.setAttribute('aria-current', 'true');
 			else link.removeAttribute('aria-current');
 		});
-	}
-
-	function filterPosts(tags: string[]) {
+		};
+		const filterPosts = (tags: string[]) => {
 		updateSelection(tags);
 		document.dispatchEvent(new CustomEvent('posts:filter', { detail: tags }));
-	}
+		};
 
-	filter?.addEventListener('click', (event) => {
+		filter.addEventListener('click', (event) => {
 		if (filter.dataset.clientFilter !== 'true') return;
 		const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('[data-tag]');
 		if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -54,9 +57,12 @@ const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 		const url = new URL(link.href);
 		window.history.pushState(null, '', url);
 		filterPosts(readTagFilters(url.searchParams));
-	});
+		}, { signal });
 
-	window.addEventListener('popstate', () => filterPosts(currentTag()));
+		window.addEventListener('popstate', () => filterPosts(currentTag()), { signal });
+	}
+
+	document.addEventListener('astro:page-load', bindTagFilter);
 </script>
 
 <style>

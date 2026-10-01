@@ -21,7 +21,9 @@ const { id, name, label, initialTags = [], managed = true } = Astro.props;
 <script>
 	import { addTag, normalizeTag } from '../lib/tags.ts';
 
-	document.querySelectorAll<HTMLElement>('[data-tag-input]').forEach((root) => {
+	// Initializes tag inputs in the current page after each client-side navigation.
+	function bindTagInputs() {
+		document.querySelectorAll<HTMLElement>('[data-tag-input]').forEach((root) => {
 		const input = root.querySelector<HTMLInputElement>('.ui-input');
 		const list = root.querySelector<HTMLUListElement>('[data-tag-list]');
 		const value = root.querySelector<HTMLInputElement>('[data-tag-value]');
@@ -42,7 +44,10 @@ const { id, name, label, initialTags = [], managed = true } = Astro.props;
 			if (event.key === 'Backspace' && !input.value && tags.length) { tags = tags.slice(0, -1); render(); publish(); }
 		});
 		list.addEventListener('click', (event) => { const button = (event.target as Element).closest<HTMLButtonElement>('[data-tag]'); if (!button?.dataset.tag) return; tags = tags.filter((tag) => tag !== button.dataset.tag); render(); publish(); input.focus(); });
-	});
+		});
+	}
+
+	document.addEventListener('astro:page-load', bindTagInputs);
 </script>
 
 <style>
