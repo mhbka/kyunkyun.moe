@@ -1,5 +1,17 @@
 ---
 import { WALKERS } from '../consts';
+
+// Keeps the visible walker image static within its own transition snapshot.
+const persistentWalkerTransition = {
+	forwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+	backwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+};
 ---
 
 <img
@@ -7,6 +19,9 @@ import { WALKERS } from '../consts';
 	src={WALKERS[0].standSrc}
 	alt=""
 	aria-hidden="true"
+	transition:name="site-walker"
+	transition:persist="site-walker"
+	transition:animate={persistentWalkerTransition}
 />
 
 
@@ -27,6 +42,10 @@ import { WALKERS } from '../consts';
 	}
 
 	document.querySelectorAll<HTMLImageElement>('.walker').forEach((walker) => {
+		// Prevent a client-side navigation from reinitializing the persisted walker.
+		if (walker.dataset.initialized === 'true') return;
+		walker.dataset.initialized = 'true';
+
 		let selectedWalker = getWalker(activeWalker);
 		let position = window.innerWidth / 2;
 		let target = position;
@@ -34,6 +53,7 @@ import { WALKERS } from '../consts';
 		let animationFrame = 0;
 		let isHovered = false;
 		let isWalking = false;
+		let navigationPaused = false;
 		let walkingDirection: -1 | 1 = -1;
 		let displayedSrc = '';
 		let isMirrored = false;
@@ -53,6 +73,11 @@ import { WALKERS } from '../consts';
 			showImage(getWalkerImage(selectedWalker, isWalking, isHovered, walkingDirection));
 		}
 
+		// Shows the still sprite without changing the walker's stored movement state.
+		function showStandingImage() {
+			showImage(getWalkerImage(selectedWalker, false, false, walkingDirection));
+		}
+
 		showCurrentImage();
 
 		// Switches between walking and standing images.
@@ -65,11 +90,35 @@ import { WALKERS } from '../consts';
 		// Applies a newly selected walker without interrupting its movement.
 		function selectWalker(id: string) {
 			selectedWalker = getWalker(id);
+			if (navigationPaused) showStandingImage();
+			else showCurrentImage();
+		}
+
+		// Stops the animated sprite before a native view-transition snapshot is taken.
+		function pauseForNavigation() {
+			navigationPaused = true;
+			if (animationFrame !== 0) cancelAnimationFrame(animationFrame);
+			animationFrame = 0;
+			showStandingImage();
+		}
+
+		// Resumes the movement state after the native transition returns to live DOM rendering.
+		function resumeAfterNavigation() {
+			navigationPaused = false;
 			showCurrentImage();
+			if (!reducedMotion && isWalking && animationFrame === 0 && shouldRestartWalking(position, target)) {
+				previousTime = performance.now();
+				animationFrame = requestAnimationFrame(walk);
+			}
 		}
 
 		// Updates the walker position once per paint while it follows the cursor.
 		function walk(time: number) {
+			if (navigationPaused) {
+				animationFrame = 0;
+				return;
+			}
+
 			const elapsedSeconds = Math.min((time - previousTime) / 1000, 0.1);
 			previousTime = time;
 
@@ -91,7 +140,7 @@ import { WALKERS } from '../consts';
 		document.addEventListener('pointermove', (event) => {
 			target = event.clientX;
 
-			if (!reducedMotion && animationFrame === 0 && shouldRestartWalking(position, target)) {
+			if (!reducedMotion && !navigationPaused && animationFrame === 0 && shouldRestartWalking(position, target)) {
 				previousTime = performance.now();
 				animationFrame = requestAnimationFrame(walk);
 			}
@@ -100,13 +149,13 @@ import { WALKERS } from '../consts';
 		// Shows a character's pose while the pointer is over it.
 		walker.addEventListener('pointerenter', () => {
 			isHovered = true;
-			showCurrentImage();
+			if (!navigationPaused) showCurrentImage();
 		});
 
 		// Restores the standing or walking image after hover ends.
 		walker.addEventListener('pointerleave', () => {
 			isHovered = false;
-			showCurrentImage();
+			if (!navigationPaused) showCurrentImage();
 		});
 
 		window.addEventListener('walkerchange', (event) => {
@@ -114,6 +163,8 @@ import { WALKERS } from '../consts';
 				selectWalker(event.detail);
 			}
 		});
+		window.addEventListener('walkerpause', pauseForNavigation);
+		window.addEventListener('walkerresume', resumeAfterNavigation);
 	});
 </script>
 

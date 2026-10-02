@@ -24,6 +24,13 @@ body {
 	}
 }
 
+/* Keeps the persisted walker visible while browser transition snapshots hand over. */
+::view-transition-old(site-walker),
+::view-transition-new(site-walker) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
 .site-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 40vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
 /* Keep the main column centred while sidebars use the available outer space. */
 .site-sidebar { display: grid; grid-column: 1; gap: 1.5rem; width: min(100%, 16rem); justify-self: end; align-self: start; position: sticky; top: 2rem; }

@@ -17,12 +17,24 @@ interface Props {
 }
 
 const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = true, renderWalker = true, title, titleClass } = Astro.props;
+
+// Keeps persistent UI visible in both transition snapshots without animating either one.
+const persistentUiTransition = {
+	forwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+	backwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+};
 ---
 
 <div class="site-layout">
 	<div class="site-sidebar">
 		<!-- Keeps the stable site navigation outside page transition effects. -->
-		<div class="site-header-persist" transition:persist="site-header" transition:animate="none">
+		<div class="site-header-persist" transition:persist="site-header" transition:animate={persistentUiTransition}>
 			<Header isLoggedIn={isLoggedIn} />
 		</div>
 		{renderChangelog && <Changelog />}
@@ -49,5 +61,4 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 		</aside>
 	)}
 </div>
-<!-- Preserves the walker and prevents the router's view-transition animation from fading it. -->
-{renderWalker && <div transition:persist="site-walker" transition:animate="none"><Walker /></div>}
+{renderWalker && <Walker />}

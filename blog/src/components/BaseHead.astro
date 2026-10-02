@@ -41,6 +41,18 @@ const { title, description, image } = Astro.props;
 	import { bindNavigationFade } from '../scripts/navigation-fade';
 
 	bindNavigationFade();
+
+	// Freezes the animated walker before the browser captures its transition snapshot.
+	document.addEventListener('astro:before-preparation', (event) => {
+		window.dispatchEvent(new Event('walkerpause'));
+		event.signal.addEventListener('abort', () => window.dispatchEvent(new Event('walkerresume')), { once: true });
+	});
+
+	// Restores the walker's movement only after the browser returns to the live DOM.
+	document.addEventListener('astro:before-swap', (event) => {
+		const resumeWalker = () => window.dispatchEvent(new Event('walkerresume'));
+		void event.viewTransition.finished.then(resumeWalker, resumeWalker);
+	});
 </script>
 
 <script is:inline>
