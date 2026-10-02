@@ -9,6 +9,8 @@ test('keeps the hanging-out foreground decoration across page navigations', () =
 	const component = readFileSync(componentPath, 'utf8');
 
 	assert.match(component, /transition:persist="site-foreground-hangingout"/);
+	assert.match(component, /transition:name="site-background"/);
+	assert.match(component, /transition:name="site-foreground-hangingout"/);
 	assert.match(component, /src="\/images\/hangingout\.png"/);
 });
 

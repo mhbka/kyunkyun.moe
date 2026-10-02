@@ -19,14 +19,29 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 
 /* Soften the outgoing page into a hazy, visual-novel-style fade before the next page loads. */
 @media (prefers-reduced-motion: no-preference) {
+	.page-content,
+	.site-sidebar-right,
+	.site-sidebar:not(.site-sidebar-right) > :not(.site-header-persist) {
+		/* Keeps the return to the live page state animated after a navigation swap. */
+		transition: opacity 750ms ease-out, filter 750ms ease-out, transform 750ms ease-out;
+	}
+
 	html.is-navigating .page-content,
 	html.is-navigating .site-sidebar-right,
 	html.is-navigating .site-sidebar:not(.site-sidebar-right) > :not(.site-header-persist) {
 		opacity: 0;
 		filter: blur(0.55rem);
 		transform: scale(1.015);
-		transition: opacity 420ms ease-out, filter 520ms ease-out, transform 520ms ease-out;
 	}
+
+}
+
+@keyframes navigation-page-fade-out {
+	to { opacity: 0; }
+}
+
+@keyframes navigation-page-fade-in {
+	from { opacity: 0; }
 }
 
 /* Keeps persisted decorations visible while browser transition snapshots hand over. */
@@ -34,6 +49,8 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 ::view-transition-new(site-background),
 ::view-transition-old(site-foreground-hangingout),
 ::view-transition-new(site-foreground-hangingout),
+::view-transition-old(site-header),
+::view-transition-new(site-header),
 ::view-transition-old(site-walker),
 ::view-transition-new(site-walker) {
 	animation: none;

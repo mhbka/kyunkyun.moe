@@ -30,18 +30,34 @@ const persistentUiTransition = {
 		new: { name: 'none' },
 	},
 };
+
+// Animates the changing page shell while persisted decorations remain static.
+const pageTransition = {
+	forwards: {
+		old: { name: 'navigation-page-fade-out', duration: '750ms', easing: 'ease-out', fillMode: 'both' },
+		new: { name: 'navigation-page-fade-in', duration: '750ms', easing: 'ease-out', fillMode: 'both' },
+	},
+	backwards: {
+		old: { name: 'navigation-page-fade-out', duration: '750ms', easing: 'ease-out', fillMode: 'both' },
+		new: { name: 'navigation-page-fade-in', duration: '750ms', easing: 'ease-out', fillMode: 'both' },
+	},
+};
 ---
 
 <Background />
 <div class="site-layout">
 	<div class="site-sidebar">
 		<!-- Keeps the stable site navigation outside page transition effects. -->
-		<div class="site-header-persist" transition:persist="site-header" transition:animate={persistentUiTransition}>
+		<div class="site-header-persist" transition:name="site-header" transition:persist="site-header" transition:animate={persistentUiTransition}>
 			<Header isLoggedIn={isLoggedIn} />
 		</div>
-		{renderChangelog && <Changelog />}
+		{renderChangelog && (
+			<div transition:animate={pageTransition}>
+				<Changelog />
+			</div>
+		)}
 	</div>
-	<div class="page-content">
+	<div class="page-content" transition:animate={pageTransition}>
 		<PageTop><slot name="page-top" /></PageTop>
 		<main class:list={['page-main', mainClass]}>
 			{title && (
@@ -58,7 +74,7 @@ const persistentUiTransition = {
 		<Footer renderQuote={renderQuote} />
 	</div>
 	{Astro.slots.has('right-sidebar') && (
-		<aside class="site-sidebar site-sidebar-right" aria-label="page navigation">
+		<aside class="site-sidebar site-sidebar-right" aria-label="page navigation" transition:animate={pageTransition}>
 			<slot name="right-sidebar" />
 		</aside>
 	)}
