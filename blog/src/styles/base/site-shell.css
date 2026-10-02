@@ -12,6 +12,18 @@ body {
 	line-height: var(--line-height-body);
 }
 
+/* Soften the outgoing page into a hazy, visual-novel-style fade before the next page loads. */
+@media (prefers-reduced-motion: no-preference) {
+	html.is-navigating .page-content,
+	html.is-navigating .site-sidebar-right,
+	html.is-navigating .site-sidebar:not(.site-sidebar-right) > :not(.site-header-persist) {
+		opacity: 0;
+		filter: blur(0.55rem);
+		transform: scale(1.015);
+		transition: opacity 420ms ease-out, filter 520ms ease-out, transform 520ms ease-out;
+	}
+}
+
 .site-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 40vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
 /* Keep the main column centred while sidebars use the available outer space. */
 .site-sidebar { display: grid; grid-column: 1; gap: 1.5rem; width: min(100%, 16rem); justify-self: end; align-self: start; position: sticky; top: 2rem; }

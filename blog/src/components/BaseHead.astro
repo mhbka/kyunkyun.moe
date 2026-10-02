@@ -37,6 +37,12 @@ const { title, description, image } = Astro.props;
 <meta name="generator" content={Astro.generator} />
 <ClientRouter />
 
+<script>
+	import { bindNavigationFade } from '../scripts/navigation-fade';
+
+	bindNavigationFade();
+</script>
+
 <script is:inline>
 	// Warn before leaving an editor with unsaved changes through an internal link.
 	document.addEventListener('click', (event) => {

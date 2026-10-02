@@ -21,7 +21,10 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 
 <div class="site-layout">
 	<div class="site-sidebar">
-		<Header isLoggedIn={isLoggedIn} />
+		<!-- Keeps the stable site navigation outside page transition effects. -->
+		<div class="site-header-persist" transition:persist="site-header" transition:animate="none">
+			<Header isLoggedIn={isLoggedIn} />
+		</div>
 		{renderChangelog && <Changelog />}
 	</div>
 	<div class="page-content">
@@ -46,4 +49,5 @@ const { isLoggedIn = false, mainClass, renderChangelog = false, renderQuote = tr
 		</aside>
 	)}
 </div>
-{renderWalker && <div transition:persist="site-walker"><Walker /></div>}
+<!-- Preserves the walker and prevents the router's view-transition animation from fading it. -->
+{renderWalker && <div transition:persist="site-walker" transition:animate="none"><Walker /></div>}
