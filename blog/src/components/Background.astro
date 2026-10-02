@@ -1,0 +1,22 @@
+---
+// Keeps the decorative background mounted across client-side page navigations.
+const persistentBackgroundTransition = {
+	forwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+	backwards: {
+		old: { name: 'none' },
+		new: { name: 'none' },
+	},
+};
+---
+
+<div
+	class="site-background"
+	aria-hidden="true"
+	transition:persist="site-background"
+	transition:animate={persistentBackgroundTransition}
+>
+	<img class="site-background__mikuonion" src="/images/mikuonion.gif" alt="" />
+</div>
