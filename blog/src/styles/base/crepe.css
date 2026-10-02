@@ -1,8 +1,8 @@
-/* Map Crepe's controls and canvas to the active site theme. */
+/* Map Crepe's controls and canvas to the site's shared tokens. */
 .editor-surface .milkdown {
-	--crepe-color-background: var(--color-surface);
+	--crepe-color-background: var(--color-content-surface);
 	--crepe-color-on-background: var(--color-text);
-	--crepe-color-surface: var(--color-surface);
+	--crepe-color-surface: var(--color-content-surface);
 	--crepe-color-surface-low: var(--color-subtle);
 	--crepe-color-on-surface: var(--color-text);
 	--crepe-color-on-surface-variant: var(--color-muted);
@@ -28,7 +28,7 @@
 .editor-surface {
 	min-width: 0;
 	max-width: 100%;
-	background: var(--color-surface);
+	background: var(--color-content-surface);
 }
 
 .editor-surface .milkdown {

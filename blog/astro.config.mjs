@@ -49,16 +49,12 @@ export default defineConfig({
 
 	fonts: [
 		{
-			provider: fontProviders.local(),
-			name: 'IBM Plex Sans',
-			cssVariable: '--font-ibm-plex-sans',
+			provider: fontProviders.google(),
+			name: 'M PLUS 1p',
+			cssVariable: '--font-m-plus-1p',
 			fallbacks: ['sans-serif'],
-			options: {
-				variants: [
-					{ src: ['./src/assets/fonts/ibm-plex-sans-regular.woff2'], weight: 400, style: 'normal', display: 'swap' },
-					{ src: ['./src/assets/fonts/ibm-plex-sans-bold.woff2'], weight: 700, style: 'normal', display: 'swap' },
-				],
-			},
+			weights: [400, 700],
+			subsets: ['latin', 'japanese'],
 		},
 	],
 

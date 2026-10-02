@@ -5,16 +5,21 @@ import test from 'node:test';
 const componentPath = new URL('../../../src/components/Background.astro', import.meta.url);
 const stylesheetPath = new URL('../../../src/styles/base/site-shell.css', import.meta.url);
 
-test('keeps the Miku Onion background layer across page navigations', () => {
+test('keeps the hanging-out foreground decoration across page navigations', () => {
 	const component = readFileSync(componentPath, 'utf8');
 
-	assert.match(component, /transition:persist="site-background"/);
-	assert.match(component, /src="\/images\/mikuonion\.gif"/);
+	assert.match(component, /transition:persist="site-foreground-hangingout"/);
+	assert.match(component, /src="\/images\/hangingout\.png"/);
 });
 
-test('sizes the Miku Onion decoration larger and beyond the lower-right viewport edge', () => {
+test('uses the blurred Summer Pockets image as the site background', () => {
 	const stylesheet = readFileSync(stylesheetPath, 'utf8');
 
-	assert.match(stylesheet, /right: -12rem; bottom: -2rem;[^}]*width: min\(45rem, 63vw\)/);
-	assert.match(stylesheet, /@media \(max-width: 800px\)[\s\S]*?\.site-background__mikuonion \{ display: none; \}/);
+	assert.match(stylesheet, /\.site-background::before[^}]*summer_pockets\.png[^}]*filter: blur\(0\.4rem\)/);
+});
+
+test('places the hanging-out decoration at the top centre-right foreground', () => {
+	const stylesheet = readFileSync(stylesheetPath, 'utf8');
+
+	assert.match(stylesheet, /\.site-foreground__hangingout[^}]*z-index: 2; top: 0; left: 60%;[^}]*pointer-events: none; transform: translateX\(-50%\)/);
 });

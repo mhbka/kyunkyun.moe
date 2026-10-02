@@ -3,6 +3,14 @@ import type { WalkerDefinition } from '../components/walker/assets';
 // Generated from public/images/walkers. Do not edit manually.
 export const WALKERS = [
 	{
+		"id": "slime",
+		"label": "slime",
+		"standSrc": "/images/walkers/slime/stand.png",
+		"mirrorStandWithDirection": true,
+		"poseSrc": "/images/walkers/slime/pose.gif",
+		"walkLeftSrc": "/images/walkers/slime/walk-left.gif"
+	},
+	{
 		"id": "air_groove",
 		"label": "air_groove",
 		"standSrc": "/images/walkers/uma/air_groove/stand.gif",
@@ -161,15 +169,7 @@ export const WALKERS = [
 		"poseSrc": "/images/walkers/uma/vodka/pose.gif",
 		"walkLeftSrc": "/images/walkers/uma/vodka/walk-left.gif",
 		"walkRightSrc": "/images/walkers/uma/vodka/walk-right.gif"
-	},
-	{
-		"id": "slime",
-		"label": "slime",
-		"standSrc": "/images/walkers/slime/stand.png",
-		"mirrorStandWithDirection": true,
-		"poseSrc": "/images/walkers/slime/pose.gif",
-		"walkLeftSrc": "/images/walkers/slime/walk-left.gif"
 	}
 ] satisfies readonly WalkerDefinition[];
 
-export const DEFAULT_WALKER_ID = 'seiun_sky';
+export const DEFAULT_WALKER_ID = WALKERS[0].id;

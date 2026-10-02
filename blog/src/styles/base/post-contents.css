@@ -20,7 +20,7 @@ post-contents [aria-current="location"] { color: var(--color-accent); font-weigh
 	post-contents .contents-toggle {
 		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 		min-height: 3rem; padding: 0.65rem 1rem;
-		background: var(--color-surface); color: var(--color-heading); box-shadow: var(--shadow-header);
+		background: var(--color-content-surface); color: var(--color-heading); box-shadow: var(--shadow-content-smoke);
 	}
 	.contents-toggle > span:first-child { flex-shrink: 0; }
 	.contents-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }

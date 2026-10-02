@@ -25,7 +25,7 @@ const tweet = tweetsResult.status === 'fulfilled' ? tweetsResult.value.tweets[0]
 		<BaseHead title={"home"}  />
 	</head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} renderChangelog title="kyunkyun.moe" titleClass="title-wave">
+		<PageLayout isLoggedIn={isLoggedIn} renderChangelog title="home" titleClass="title-wave">
 			<HomePreviews slot="right-sidebar" images={images} post={post} tweet={tweet} />
 			<div class="markdown-content" set:html={content} />
 		</PageLayout>

@@ -1,0 +1,35 @@
+/* Defines the single, shared visual language for the site. */
+:root {
+	--font-body: var(--font-m-plus-1p);
+	--color-accent: #d7eeff;
+	--color-text: #f8fbff;
+	--color-heading: #ffffff;
+	--color-muted: #d0e6f8;
+	--color-subtle: #255d91;
+	--color-page-background: #5797c9;
+	--color-surface: #2f70a9;
+	--color-content-surface: rgb(35 100 160 / 75%);
+	--color-danger: #ffe0e3;
+	--color-success: #c7f4dc;
+	--color-overlay: rgb(8 47 83 / 65%);
+	--color-overlay-surface: rgb(24 88 142 / 92%);
+	--color-transparent: transparent;
+	--color-text-outline: rgb(0 0 0 / 58%);
+	--color-text-outline-outer: rgb(0 0 0 / 32%);
+	--text-outline: 1px 0 var(--color-text-outline), -1px 0 var(--color-text-outline), 0 1px var(--color-text-outline), 0 -1px var(--color-text-outline), 1px 1px var(--color-text-outline), -1px -1px var(--color-text-outline), 1px -1px var(--color-text-outline), -1px 1px var(--color-text-outline), 1.5px 0 var(--color-text-outline-outer), -1.5px 0 var(--color-text-outline-outer), 0 1.5px var(--color-text-outline-outer), 0 -1.5px var(--color-text-outline-outer), 1.5px 1.5px var(--color-text-outline-outer), -1.5px -1.5px var(--color-text-outline-outer), 1.5px -1.5px var(--color-text-outline-outer), -1.5px 1.5px var(--color-text-outline-outer);
+	--text-outline-code: 0.75px 0 var(--color-text-outline), -0.75px 0 var(--color-text-outline), 0 0.75px var(--color-text-outline), 0 -0.75px var(--color-text-outline), 0.75px 0.75px var(--color-text-outline), -0.75px -0.75px var(--color-text-outline), 0.75px -0.75px var(--color-text-outline), -0.75px 0.75px var(--color-text-outline);
+	--shadow-page: 0 2px 6px rgb(8 47 83 / 18%), 0 8px 24px rgb(8 47 83 / 20%), 0 16px 32px rgb(8 47 83 / 16%);
+	--shadow-header: 0 2px 8px rgb(8 47 83 / 16%);
+	--shadow-content-smoke: 0 0 1.5rem rgb(8 47 83 / 18%), 0 0 4rem rgb(8 47 83 / 28%);
+	--border-width: 1px;
+	--blockquote-border-width: 4px;
+	--radius-control: 0;
+	--radius-input: 6px;
+	--radius-code: 2px;
+	--radius-media: 8px;
+	--radius-panel: 12px;
+	--radius-focus: 6px;
+	--radius-tag: 0;
+	--focus-ring-width: 2px;
+	--comment-border-width: 2px;
+}

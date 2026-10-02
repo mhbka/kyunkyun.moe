@@ -1,7 +1,6 @@
 ---
 import HeaderLink from './HeaderLink.astro';
 import LoginButton from './LoginButton.astro';
-import ThemeSelector from './ThemeSelector.astro';
 import WalkerSelector from './WalkerSelector.astro';
 import SideContent from './ui/SideContent.astro';
 
@@ -28,7 +27,6 @@ const { isLoggedIn = false } = Astro.props;
 			</details>
 		</div>
 		<div class="nav-actions">
-			<ThemeSelector />
 			<WalkerSelector />
 			<LoginButton isLoggedIn={isLoggedIn} />
 		</div>
@@ -102,8 +100,8 @@ const { isLoggedIn = false } = Astro.props;
 			box-sizing: border-box;
 			padding: 0.75rem;
 			margin-top: 0.5rem;
-			background: var(--color-surface);
-			box-shadow: var(--shadow-header);
+			background: var(--color-content-surface);
+			box-shadow: var(--shadow-content-smoke);
 			transform: translateX(-50%);
 		}
 	}

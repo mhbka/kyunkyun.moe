@@ -81,7 +81,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	.moe-portal { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); padding: 0; border: 0; background: transparent; box-shadow: none; overflow: hidden; }
 	.moe-portal::backdrop { background: var(--color-overlay); }
 	.moe-portal img { display: block; max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); object-fit: contain; }
-	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; gap: 0.35rem; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: rgb(74 54 39 / 80%); color: var(--color-heading); }
+	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; gap: 0.35rem; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: var(--color-overlay-surface); color: var(--color-heading); }
 	.moe-portal__close { padding: 0.35rem 0.65rem; }
 	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.8rem; text-align: right; }
 	.moe-portal__info :empty { display: none; }

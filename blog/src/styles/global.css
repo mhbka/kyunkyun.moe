@@ -1,8 +1,8 @@
-/* Stable structure first; select the active theme with the final import. */
+/* Load shared visual values before the rules that consume them. */
+@import './base_tokens.css';
 @import './base/site-shell.css';
 @import './base/typography.css';
 @import './base/ui.css';
 @import './base/markdown-content.css';
 @import './base/crepe.css';
 @import './base/post-surface.css';
-@import './themes/index.css';

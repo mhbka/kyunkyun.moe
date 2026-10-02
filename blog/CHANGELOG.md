@@ -1,5 +1,12 @@
 # (functional) changelog
 
+## 2026-10-02
+```
+- major overhaul of theme
+- no more theme-changing system, i'll commit to one
+- added hanging yuzusoft girl
+```
+
 ## 2026-10-01
 ```
 - added SPA-style nav with transitions
