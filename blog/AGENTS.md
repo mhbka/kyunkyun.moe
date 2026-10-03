@@ -20,6 +20,12 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 - Shared layout, spacing, sizing, responsive rules, and Markdown/Milkdown geometry live in `src/styles/base/`. Keep these independent from individual component styling.
 - Keep Astro-rendered Markdown and Milkdown aligned through `src/styles/base/markdown-content.css`; do not add separate visual systems for the editor and published posts.
 
+## Testing
+
+- Add tests only for meaningful, non-visual behaviour that is easy to regress. For example: content parsing, slugs, sorting, filtering, pagination, date or reading-time calculations, navigation, redirects, RSS/sitemap generation, and important interactions.
+- Do not add tests that only restate static markup, implementation details, or visual styling. Once it looks fine, ask the user to verify it themselves.
+- Keep tests proportionate: prefer a small set that protects durable logic and important user flows over broad coverage of presentational components.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build

@@ -1,0 +1,41 @@
+---
+// Renders the separated layers from the SD002 KiriKiri motion export.
+---
+
+<div class="nanami-hanging" aria-hidden="true">
+	<!-- The outer group follows the swing2 track's rope-pivot motion. -->
+	<div class="nanami-hanging__swing">
+		<img class="nanami-hanging__body" src="/images/nanami_hanging/sd002/SD002-七海体.png" alt="" />
+		<img class="nanami-hanging__face" src="/images/nanami_hanging/sd002/SD002-たすけっ….png" alt="" />
+		<img class="nanami-hanging__sweat nanami-hanging__sweat--left" src="/images/nanami_hanging/sd002/SD002-たすけっ…as1.png" alt="" />
+		<img class="nanami-hanging__sweat nanami-hanging__sweat--right" src="/images/nanami_hanging/sd002/SD002-たすけっ…as2.png" alt="" />
+	</div>
+</div>
+
+<style>
+	/* Keeps the canvas size and layer coordinates proportional to the source sprite. */
+	.nanami-hanging { width: 100%; aspect-ratio: 418 / 620; }
+	/* Applies the SD002 swing2 keys: 0°, -5°, then back to 0° over 90 frames. */
+	.nanami-hanging__swing { position: relative; width: 100%; height: 100%; transform-origin: 94.75% 0; animation: nanami-swing 3s linear infinite; }
+	.nanami-hanging img { position: absolute; display: block; pointer-events: none; }
+	/* Shows the base body layer beneath the animated facial expression. */
+	.nanami-hanging__body { inset: 0; width: 100%; height: 100%; }
+	/* Aligns the face to the visible head cutout in the exported body sprite. */
+	.nanami-hanging__face { top: 25.81%; left: 33.49%; width: 40.43%; }
+	/* Aligns the two sweat layers to the adjusted face position. */
+	.nanami-hanging__sweat { animation: nanami-sweat 1s ease-in-out infinite alternate; }
+	.nanami-hanging__sweat--left { top: 42.26%; left: 38.28%; width: 25.12%; }
+	.nanami-hanging__sweat--right { top: 35.65%; left: 23.44%; width: 39.23%; animation-delay: -0.5s; }
+	@keyframes nanami-swing {
+		0%, 100% { transform: translate(0, 0) rotate(0deg); }
+		50% { transform: translate(8.97%, -0.36%) rotate(-5deg); }
+	}
+	@keyframes nanami-sweat {
+		from { transform: translate(0, 0); }
+		to { transform: translate(-0.18%, 0.73%); }
+	}
+	/* Leaves a static decoration for visitors who prefer less motion. */
+	@media (prefers-reduced-motion: reduce) {
+		.nanami-hanging__swing, .nanami-hanging__sweat { animation: none; }
+	}
+</style>
