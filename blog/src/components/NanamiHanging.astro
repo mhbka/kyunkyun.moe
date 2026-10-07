@@ -1,41 +1,70 @@
 ---
-// Renders the separated layers from the SD002 KiriKiri motion export.
+// Displays the extracted Nanami hanging animation as a reusable canvas scene.
 ---
 
-<div class="nanami-hanging" aria-hidden="true">
-	<!-- The outer group follows the swing2 track's rope-pivot motion. -->
-	<div class="nanami-hanging__swing">
-		<img class="nanami-hanging__body" src="/images/nanami_hanging/sd002/SD002-七海体.png" alt="" />
-		<img class="nanami-hanging__face" src="/images/nanami_hanging/sd002/SD002-たすけっ….png" alt="" />
-		<img class="nanami-hanging__sweat nanami-hanging__sweat--left" src="/images/nanami_hanging/sd002/SD002-たすけっ…as1.png" alt="" />
-		<img class="nanami-hanging__sweat nanami-hanging__sweat--right" src="/images/nanami_hanging/sd002/SD002-たすけっ…as2.png" alt="" />
-	</div>
-</div>
+<canvas class="nanami-hanging" width="520" height="620" aria-label="Nanami hanging from a rope"></canvas>
+
+<script>
+	import { CanvasAnimationPlayer, type CanvasAnimationDefinition } from '../lib/canvas-animation';
+
+	// Recreates the source's swing2 composition with the exported transparent layers.
+	const animation: CanvasAnimationDefinition = {
+		width: 520,
+		height: 620,
+		frames: 90,
+		framesPerSecond: 30,
+		root: {
+			type: 'group',
+			originX: 396,
+			originY: 0,
+			// Keeps all additional canvas space to the right of the source art.
+			keyframes: [{ frame: 0 }, { frame: 45, x: 37.5, y: -2.25, rotation: -5 }, { frame: 90 }],
+			children: [
+				{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-七海体.png', width: 418, height: 620 },
+				// Positions include the source icon origins and the body layer's clip offsets.
+				{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-たすけっ….png', width: 169, height: 153, keyframes: [{ frame: 0, x: 190, y: 270.5 }] },
+				{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-たすけっ…as1.png', width: 105, height: 38, keyframes: [{ frame: 0, x: 210, y: 271 }, { frame: 15, x: 209.25, y: 266.5 }] },
+				{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-たすけっ…as2.png', width: 164, height: 144, keyframes: [{ frame: 0, x: 148, y: 208 }, { frame: 15, x: 150.25, y: 214.25 }] },
+				// Preserves the source's three small motion lines from the nested gaku motion.
+				{
+					type: 'group',
+					originX: 22,
+					originY: 20,
+					keyframes: [{ frame: 0, x: 120, y: 148 }, { frame: 15, x: 131.25, y: 136, rotation: 19.6939449 }],
+					children: [{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-七海体ef1.png', width: 43, height: 40 }],
+				},
+				{
+					type: 'group',
+					originX: 17,
+					originY: 21,
+					keyframes: [{ frame: 0, x: 178, y: 496 }, { frame: 15, x: 185.5, y: 520.75, rotation: 342.145447 }],
+					children: [{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-七海体ef12.png', width: 34, height: 42 }],
+				},
+				{
+					type: 'group',
+					originX: 20,
+					originY: 24,
+					keyframes: [{ frame: 0, x: 371, y: 379 }, { frame: 15, x: 389.75, y: 373.75, rotation: 348.119537 }],
+					children: [{ type: 'sprite', src: '/images/nanami_hanging/sd002/SD002-七海体ef13.png', width: 39, height: 48 }],
+				},
+			],
+		},
+	};
+
+	document.querySelectorAll<HTMLCanvasElement>('.nanami-hanging').forEach((canvas) => {
+		// Avoids restarting a persisted decoration after client-side navigation.
+		if (canvas.dataset.initialized === 'true') return;
+		canvas.dataset.initialized = 'true';
+
+		const player = new CanvasAnimationPlayer(canvas, animation);
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		void player.load().then(() => {
+			if (!reducedMotion) player.play();
+		});
+	});
+</script>
 
 <style>
-	/* Keeps the canvas size and layer coordinates proportional to the source sprite. */
-	.nanami-hanging { width: 100%; aspect-ratio: 418 / 620; }
-	/* Applies the SD002 swing2 keys: 0°, -5°, then back to 0° over 90 frames. */
-	.nanami-hanging__swing { position: relative; width: 100%; height: 100%; transform-origin: 94.75% 0; animation: nanami-swing 3s linear infinite; }
-	.nanami-hanging img { position: absolute; display: block; pointer-events: none; }
-	/* Shows the base body layer beneath the animated facial expression. */
-	.nanami-hanging__body { inset: 0; width: 100%; height: 100%; }
-	/* Aligns the face to the visible head cutout in the exported body sprite. */
-	.nanami-hanging__face { top: 25.81%; left: 33.49%; width: 40.43%; }
-	/* Aligns the two sweat layers to the adjusted face position. */
-	.nanami-hanging__sweat { animation: nanami-sweat 1s ease-in-out infinite alternate; }
-	.nanami-hanging__sweat--left { top: 42.26%; left: 38.28%; width: 25.12%; }
-	.nanami-hanging__sweat--right { top: 35.65%; left: 23.44%; width: 39.23%; animation-delay: -0.5s; }
-	@keyframes nanami-swing {
-		0%, 100% { transform: translate(0, 0) rotate(0deg); }
-		50% { transform: translate(8.97%, -0.36%) rotate(-5deg); }
-	}
-	@keyframes nanami-sweat {
-		from { transform: translate(0, 0); }
-		to { transform: translate(-0.18%, 0.73%); }
-	}
-	/* Leaves a static decoration for visitors who prefer less motion. */
-	@media (prefers-reduced-motion: reduce) {
-		.nanami-hanging__swing, .nanami-hanging__sweat { animation: none; }
-	}
+	.nanami-hanging { display: block; width: min(29rem, 39.8vw); height: auto; }
 </style>

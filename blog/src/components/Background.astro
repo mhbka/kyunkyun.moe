@@ -1,4 +1,6 @@
 ---
+import NanamiHanging from './NanamiHanging.astro';
+
 // Keeps the decorative background mounted across client-side page navigations.
 const persistentBackgroundTransition = {
 	forwards: {
@@ -21,13 +23,13 @@ const persistentBackgroundTransition = {
 >
 </div>
 
-<!-- Keeps the decoration above page content without intercepting interactions. -->
-<img
+<!-- Keeps the animated decoration above page content across navigations. -->
+<div
 	class="site-foreground__hangingout"
-	src="/images/hangingout.png"
-	alt=""
 	aria-hidden="true"
 	transition:name="site-foreground-hangingout"
 	transition:persist="site-foreground-hangingout"
 	transition:animate={persistentBackgroundTransition}
-/>
+>
+	<NanamiHanging />
+</div>
