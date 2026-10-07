@@ -60,7 +60,6 @@ export function initTweetTimeline(timeline: HTMLElement) {
 		else { viewerImage.src = thumbnail.dataset.mediaUrl ?? ''; viewerVideo.removeAttribute('src'); }
 		viewer.showModal();
 	});
-	viewer?.querySelector('[data-tweet-viewer-close]')?.addEventListener('click', () => viewer.close());
 	viewer?.addEventListener('click', (event) => { if (event.target === viewer) viewer.close(); });
 	viewer?.addEventListener('close', () => { viewerVideo?.pause(); viewerVideo?.removeAttribute('src'); });
 

@@ -59,8 +59,8 @@ const tweetPreview = tweet
 	.home-preview__images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; }
 	.home-preview__images img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
 	@media (max-width: 800px) {
-		/* Keep the compact pix preview as a small four-image row on mobile. */
-		.home-preview__images { grid-template-columns: repeat(4, 5rem); }
+		/* Keeps four images in one row while allowing each tile to shrink on mobile. */
+		.home-preview__images { min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	}
 	:global(.home-preview:hover .home-preview__heading) { color: var(--color-accent); }
 	:global(.home-preview:hover .home-preview__text) { color: var(--color-accent); }

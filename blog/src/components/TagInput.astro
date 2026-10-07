@@ -53,7 +53,8 @@ const { id, name, label, initialTags = [], managed = true } = Astro.props;
 <style>
 	.tag-input { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; padding: .4rem; }
 	.tag-input:focus-within { border-radius: var(--radius-focus); box-shadow: 0 0 0 var(--focus-ring-width) var(--color-accent); }
-	.tag-input :global(.ui-input) { min-width: 12rem; flex: 1; padding: .3rem; border: 0; outline: 0; background: var(--color-transparent); }
+	/* Allows the tag field to fit within very narrow upload layouts. */
+	.tag-input :global(.ui-input) { min-width: min(12rem, 100%); max-width: 100%; flex: 1; padding: .3rem; border: 0; outline: 0; background: var(--color-transparent); }
 	.tag-list { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
 	.tag { padding: .2rem .55rem; border-radius: var(--radius-tag); background: var(--color-subtle); color: var(--color-text); font-size: .8rem; }
 </style>

@@ -129,7 +129,6 @@ export function initPixGallery(gallery: HTMLElement) {
 			if (status) status.textContent = error instanceof Error ? error.message : 'tag update failed. please try again.';
 		} finally { saveTags.disabled = false; }
 	});
-	gallery.querySelector('[data-moe-close]')?.addEventListener('click', () => portal?.close());
 	portal?.addEventListener('click', (event) => { if (event.target === portal) portal.close(); });
 	portal?.addEventListener('close', () => {
 		restoreViewerScrollPosition();

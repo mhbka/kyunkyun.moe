@@ -67,7 +67,7 @@ const pageUrl = (cursor?: string) => {
 		{before && <Link class="ui-button" href={pageUrl()}>newer tweets</Link>}
 		{hasMore && <Link class="ui-button" href={pageUrl(nextBefore ?? undefined)}>older tweets</Link>}
 	</nav>
-	<dialog class="tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><Button class="tweet-viewer__close" type="button" data-tweet-viewer-close>close</Button><img data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
+	<dialog class="tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><img data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
 </section>
 
 <script>
@@ -101,5 +101,4 @@ const pageUrl = (cursor?: string) => {
 	.tweet-viewer::backdrop { background: var(--color-overlay); }
 	.tweet-viewer img, .tweet-viewer video { display: none; max-width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); }
 	.tweet-viewer.is-image img, .tweet-viewer.is-video video { display: block; }
-	:global(.tweet-viewer__close) { position: fixed; z-index: 1; top: .5rem; right: .5rem; }
 </style>

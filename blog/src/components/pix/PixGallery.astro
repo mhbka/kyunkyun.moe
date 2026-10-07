@@ -46,7 +46,6 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	<Button class="moe-load-more" type="button" data-moe-load-more hidden={!hasMore}>load more</Button>
 	<dialog class="moe-portal" data-moe-portal aria-label="full-size image">
 		<div class="moe-portal__details">
-			<Button class="moe-portal__close" type="button" data-moe-close>close</Button>
 			<div class="moe-portal__info">
 				<time data-moe-portal-created-at></time>
 				<span data-moe-portal-tags></span>
@@ -67,12 +66,14 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 </script>
 
 <style>
-	.moe-gallery { display: grid; gap: 1rem; }
-	.moe-upload { display: grid; gap: 0.5rem; }
+	/* Lets the gallery shrink with the page column on narrow screens. */
+	.moe-gallery { display: grid; min-width: 0; gap: 1rem; }
+	.moe-upload { display: grid; min-width: 0; gap: 0.5rem; }
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 	.moe-tag-editor[hidden] { display: none; }
-	.moe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(8rem, 7.5vw, 12rem)), 1fr)); gap: 0.75rem; }
+	/* Prevents grid items from widening the mobile content column. */
+	.moe-grid { display: grid; min-width: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(8rem, 7.5vw, 12rem)), 1fr)); gap: 0.75rem; }
 	.moe-load-more[hidden] { display: none; }
 	:global(.moe-thumbnail) { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); }
 	:global(.moe-thumbnail img) { display: block; width: 100%; height: 100%; border-radius: 0; object-fit: cover; }
@@ -81,8 +82,8 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	.moe-portal { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); padding: 0; border: 0; background: transparent; box-shadow: none; overflow: hidden; }
 	.moe-portal::backdrop { background: var(--color-overlay); }
 	.moe-portal img { display: block; max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); object-fit: contain; }
-	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; gap: 0.35rem; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: var(--color-overlay-surface); color: var(--color-heading); }
-	.moe-portal__close { padding: 0.35rem 0.65rem; }
-	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.8rem; text-align: right; }
+	/* Keeps image metadata readable without competing with the picture. */
+	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-overlay-surface) 75%, transparent); color: var(--color-heading); }
+	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.7rem; text-align: right; }
 	.moe-portal__info :empty { display: none; }
 </style>

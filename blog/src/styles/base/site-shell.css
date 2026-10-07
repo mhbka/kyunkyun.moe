@@ -75,6 +75,8 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 .site-sidebar-right:not(:has(> :not([hidden]))) { display: none; }
 
 @media (max-width: 800px) {
+	/* Removes the desktop-only hanging decoration from the mobile layout. */
+	.site-foreground__hangingout { display: none; }
 	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 0; }
 	.site-sidebar { grid-column: 1; gap: 1rem; width: 100%; margin: 0; justify-self: stretch; position: static; }
 	.page-content { grid-column: 1; width: 100%; }
