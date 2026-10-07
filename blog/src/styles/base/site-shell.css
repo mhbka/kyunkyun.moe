@@ -77,8 +77,11 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 @media (max-width: 800px) {
 	/* Removes the desktop-only hanging decoration from the mobile layout. */
 	.site-foreground__hangingout { display: none; }
-	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 0; }
-	.site-sidebar { grid-column: 1; gap: 1rem; width: 100%; margin: 0; justify-self: stretch; position: static; }
+	/* Stacks mobile panels into one continuous column without desktop-sized gaps. */
+	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; }
+	.site-sidebar { grid-column: 1; gap: 0; width: 100%; margin: 0; justify-self: stretch; position: static; }
+	/* Hides the secondary changelog panel on small screens. */
+	.site-changelog { display: none; }
 	.page-content { grid-column: 1; width: 100%; }
 	.page-top { min-height: 0rem; }
 	.page-main { padding: 1em; }

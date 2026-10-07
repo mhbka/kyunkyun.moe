@@ -1,0 +1,38 @@
+---
+import Button from './ui/Button.astro';
+---
+
+<dialog class="mobile-notice" data-mobile-notice aria-labelledby="mobile-notice-message">
+	<h2 id="mobile-notice-message">notice</h2>
+	<p>this website is desktop-first. you will miss out a few things on mobile :p</p>
+	<Button type="button" data-mobile-notice-continue>continue</Button>
+</dialog>
+
+<script>
+	import { markMobileNoticeShown, shouldShowMobileNotice } from '../lib/mobile-notice.ts';
+
+	// Shows the one-time notice only when the current viewport uses the mobile layout.
+	function bindMobileNotice() {
+		const notice = document.querySelector<HTMLDialogElement>('[data-mobile-notice]');
+		if (!notice || !window.matchMedia('(max-width: 800px)').matches) return;
+		try {
+			if (!shouldShowMobileNotice(localStorage)) return;
+			markMobileNoticeShown(localStorage);
+			notice.showModal();
+		} catch {
+			// Skips the optional notice when browser storage is unavailable.
+			return;
+		}
+		notice.querySelector<HTMLButtonElement>('[data-mobile-notice-continue]')?.addEventListener('click', () => notice.close());
+	}
+
+	document.addEventListener('astro:page-load', bindMobileNotice);
+</script>
+
+<style>
+	.mobile-notice { width: min(calc(100vw - 2rem), 22rem); padding: 1rem; border: var(--border-width) solid var(--color-muted); border-radius: var(--radius-panel); background: var(--color-content-surface); color: var(--color-text); box-shadow: var(--shadow-content-smoke); }
+	.mobile-notice::backdrop { background: var(--color-overlay); }
+	.mobile-notice h2 { margin: 0 0 0.5rem; color: var(--color-heading); font-size: 1.1rem; }
+	.mobile-notice p { margin: 0 0 1rem; }
+	.mobile-notice :global(.ui-button) { width: 100%; }
+</style>

@@ -3,6 +3,7 @@ import Footer from './Footer.astro';
 import Background from './Background.astro';
 import Changelog from './Changelog.astro';
 import Header from './Header.astro';
+import MobileNotice from './MobileNotice.astro';
 import PageTop from './PageTop.astro';
 import PageTitle from './PageTitle.astro';
 import Walker from './Walker.astro';
@@ -45,6 +46,7 @@ const pageTransition = {
 ---
 
 <Background />
+<MobileNotice />
 <div class="site-layout">
 	<div class="site-sidebar">
 		<!-- Keeps the stable site navigation outside page transition effects. -->
@@ -52,7 +54,7 @@ const pageTransition = {
 			<Header isLoggedIn={isLoggedIn} />
 		</div>
 		{renderChangelog && (
-			<div transition:animate={pageTransition}>
+			<div class="site-changelog" transition:animate={pageTransition}>
 				<Changelog />
 			</div>
 		)}
