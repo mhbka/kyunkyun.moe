@@ -58,7 +58,17 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 }
 
 /* Fills the viewport with a softly blurred image behind the site content. */
-.site-background { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--color-page-background); }
+.site-background {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	overflow: hidden;
+	background: var(--color-page-background);
+	/* Keeps the fixed image in the viewport compositor during touch scrolling. */
+	transform: translateZ(0);
+	will-change: transform;
+}
 .site-background::before { content: ''; position: absolute; inset: -1.5rem; background: url('/images/summer_pockets.png') center / cover no-repeat; filter: blur(0.4rem); }
 /* Floats the decoration near the centre-right above normal page content. */
 .site-foreground__hangingout { position: fixed; z-index: 2; top: 0; left: 60%; display: block; width: min(23.375rem, 32vw); height: auto; pointer-events: none; transform: translateX(-50%); }

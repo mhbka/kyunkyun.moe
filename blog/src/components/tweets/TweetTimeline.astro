@@ -80,7 +80,10 @@ const pageUrl = (cursor?: string) => {
 </script>
 
 <style>
-	.tweet-timeline, .tweet-composer { display: grid; }
+	.tweet-timeline { display: grid; }
+	/* Keeps the composer's implicit grid track from expanding past the mobile gutter. */
+	.tweet-composer { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+	.tweet-composer > * { min-inline-size: 0; }
 	.tweet-list { display: grid; gap: 0; }
 	.tweet-composer { padding-bottom: 1rem; gap: 1rem; border-bottom: var(--border-width) solid var(--color-muted); }
 	.tweet-composer__controls, .tweet-composer__actions, .tweet__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }

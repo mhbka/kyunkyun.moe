@@ -68,7 +68,9 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <style>
 	/* Lets the gallery shrink with the page column on narrow screens. */
 	.moe-gallery { display: grid; min-width: 0; gap: 1rem; }
-	.moe-upload { display: grid; min-width: 0; gap: 0.5rem; }
+	/* Constrains the implicit upload track to the page column. */
+	.moe-upload { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 0.5rem; }
+	.moe-upload > * { min-inline-size: 0; }
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 	.moe-tag-editor[hidden] { display: none; }
