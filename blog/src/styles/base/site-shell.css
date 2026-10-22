@@ -47,8 +47,8 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 /* Keeps persisted decorations visible while browser transition snapshots hand over. */
 ::view-transition-old(site-background),
 ::view-transition-new(site-background),
-::view-transition-old(site-foreground-hangingout),
-::view-transition-new(site-foreground-hangingout),
+::view-transition-old(site-foreground-pendulum),
+::view-transition-new(site-foreground-pendulum),
 ::view-transition-old(site-header),
 ::view-transition-new(site-header),
 ::view-transition-old(site-walker),
@@ -70,8 +70,8 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 	will-change: transform;
 }
 .site-background::before { content: ''; position: absolute; inset: -1.5rem; background: url('/images/summer_pockets.png') center / cover no-repeat; filter: blur(0.4rem); }
-/* Floats the decoration near the centre-right above normal page content. */
-.site-foreground__hangingout { position: fixed; z-index: 2; top: 0; left: 60%; display: block; width: min(23.375rem, 32vw); height: auto; pointer-events: none; transform: translateX(-50%); }
+/* Floats the interactive decoration near the centre-right above normal page content. */
+.site-foreground__pendulum { position: fixed; z-index: 2; top: 0; left: calc(60% + 300px); display: block; width: auto; height: min(34.75rem, 47.5vw); transform: translateX(-50%); }
 
 .site-layout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 40vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
 /* Keep the main column centred while sidebars use the available outer space. */
@@ -86,7 +86,7 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 
 @media (max-width: 800px) {
 	/* Removes the desktop-only hanging decoration from the mobile layout. */
-	.site-foreground__hangingout { display: none; }
+	.site-foreground__pendulum { display: none; }
 	/* Stacks mobile panels into one continuous column without desktop-sized gaps. */
 	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; }
 	.site-sidebar { grid-column: 1; gap: 0; width: 100%; margin: 0; justify-self: stretch; position: static; }

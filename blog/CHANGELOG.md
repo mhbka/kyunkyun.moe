@@ -1,5 +1,10 @@
 # (functional) changelog
 
+## 2026-10-22
+```
+- add animated nanami
+```
+
 ## 2026-10-02
 ```
 - major overhaul of theme

@@ -1,0 +1,33 @@
+---
+// Mounts the interactive SD002 pendulum with the blog's existing exported assets.
+---
+
+<svg
+	class="site-foreground__pendulum"
+	aria-hidden="true"
+	data-json-url="/images/nanami_hanging/sd002.json"
+	data-image-directory-url="/images/nanami_hanging/sd002/"
+	data-image-prefix="SD002"
+	transition:name="site-foreground-pendulum"
+	transition:persist="site-foreground-pendulum"
+></svg>
+
+<script is:inline type="module">
+	import { mountPendulum } from '/simplemotion/pendulum-embed.js';
+
+	// Reconnects the SVG if a client-side navigation supplied a fresh element.
+	function mountCurrentPendulum() {
+		const svg = document.querySelector('.site-foreground__pendulum');
+		if (!(svg instanceof SVGSVGElement) || svg.dataset.mounted) return;
+
+		svg.dataset.mounted = 'true';
+		void mountPendulum(svg, {
+			jsonUrl: svg.dataset.jsonUrl,
+			imageDirectoryUrl: svg.dataset.imageDirectoryUrl,
+			imagePrefix: svg.dataset.imagePrefix,
+		});
+	}
+
+	mountCurrentPendulum();
+	document.addEventListener('astro:page-load', mountCurrentPendulum);
+</script>
