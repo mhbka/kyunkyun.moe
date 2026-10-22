@@ -1,0 +1,17 @@
+{
+  "name": "simplemotion-web",
+  "type": "module",
+  "description": "WebAssembly canvas renderer for simplemotion animations.",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    "simplemotion_web_bg.wasm",
+    "simplemotion_web.js",
+    "simplemotion_web.d.ts"
+  ],
+  "main": "simplemotion_web.js",
+  "types": "simplemotion_web.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
