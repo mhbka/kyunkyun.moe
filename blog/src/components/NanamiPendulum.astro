@@ -25,7 +25,11 @@
 			jsonUrl: svg.dataset.jsonUrl,
 			imageDirectoryUrl: svg.dataset.imageDirectoryUrl,
 			imagePrefix: svg.dataset.imagePrefix,
-		});
+		})
+			// Releases the initial page once every pendulum layer is decoded and mounted.
+			.then(() => window.dispatchEvent(new Event('nanami-pendulum-ready')))
+			// Prevents an unavailable decoration from leaving the page hidden.
+			.catch(() => window.dispatchEvent(new Event('nanami-pendulum-ready')));
 	}
 
 	mountCurrentPendulum();

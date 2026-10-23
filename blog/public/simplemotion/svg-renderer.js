@@ -7,6 +7,7 @@ export class SvgAnimationRenderer {
     this.svg = svg;
     this.leftExtension = leftExtension;
     this.images = document.createElementNS(SVG_NAMESPACE, "g");
+    this.commandNodes = new Map();
     this.definitions = document.createElementNS(SVG_NAMESPACE, "defs");
     this.interaction = null;
     this.interactivePath = null;
@@ -24,12 +25,16 @@ export class SvgAnimationRenderer {
 
   /// Updates the SVG images in the supplied back-to-front command order.
   render(commands, imageUrls) {
-    while (this.images.childElementCount > commands.length) {
-      this.images.lastElementChild.remove();
-    }
+    const occurrences = new Map();
+    const activeKeys = new Set();
 
     commands.forEach((command, index) => {
-      let image = this.images.children[index];
+      const count = occurrences.get(command.icon) ?? 0;
+      const key = `${command.icon}:${count}`;
+      occurrences.set(command.icon, count + 1);
+      activeKeys.add(key);
+
+      let image = this.commandNodes.get(key);
       if (!image) {
         image = document.createElementNS(SVG_NAMESPACE, "image");
         image.setAttribute("pointer-events", "none");
@@ -39,13 +44,21 @@ export class SvgAnimationRenderer {
         image.setAttribute("height", "1");
         // Matches Canvas2D's deliberate source-image stretch into the unit quad.
         image.setAttribute("preserveAspectRatio", "none");
-        this.images.append(image);
+        this.commandNodes.set(key, image);
       }
 
-      image.setAttribute("href", imageUrls.get(command.icon));
+      const imageUrl = imageUrls.get(command.icon);
+      if (image.getAttribute("href") !== imageUrl) image.setAttribute("href", imageUrl);
       image.setAttribute("opacity", command.opacity);
       image.setAttribute("transform", matrix(command.matrix));
+      if (this.images.children[index] !== image) this.images.append(image);
     });
+
+    for (const [key, image] of this.commandNodes) {
+      if (activeKeys.has(key)) continue;
+      image.remove();
+      this.commandNodes.delete(key);
+    }
 
     this.updateInteractivePath(commands);
   }

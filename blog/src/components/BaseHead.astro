@@ -31,6 +31,27 @@ const { title, description, image } = Astro.props;
 	href={new URL('rss.xml', Astro.site)}
 />
 <meta name="generator" content={Astro.generator} />
+<!-- Starts the pendulum's image downloads before its client-side renderer mounts. -->
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-bg.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-おちる….png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-たすけっ….png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-たすけっ…as1.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-たすけっ…as2.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-スマホ.png32.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体ef1.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体ef12.png" />
+<link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体ef13.png" />
+
+<script is:inline>
+	// Keeps the first desktop render hidden until the pendulum has drawn its first frame.
+	if (window.matchMedia('(min-width: 801px) and (prefers-reduced-motion: no-preference)').matches) {
+		document.documentElement.classList.add('pendulum-loading');
+		const revealPage = () => document.documentElement.classList.remove('pendulum-loading');
+		window.addEventListener('nanami-pendulum-ready', revealPage, { once: true });
+		window.setTimeout(revealPage, 5000);
+	}
+</script>
 <ClientRouter />
 
 <script>

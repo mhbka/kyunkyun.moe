@@ -14,6 +14,9 @@ body {
 	text-shadow: var(--text-outline);
 }
 
+/* Hides the first desktop render until the pendulum has its initial frame. */
+html.pendulum-loading body { visibility: hidden; }
+
 /* Keeps code block glyphs sharper than the surrounding prose. */
 pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text-outline-code); }
 
