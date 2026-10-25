@@ -10,6 +10,13 @@
 	box-shadow: var(--shadow-card-glow);
 }
 
+/* Owns the combined card and content inset for primary and independently stacked cards. */
+.edge-card.page-content,
+.page-content--cards .edge-card { padding: calc(1rem + 0.5em) calc(2rem + 1em); }
+
+/* Preserves the deeper desktop breathing room used by full post and editor surfaces. */
+.edge-card.page-content:has(> .post-page) { padding-block: 4rem; }
+
 /* Paints the full left edge white with a thicker glowing strip and matching corners. */
 .edge-card::after {
 	content: '';
@@ -24,5 +31,9 @@
 
 @media (max-width: 800px) {
 	/* Recovers horizontal space while keeping content clear of the white edge strip. */
-	.edge-card { padding-right: 0.5rem; padding-left: 1.5rem; }
+	.edge-card { padding-right: 0.75rem; padding-left: 2rem; }
+	/* Replaces formerly nested mobile padding with one consistent card-owned inset. */
+	.edge-card.page-content,
+	.page-content--cards .edge-card { padding: 2rem 0.75rem 2rem 2rem; }
+	.edge-card.page-content:has(> .post-page) { padding-block: 2rem; }
 }

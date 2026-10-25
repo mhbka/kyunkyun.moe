@@ -1,22 +1,22 @@
 ---
 import Button from './ui/Button.astro';
+import EdgeCard from './ui/EdgeCard.astro';
 import Link from './ui/Link.astro';
-import SideContent from './ui/SideContent.astro';
 import '../styles/base/post-contents.css';
 interface Props { target: string; editable?: boolean; }
 const { target, editable = false } = Astro.props;
 ---
 	<post-contents data-target={target} data-editable={String(editable)} hidden>
-		<Button class="contents-toggle" type="button" aria-expanded="false" aria-controls={`${target}-contents`}>
+		<Button class="contents-toggle edge-card" type="button" aria-expanded="false" aria-controls={`${target}-contents`}>
 			<span>on this page <span class="contents-chevron" aria-hidden="true">▾</span></span>
 			<span class="contents-current" data-current-section></span>
 		</Button>
-		<SideContent class="contents-panel" id={`${target}-contents`}>
+		<EdgeCard as="div" class="contents-panel" id={`${target}-contents`}>
 		<nav aria-label="table of contents">
 			<p class="contents-title">on this page</p>
 			<ol></ol>
 		</nav>
-		</SideContent>
+		</EdgeCard>
 		<template><li>{editable ? <Button type="button" /> : <Link />}</li></template>
 	</post-contents>
 <script>
