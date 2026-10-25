@@ -43,7 +43,7 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 		<PageLayout isLoggedIn={isLoggedIn} title="blog" separateCards mainClass="blog-listing">
 			{isAuthor && (
 				<EdgeCard aria-labelledby="blog-author-heading">
-					<h2 id="blog-author-heading" class="blog-card-heading">author buttons:</h2>
+					<h2 id="blog-author-heading" class="card-heading">author buttons:</h2>
 					<div class="action-group">
 						<Link class="ui-button" href="/posts/new/">create post</Link>
 						<Link class="ui-button" href="/blog/drafts/">view drafts</Link>
@@ -55,7 +55,7 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 			) : (
 				<>
 					<EdgeCard aria-labelledby="blog-tags-heading">
-						<h2 id="blog-tags-heading" class="blog-card-heading">tags:</h2>
+						<h2 id="blog-tags-heading" class="card-heading">tags:</h2>
 						<TagFilter tags={tags} selectedTags={selectedTags} />
 					</EdgeCard>
 					<PostList posts={posts} variant="published" isAuthor={isAuthor} pageSize={pageSize} cards />

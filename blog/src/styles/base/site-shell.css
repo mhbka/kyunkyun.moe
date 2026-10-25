@@ -53,8 +53,6 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 .site-content-region { display: grid; flex-shrink: 0; gap: 1.5rem; width: 100%; min-width: 0; margin-block: auto; }
 /* Stacks secondary panels without introducing another desktop column. */
 .site-sidebar { display: grid; gap: 1rem; min-width: 0; }
-/* Keeps auxiliary panels aligned with the reusable right-edge cards. */
-.site-sidebar-right .side-content { border-radius: var(--radius-panel) 0 0 var(--radius-panel); }
 .page-top { box-sizing: border-box; }
 .page-body { margin-bottom: 2rem; }
 /* Lets pages compose a card stack inside the main landmark. */

@@ -27,7 +27,7 @@ const [tags, result] = await Promise.all([
 			{'error' in result ? <EdgeCard><FetchError message="couldn't load the tweets :(" /></EdgeCard> : <>
 				<TweetTimeline tweets={result.tweets.tweets} nextBefore={result.tweets.nextBefore} hasMore={result.tweets.hasMore} tags={selectedTags} before={before} isTweet={isTweet} accessToken={accessToken} userId={userId}>
 					<div slot="filters">
-						<h2 class="tweets-tags-heading">tags:</h2>
+						<h2 class="card-heading">tags:</h2>
 						<TagFilter tags={tags} selectedTags={selectedTags} basePath="/tweets/" />
 					</div>
 				</TweetTimeline>

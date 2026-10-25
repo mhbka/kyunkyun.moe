@@ -44,7 +44,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	<EdgeCard class="pix-images-card" aria-label="images">
 		<div class="moe-grid" data-moe-grid>
 			{images.map((image) => (
-				<Button class="moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
+				<Button class="media-thumbnail moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
 					<img src={image.publicUrl} alt="" loading="lazy" />
 					<span class="moe-thumbnail__tick" aria-hidden="true">✓</span>
 				</Button>
@@ -52,7 +52,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 		</div>
 		<Button class="moe-load-more" type="button" data-moe-load-more hidden={!hasMore}>load more</Button>
 	</EdgeCard>
-	<dialog class="moe-portal" data-moe-portal aria-label="full-size image">
+	<dialog class="media-viewer moe-portal" data-moe-portal aria-label="full-size image">
 		<div class="moe-portal__details">
 			<div class="moe-portal__info">
 				<time data-moe-portal-created-at></time>
@@ -86,15 +86,11 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	.moe-upload > * { min-inline-size: 0; }
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-	.moe-tag-editor[hidden] { display: none; }
-	.moe-load-more[hidden] { display: none; }
-	:global(.moe-thumbnail) { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); }
-	:global(.moe-thumbnail img) { display: block; width: 100%; height: 100%; border-radius: 0; object-fit: cover; }
+	.moe-tag-editor[hidden], .moe-load-more[hidden] { display: none; }
+	:global(.moe-thumbnail) { position: relative; }
 	:global(.moe-thumbnail__tick) { position: absolute; top: 0.45rem; right: 0.45rem; display: none; width: 1.5rem; height: 1.5rem; place-content: center; border-radius: 50%; background: var(--color-success); color: var(--color-surface); font-weight: bold; }
 	:global(.moe-thumbnail.is-selected .moe-thumbnail__tick) { display: grid; }
-	.moe-portal { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); padding: 0; border: 0; background: transparent; box-shadow: none; overflow: hidden; }
-	.moe-portal::backdrop { background: var(--color-overlay); }
-	.moe-portal img { display: block; max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); object-fit: contain; }
+	.moe-portal img { display: block; object-fit: contain; }
 	/* Keeps image metadata readable without competing with the picture. */
 	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-overlay-surface) 75%, transparent); color: var(--color-heading); }
 	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.7rem; text-align: right; }

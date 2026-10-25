@@ -109,10 +109,8 @@
 }
 .site-header nav { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 2.5rem; }
 .site-header .primary-links { display: flex; flex-direction: column; gap: var(--site-navigation-gap); width: 100%; max-width: 20rem; text-align: center; }
-/* Matches the white outlined page-heading typography without changing link semantics. */
-.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; }
-/* Smoothly hands the selected treatment between the current and hovered items. */
-.site-header .main-nav-item { transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
+/* Matches page-heading typography and smoothly hands off the selected treatment. */
+.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
 .site-header .main-nav-item:hover { text-decoration: none; }
 .site-header .main-nav-item:is(.active, :hover),
 .site-header .nav-dropdown:hover > summary { transform: scale(1.08); color: var(--color-content-surface); text-shadow: var(--shadow-card-glow); }
@@ -170,8 +168,7 @@
 /* Preserves the selected treatment without motion when requested. */
 @media (prefers-reduced-motion: reduce) {
 	.site-header .header-link-effect { animation: none; transition: none; }
-	.site-logo__part { transition: none; }
-	.site-logo__bubble { transition: none; }
+	.site-logo__part, .site-logo__bubble { transition: none; }
 }
 .site-header :is(a, button, select, summary):focus-visible { outline: var(--focus-ring-width) solid var(--color-navigation-text); outline-offset: 3px; }
 

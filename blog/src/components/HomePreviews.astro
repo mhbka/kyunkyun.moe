@@ -4,7 +4,6 @@ import type { PostSummary } from '../lib/models/posts.ts';
 import type { Tweet } from '../lib/models/tweets.ts';
 import { truncatePreviewText } from '../lib/home-preview.ts';
 import Link from './ui/Link.astro';
-import SideContent from './ui/SideContent.astro';
 
 interface Props {
 	images: Pix[];
@@ -27,7 +26,7 @@ const tweetPreview = tweet
 	: 'no tweets yet';
 ---
 
-<SideContent as="section" class="home-previews" aria-label="latest updates">
+<section class="home-previews" aria-label="latest updates">
 	<Link class="home-preview home-preview--pix" href="/pix/">
 		<h2 class="home-preview__heading">latest pix</h2>
 		{images.length > 0 && (
@@ -47,7 +46,7 @@ const tweetPreview = tweet
 		<h2 class="home-preview__heading">latest tweet</h2>
 		<p class="home-preview__text">{tweetPreview}</p>
 	</Link>
-</SideContent>
+</section>
 
 <style>
 	.home-previews { display: grid; gap: .75rem; }

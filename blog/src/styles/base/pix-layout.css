@@ -6,10 +6,6 @@
 
 /* Spaces controls and gallery contents within their separate cards. */
 .pix-controls-card, .pix-images-card { display: grid; gap: 1rem; }
-.pix-controls-card .tag-filter { margin: 0; }
-
-/* Matches the blog's normal-font filter heading. */
-.pix-page .pix-tags-heading { margin: 0 0 0.5rem; font: inherit; color: var(--color-text); }
 
 @media (max-width: 800px) {
 	/* Limits the mobile gallery to two comfortably sized thumbnails per row. */

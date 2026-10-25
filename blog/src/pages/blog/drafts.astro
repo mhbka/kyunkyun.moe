@@ -33,17 +33,13 @@ if (isAuthor && accessToken) {
 			.action-group { margin-bottom: 2rem; }
 			.empty { color: var(--color-muted); }
 			.confirm-dialog {
-				--dialog-surface: var(--color-surface);
-				--dialog-text: var(--color-heading);
-				--dialog-backdrop: var(--color-overlay);
 				width: min(32rem, calc(100% - 2rem));
 				padding: 0;
 				border: 0;
 				border-radius: var(--radius-panel);
-				background: var(--dialog-surface);
-				color: var(--dialog-text);
+				background: var(--color-surface);
+				color: var(--color-heading);
 			}
-			.confirm-dialog::backdrop { background: var(--dialog-backdrop); }
 			.confirm-dialog__content { padding: 1.5rem; }
 			.confirm-dialog__title, .confirm-dialog__message { margin: 0; }
 			.confirm-dialog__message { margin-top: 0.75rem; }

@@ -1,7 +1,6 @@
 ---
 import changelog from '../../CHANGELOG.md?raw';
 import { renderMarkdown } from '../lib/markdown.ts';
-import SideContent from './ui/SideContent.astro';
 
 const renderedContent = await renderMarkdown(changelog);
 const content = renderedContent
@@ -9,9 +8,9 @@ const content = renderedContent
 	.replace(/<code[^>]*>/g, '<code>');
 ---
 
-<SideContent as="section" class="changelog changelog-panel" aria-label="changelog">
+<section class="changelog" aria-label="changelog">
 	<div set:html={content} />
-</SideContent>
+</section>
 
 <style>
 	.changelog :global(h1) { margin: 0 0 0.75rem; color: var(--color-text); font: inherit; font-weight: 700; }

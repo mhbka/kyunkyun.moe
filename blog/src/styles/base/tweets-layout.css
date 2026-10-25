@@ -3,5 +3,3 @@
 
 /* Keeps the tag label in normal body type above the filters and composer. */
 .tweets-controls-card { display: grid; gap: 1rem; }
-.tweets-controls-card .tag-filter { margin: 0; }
-.tweets-page .tweets-tags-heading { margin: 0 0 0.5rem; font: inherit; color: var(--color-text); }

@@ -36,7 +36,7 @@ export function initPixGallery(gallery: HTMLElement) {
 	/** Creates a gallery button for an image thumbnail. */
 	function createThumbnail(pix: PixImage) {
 		const button = document.createElement('button');
-		button.className = 'ui-button moe-thumbnail';
+		button.className = 'ui-button media-thumbnail moe-thumbnail';
 		button.type = 'button';
 		button.ariaLabel = 'view full image';
 		button.dataset.imageId = pix.id;
