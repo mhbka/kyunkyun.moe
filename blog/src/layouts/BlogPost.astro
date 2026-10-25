@@ -78,5 +78,36 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 			</article>
 			)}
 		</PageLayout>
+	<script>
+	// Binds prev/next navigation for in-post galleries after each page load.
+	function bindGalleries() {
+		document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((gallery) => {
+			if (gallery.dataset.galleryBound === 'true') return;
+			gallery.dataset.galleryBound = 'true';
+
+			const slides = Array.from(gallery.querySelectorAll<HTMLElement>('.gallery__item'));
+			if (slides.length < 2) return;
+
+			const prev = gallery.querySelector<HTMLButtonElement>('[data-gallery-prev]');
+			const next = gallery.querySelector<HTMLButtonElement>('[data-gallery-next]');
+			const currentLabel = gallery.querySelector<HTMLElement>('[data-gallery-current]');
+
+			let index = 0;
+			const show = (nextIndex: number) => {
+				index = (nextIndex + slides.length) % slides.length;
+				slides.forEach((slide, i) => {
+					slide.hidden = i !== index;
+				});
+				if (currentLabel) currentLabel.textContent = String(index + 1);
+			};
+
+			prev?.addEventListener('click', () => show(index - 1));
+			next?.addEventListener('click', () => show(index + 1));
+		});
+	}
+
+	bindGalleries();
+	document.addEventListener('astro:page-load', bindGalleries);
+	</script>
 	</body>
 </html>

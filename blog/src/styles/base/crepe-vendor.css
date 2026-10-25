@@ -1,0 +1,6 @@
+/* Crepe's theme ships a blanket reset (`border`/`background`: none on buttons
+   and inputs, zeroed margin/padding) that would otherwise outrank the site's
+   shared control styles inside the editor. Loading the vendor theme in a
+   cascade layer keeps the site's own styles authoritative on the editor
+   surface without specificity hacks. */
+@import '@milkdown/crepe/theme/common/style.css' layer(crepe);

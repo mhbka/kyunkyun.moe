@@ -1,10 +1,12 @@
 import { Crepe } from '@milkdown/crepe';
+import { commandsCtx } from '@milkdown/kit/core';
 
 import { blogApi } from '../../lib/api.ts';
 import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 import { uploadImage } from '../../lib/image-upload.ts';
 import { initTagInput } from '../tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
+import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
 
 /** Initializes the Milkdown editor and its post form controls. */
 async function initPostEditor() {
@@ -80,6 +82,9 @@ async function initPostEditor() {
 	const editor = new Crepe({
 		root,
 		defaultValue: root.dataset.initialContent ?? '',
+		features: {
+			[Crepe.Feature.TopBar]: true,
+		},
 		featureConfigs: {
 			[Crepe.Feature.ImageBlock]: {
 				onUpload: uploadImageFile,
@@ -88,8 +93,21 @@ async function initPostEditor() {
 				text: 'Content',
 				mode: 'doc',
 			},
+			[Crepe.Feature.TopBar]: {
+				buildTopBar: (builder) => {
+					builder.getGroup('insert').addItem('gallery', {
+						icon: galleryIcon,
+						active: () => false,
+						onRun: (ctx) => {
+							ctx.get(commandsCtx).call(insertGalleryCommand.key);
+						},
+					});
+				},
+			},
 		},
 	});
+
+	editor.addFeature(galleryFeature, { onUpload: uploadImageFile });
 
 	// Includes toolbar and programmatic edits, which need not fire DOM input events.
 	let ready = false;

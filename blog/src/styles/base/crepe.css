@@ -1,6 +1,6 @@
 /* Map Crepe's controls and canvas to the site's shared tokens. */
 .editor-surface .milkdown {
-	--crepe-color-background: var(--color-content-surface);
+	--crepe-color-background: var(--color-transparent);
 	--crepe-color-on-background: var(--color-text);
 	--crepe-color-surface: var(--color-content-surface);
 	--crepe-color-surface-low: var(--color-subtle);
@@ -28,13 +28,18 @@
 .editor-surface {
 	min-width: 0;
 	max-width: 100%;
-	background: var(--color-content-surface);
+	background: var(--color-transparent);
 }
 
 .editor-surface .milkdown {
 	width: 100%;
 	min-width: 0;
 	max-width: 100%;
+	/* Strip Crepe's own canvas so the page background shows through. */
+	background: transparent;
+	color: inherit;
+	font-family: inherit;
+	font-size: inherit;
 }
 
 .editor-surface .milkdown .ProseMirror {

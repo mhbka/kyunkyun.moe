@@ -22,3 +22,26 @@ test('keeps unordered lists separated by content distinct', async () => {
 
 	assert.equal((html.match(/<ul>/g) ?? []).length, 2);
 });
+
+test('renders gallery directives as an image carousel', async () => {
+	const html = await renderMarkdown(
+		':::gallery{caption="Trip"}\n' +
+		'::pic{src="https://x/1.jpg" caption="One"}\n' +
+		'::pic{src="https://x/2.jpg" alt="Two"}\n' +
+		':::',
+	);
+
+	assert.match(html, /<figure class="gallery"/);
+	assert.match(html, /<figcaption class="gallery__caption">Trip<\/figcaption>/);
+	assert.match(html, /<div class="gallery__viewport">/);
+	assert.match(html, /<img src="https:\/\/x\/1.jpg">/);
+	assert.match(html, /<img src="https:\/\/x\/2.jpg" alt="Two" loading="lazy">/);
+	assert.match(html, /data-gallery-prev/);
+	assert.match(html, /data-gallery-next/);
+});
+
+test('ignores non-gallery directives', async () => {
+	const html = await renderMarkdown(':::note\nNot a gallery.\n:::');
+
+	assert.equal(html.includes('class="gallery"'), false);
+});
