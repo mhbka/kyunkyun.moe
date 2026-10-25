@@ -1,0 +1,367 @@
+<ambient-butterflies class="ambient-butterflies" aria-hidden="true"></ambient-butterflies>
+
+<script>
+	const INITIAL_BUTTERFLY_COUNT = 10;
+	const MAX_BUTTERFLY_COUNT = 30;
+	const SPAWN_INTERVAL = 500;
+
+	// Produces varied flight paths without spreading random-number expressions through the animation code.
+	function randomBetween(minimum: number, maximum: number) {
+		return minimum + Math.random() * (maximum - minimum);
+	}
+
+	// Builds short wandering steps with an overall upward-right bias and a guaranteed top exit.
+	function createFlightPath(startX: number, startY: number, scale: number) {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const keyframes: Keyframe[] = [];
+		let x = startX;
+		let y = startY;
+		let rotation = randomBetween(-12, 12);
+		const driftingSteps = Math.floor(randomBetween(14, 26));
+		const maximumSteps = driftingSteps + 20;
+		const transform = () => `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
+		keyframes.push({ transform: transform(), easing: 'ease-in-out' });
+
+		for (let step = 1; step <= maximumSteps; step += 1) {
+			const isLeaving = step > driftingSteps;
+			const horizontalStep = randomBetween(viewportWidth * -0.035, viewportWidth * 0.07);
+			const verticalStep = isLeaving
+				? randomBetween(viewportHeight * -0.1, viewportHeight * -0.04)
+				: randomBetween(viewportHeight * -0.03, viewportHeight * 0.055);
+			x += horizontalStep;
+			y = Math.min(y + verticalStep, viewportHeight - 30);
+			rotation = Math.max(-18, Math.min(18, horizontalStep / 4));
+			keyframes.push({ transform: transform(), easing: 'ease-in-out' });
+
+			if (step >= 14 && y < -150) break;
+		}
+
+		if (y >= -150) {
+			x += randomBetween(viewportWidth * 0.04, viewportWidth * 0.1);
+			y = -150;
+			rotation = randomBetween(-8, 8);
+			keyframes.push({ transform: transform() });
+		}
+
+		return keyframes;
+	}
+
+	// Maintains a small population of independently animated ambient butterflies.
+	class AmbientButterflies extends HTMLElement {
+		private animations = new Set<Animation>();
+		private controller: AbortController | undefined;
+		private interactionTimers = new Set<number>();
+		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		private spawnTimer = 0;
+
+		connectedCallback() {
+			this.controller = new AbortController();
+			this.motionPreference.addEventListener('change', this.handleMotionPreference);
+			document.addEventListener('click', this.handleBackgroundClick, { signal: this.controller.signal });
+			this.updatePopulation();
+		}
+
+		disconnectedCallback() {
+			this.controller?.abort();
+			this.motionPreference.removeEventListener('change', this.handleMotionPreference);
+			this.clearPopulation();
+		}
+
+		// Starts or removes the decoration when the operating-system preference changes.
+		private handleMotionPreference = () => this.updatePopulation();
+
+		// Toggles the butterfly beneath a click that reached an uncovered background area.
+		private handleBackgroundClick = (event: MouseEvent) => {
+			if (event.button !== 0 || this.motionPreference.matches) return;
+			if (!(event.target instanceof Element)) return;
+			if (!event.target.matches('html, body, .site-background, .site-layout, .site-content-region')) return;
+
+			const butterfly = this.findButterflyAt(event.clientX, event.clientY);
+			if (butterfly) this.pauseButterfly(butterfly);
+			this.showInteractionPulse(event.clientX, event.clientY, () => {
+				if (butterfly) {
+					this.removeButterfly(butterfly);
+					return;
+				}
+
+				const spawnedButterfly = this.spawnButterfly(false, { x: event.clientX, y: event.clientY });
+				if (!spawnedButterfly) return;
+				this.pauseButterfly(spawnedButterfly);
+				this.poseButterflyOpen(spawnedButterfly);
+				return () => this.resumeButterfly(spawnedButterfly);
+			});
+		};
+
+		// Finds the nearest visible butterfly whose transformed bounds contain the cursor.
+		private findButterflyAt(x: number, y: number) {
+			const butterflies = Array.from(this.querySelectorAll<HTMLElement>('.ambient-butterfly'));
+			return butterflies.find((butterfly) => {
+				const bounds = butterfly.getBoundingClientRect();
+				return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+			});
+		}
+
+		// Expands a glowing ring and applies the interaction once it reaches full size.
+		private showInteractionPulse(x: number, y: number, onPeak: () => void | (() => void)) {
+			const pulse = document.createElement('span');
+			pulse.className = 'ambient-butterfly-pulse';
+			pulse.style.left = `${x}px`;
+			pulse.style.top = `${y}px`;
+			this.append(pulse);
+
+			const duration = 900;
+			const peakTime = 200;
+			const releaseTime = 400;
+			const animation = pulse.animate(
+				[
+					{ opacity: 0, transform: 'translate(-50%, -50%) scale(0.15)' },
+					{ opacity: 1, transform: 'translate(-50%, -50%) scale(1)', offset: 0.22 },
+					{ opacity: 1, transform: 'translate(-50%, -50%) scale(1)', offset: 0.44 },
+					{ opacity: 0, transform: 'translate(-50%, -50%) scale(1.08)' },
+				],
+				{ duration, easing: 'ease-out' },
+			);
+
+			let onRelease: (() => void) | undefined;
+			const peakTimer = window.setTimeout(() => {
+				this.interactionTimers.delete(peakTimer);
+				if (this.isConnected) onRelease = onPeak() ?? undefined;
+			}, peakTime);
+			const releaseTimer = window.setTimeout(() => {
+				this.interactionTimers.delete(releaseTimer);
+				if (this.isConnected) onRelease?.();
+			}, releaseTime);
+			this.interactionTimers.add(peakTimer);
+			this.interactionTimers.add(releaseTimer);
+			animation.onfinish = () => {
+				pulse.remove();
+			};
+		}
+
+		// Seeds the swarm and starts probabilistic spawning while animation is allowed.
+		private updatePopulation() {
+			this.clearPopulation();
+			if (this.motionPreference.matches) return;
+
+			for (let index = 0; index < INITIAL_BUTTERFLY_COUNT; index += 1) {
+				this.spawnButterfly(true);
+			}
+
+			this.spawnTimer = window.setInterval(() => {
+				const canSpawn = this.animations.size < MAX_BUTTERFLY_COUNT;
+				if (canSpawn && Math.random() < 0.5) this.spawnButterfly();
+			}, SPAWN_INTERVAL);
+		}
+
+		// Creates one randomized upward-right flight and replaces it after completion.
+		private spawnButterfly(seedFlight = false, origin?: { x: number; y: number }) {
+			if (!this.isConnected || this.motionPreference.matches) return;
+
+			const butterfly = document.createElement('span');
+			butterfly.className = 'ambient-butterfly';
+			butterfly.innerHTML = '<span class="ambient-butterfly__pose"><span class="ambient-butterfly__wing ambient-butterfly__wing--left"></span><span class="ambient-butterfly__body"></span><span class="ambient-butterfly__wing ambient-butterfly__wing--right"></span></span>';
+			butterfly.style.setProperty('--butterfly-flap-duration', `${randomBetween(190, 280)}ms`);
+			this.append(butterfly);
+
+			const viewportWidth = window.innerWidth;
+			const viewportHeight = window.innerHeight;
+			const startX = origin ? origin.x - butterfly.offsetWidth / 2 : randomBetween(-20, viewportWidth * 0.2);
+			const startY = origin ? origin.y - butterfly.offsetHeight / 2 : randomBetween(0, viewportHeight * 0.7);
+			const scale = randomBetween(0.65, 1.2);
+			const flightPath = createFlightPath(startX, startY, scale);
+
+			// Gives every wandering step its own pace, including occasional two-second drifts.
+			const stepDurations = flightPath.slice(1).map(() => randomBetween(450, 2000));
+			const duration = stepDurations.reduce((total, stepDuration) => total + stepDuration, 0);
+			let elapsed = 0;
+			flightPath[0].offset = 0;
+			stepDurations.forEach((stepDuration, index) => {
+				elapsed += stepDuration;
+				flightPath[index + 1].offset = elapsed / duration;
+			});
+
+			const animation = butterfly.animate(flightPath, { duration, easing: 'linear' });
+
+			this.animations.add(animation);
+			if (seedFlight) animation.currentTime = randomBetween(duration * 0.08, duration * 0.82);
+
+			animation.onfinish = () => {
+				this.animations.delete(animation);
+				butterfly.remove();
+			};
+
+			return butterfly;
+		}
+
+		// Freezes both the flight path and the independent wing animations.
+		private pauseButterfly(butterfly: HTMLElement) {
+			butterfly.getAnimations({ subtree: true }).forEach((animation) => animation.pause());
+		}
+
+		// Positions a newly created butterfly at the fully open point of its wingbeat.
+		private poseButterflyOpen(butterfly: HTMLElement) {
+			butterfly.getAnimations({ subtree: true }).forEach((animation) => {
+				if (!(animation instanceof CSSAnimation)) return;
+				const duration = animation.effect?.getTiming().duration;
+				if (typeof duration === 'number') animation.currentTime = duration * 0.48;
+			});
+		}
+
+		// Starts every paused part once the creation circle has disappeared.
+		private resumeButterfly(butterfly: HTMLElement) {
+			if (!butterfly.isConnected) return;
+			butterfly.getAnimations({ subtree: true }).forEach((animation) => animation.play());
+		}
+
+		// Removes a selected butterfly and stops its active flight animation.
+		private removeButterfly(butterfly: HTMLElement) {
+			const animation = butterfly.getAnimations().find((candidate) => this.animations.has(candidate));
+			if (animation) {
+				this.animations.delete(animation);
+				animation.cancel();
+			}
+			butterfly.remove();
+		}
+
+		// Cancels active flights before rebuilding or disconnecting the layer.
+		private clearPopulation() {
+			window.clearInterval(this.spawnTimer);
+			this.spawnTimer = 0;
+			this.interactionTimers.forEach((timer) => window.clearTimeout(timer));
+			this.interactionTimers.clear();
+			this.animations.forEach((animation) => animation.cancel());
+			this.animations.clear();
+			this.replaceChildren();
+		}
+	}
+
+	if (!customElements.get('ambient-butterflies')) {
+		customElements.define('ambient-butterflies', AmbientButterflies);
+	}
+</script>
+
+<style>
+	/* Keeps the ambient swarm directly above the page artwork and below the site shell. */
+	.ambient-butterflies {
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		display: block;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	:global(.ambient-butterfly) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 1.8rem;
+		height: 1.35rem;
+		perspective: 2.4rem;
+		filter: drop-shadow(var(--shadow-ambient-butterfly));
+		transform-origin: center;
+		transform-style: preserve-3d;
+		will-change: transform;
+	}
+
+	:global(.ambient-butterfly__pose) {
+		position: absolute;
+		inset: 0;
+		transform-style: preserve-3d;
+		animation: ambient-butterfly-body-response var(--butterfly-flap-duration) ease-in-out infinite;
+	}
+
+	:global(.ambient-butterfly__body) {
+		position: absolute;
+		z-index: 1;
+		top: 0.22rem;
+		left: 50%;
+		width: 0.13rem;
+		height: 0.98rem;
+		border-radius: 999px;
+		background: var(--color-ambient-butterfly);
+		transform: translateX(-50%);
+	}
+
+	:global(.ambient-butterfly__wing) {
+		position: absolute;
+		top: 0;
+		width: 0.86rem;
+		height: 0.92rem;
+		border: 1px solid var(--color-ambient-butterfly);
+		background: var(--color-ambient-butterfly-fill);
+		backface-visibility: visible;
+		transform-style: preserve-3d;
+		will-change: transform;
+	}
+
+	:global(.ambient-butterfly__wing::after) {
+		content: '';
+		position: absolute;
+		top: 0.65rem;
+		width: 0.62rem;
+		height: 0.52rem;
+		border: 1px solid var(--color-ambient-butterfly);
+		background: var(--color-ambient-butterfly-fill);
+	}
+
+	:global(.ambient-butterfly__wing--left) {
+		left: 0.03rem;
+		border-radius: 85% 25% 72% 34%;
+		transform-origin: right center;
+		animation: ambient-butterfly-left-wing var(--butterfly-flap-duration) ease-in-out infinite;
+	}
+
+	:global(.ambient-butterfly__wing--left::after) {
+		right: 0;
+		border-radius: 70% 32% 75% 45%;
+	}
+
+	:global(.ambient-butterfly__wing--right) {
+		right: 0.03rem;
+		border-radius: 25% 85% 34% 72%;
+		transform-origin: left center;
+		animation: ambient-butterfly-right-wing var(--butterfly-flap-duration) ease-in-out infinite;
+	}
+
+	:global(.ambient-butterfly__wing--right::after) {
+		left: 0;
+		border-radius: 32% 70% 45% 75%;
+	}
+
+	:global(.ambient-butterfly-pulse) {
+		position: fixed;
+		width: 2.7rem;
+		height: 2.7rem;
+		box-sizing: border-box;
+		border-radius: 50%;
+		background: var(--color-ambient-butterfly);
+		box-shadow: var(--shadow-ambient-butterfly-pulse);
+		pointer-events: none;
+	}
+
+	/* Uses a quick downstroke and slower raised-wing recovery around the body axis. */
+	@keyframes ambient-butterfly-left-wing {
+		0%, 100% { transform: rotateY(-72deg) rotateZ(-3deg); }
+		32% { transform: rotateY(30deg) rotateZ(-10deg); }
+		48% { transform: rotateY(4deg) rotateZ(-8deg); }
+	}
+
+	@keyframes ambient-butterfly-right-wing {
+		0%, 100% { transform: rotateY(72deg) rotateZ(3deg); }
+		32% { transform: rotateY(-30deg) rotateZ(10deg); }
+		48% { transform: rotateY(-4deg) rotateZ(8deg); }
+	}
+
+	/* Lets the thorax react subtly to the force of each downstroke. */
+	@keyframes ambient-butterfly-body-response {
+		0%, 100% { transform: translateY(0) rotateX(3deg); }
+		32% { transform: translateY(-0.06rem) rotateX(-7deg); }
+		55% { transform: translateY(0.02rem) rotateX(2deg); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ambient-butterflies { display: none; }
+	}
+</style>

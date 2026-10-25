@@ -14,7 +14,7 @@ const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);
 		<BaseHead title="bash.org quote picker" />
 	</head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} renderQuote={false} title="bash.org quote picker" titleClass="title-wave">
+		<PageLayout isLoggedIn={isLoggedIn} title="bash.org quote picker">
 			<BashQuoteParameterSliders />
 			<BashQuoteOutput />
 		</PageLayout>

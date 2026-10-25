@@ -6,6 +6,8 @@ import Pagination from '../../components/Pagination.astro';
 import PostList from '../../components/PostList.astro';
 import TagFilter from '../../components/TagFilter.astro';
 import Link from '../../components/ui/Link.astro';
+import EdgeCard from '../../components/ui/EdgeCard.astro';
+import '../../styles/base/blog-listing.css';
 import { blogApi } from '../../lib/api.ts';
 import { fetchResult } from '../../lib/fetch-result.ts';
 import { getPageAuth } from '../../lib/page-auth.ts';
@@ -38,20 +40,26 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 		<BaseHead title={"blog"}  />
 	</head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} title="blog" titleClass="title-wave">
+		<PageLayout isLoggedIn={isLoggedIn} title="blog" separateCards mainClass="blog-listing">
 			{isAuthor && (
-				<div class="action-group">
-					<Link class="ui-button" href="/posts/new/">create post</Link>
-					<Link class="ui-button" href="/blog/drafts/">view drafts</Link>
-				</div>
+				<EdgeCard aria-labelledby="blog-author-heading">
+					<h2 id="blog-author-heading" class="blog-card-heading">author buttons:</h2>
+					<div class="action-group">
+						<Link class="ui-button" href="/posts/new/">create post</Link>
+						<Link class="ui-button" href="/blog/drafts/">view drafts</Link>
+					</div>
+				</EdgeCard>
 			)}
 			{result.error ? (
-				<FetchError message={result.error} />
+				<EdgeCard><FetchError message={result.error} /></EdgeCard>
 			) : (
 				<>
-					<TagFilter tags={tags} selectedTags={selectedTags} />
-					<PostList posts={posts} variant="published" isAuthor={isAuthor} pageSize={pageSize} />
-				<Pagination page={page} hasNext={hasNext} tags={selectedTags} />
+					<EdgeCard aria-labelledby="blog-tags-heading">
+						<h2 id="blog-tags-heading" class="blog-card-heading">tags:</h2>
+						<TagFilter tags={tags} selectedTags={selectedTags} />
+					</EdgeCard>
+					<PostList posts={posts} variant="published" isAuthor={isAuthor} pageSize={pageSize} cards />
+					<Pagination page={page} hasNext={hasNext} tags={selectedTags} />
 				</>
 			)}
 		</PageLayout>

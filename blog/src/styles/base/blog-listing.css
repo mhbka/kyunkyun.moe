@@ -1,0 +1,13 @@
+/* Matches the inner breathing room supplied by page-main on single-card pages. */
+.blog-listing .edge-card { padding: calc(1rem + 0.5em) calc(2rem + 1em); }
+
+/* Keeps controls compact inside their own cards and their headings in normal body type. */
+.blog-listing .action-group { padding: 0; }
+.blog-listing .tag-filter { margin: 0; }
+.blog-listing .blog-card-heading { margin: 0 0 0.5rem; font: inherit; color: var(--color-text); }
+.blog-listing .pagination { margin: 0; padding: 1rem 2rem; }
+
+@media (max-width: 800px) {
+	/* Matches the larger vertical content inset used on mobile pages. */
+	.blog-listing .edge-card { padding-block: calc(1rem + 1em); }
+}

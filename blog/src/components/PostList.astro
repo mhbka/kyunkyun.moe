@@ -4,26 +4,30 @@ import FormattedDate from './FormattedDate.astro';
 import MoveToDraftButton from './MoveToDraftButton.astro';
 import Button from './ui/Button.astro';
 import Link from './ui/Link.astro';
+import EdgeCard from './ui/EdgeCard.astro';
 
 interface Props {
 	posts: Array<PostSummary | DraftPostSummary>;
 	variant: 'published' | 'drafts';
 	isAuthor?: boolean;
 	pageSize?: number;
+	cards?: boolean;
 }
 
-const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
+const { posts, variant, isAuthor = false, pageSize = 20, cards = false } = Astro.props;
+// Keeps list semantics while optionally giving each post its own edge card.
+const Item = cards ? EdgeCard : 'li';
 ---
 
 <ul
-	class="post-list"
+	class:list={['post-list', { 'post-list--cards': cards }]}
 	id={variant === 'drafts' ? 'draft-list' : 'published-list'}
 	data-page-size={variant === 'published' ? pageSize + 1 : undefined}
 	data-is-author={variant === 'published' && isAuthor ? 'true' : undefined}
 	aria-live={variant === 'published' ? 'polite' : undefined}
 >
 	{posts.map((post) => (
-		<li data-draft-id={variant === 'drafts' ? post.id : undefined}>
+		<Item as={cards ? 'li' : undefined} data-draft-id={variant === 'drafts' ? post.id : undefined}>
 			<Link class="post-card" href={variant === 'drafts' ? `/posts/edit/${post.id}/` : `/blog/${post.slug}/`}>
 				{post.thumbnailUrl && <img width="720" height="360" src={post.thumbnailUrl} alt="" />}
 				<h4 class="post-card__title">{post.title}</h4>
@@ -47,7 +51,7 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 					<Button type="button" data-delete-id={post.id} data-delete-title={post.title}>delete</Button>
 				</div>
 			)}
-		</li>
+		</Item>
 	))}
 </ul>
 
@@ -91,6 +95,8 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 
 		function renderPost(post: PostSummary) {
 			const item = document.createElement('li');
+			// Preserves the card surface when tag filtering replaces the list items.
+			if (list?.classList.contains('post-list--cards')) item.className = 'edge-card';
 			const link = document.createElement('a');
 			link.className = 'ui-link post-card';
 			link.href = `/blog/${encodeURIComponent(post.slug)}/`;
@@ -182,6 +188,7 @@ const { posts, variant, isAuthor = false, pageSize = 20 } = Astro.props;
 <style>
 	:global(.post-list) { display: grid; gap: 2rem; margin: 0; padding: 0; list-style: none; }
 	:global(.post-list > li) { width: 100%; text-align: left; }
+	:global(.post-list.post-list--cards) { gap: 0.5rem; }
 	:global(.post-card) { display: block; text-decoration: none; }
 	:global(.post-card img) { display: block; width: 100%; margin-bottom: 0.5rem; border-radius: var(--radius-panel); transition: box-shadow 0.2s ease; }
 	:global(.post-card__title) { margin: 0; color: var(--color-heading); line-height: 1; transition: color 0.2s ease; }

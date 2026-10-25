@@ -1,4 +1,18 @@
 /* Token-driven site structure. */
+html { background: var(--color-page-background); }
+
+/* Keeps the background visible while desktop content waits for its decoration. */
+@media (min-width: 801px) and (prefers-reduced-motion: no-preference) {
+	html.page-loading :is(.site-layout, .site-foreground__pendulum, .walker) { visibility: hidden; }
+	html.page-entering :is(.site-layout, .site-foreground__pendulum, .walker) { animation: initial-page-reveal 600ms ease-out; }
+}
+
+/* Fades each foreground layer together without moving the layout. */
+@keyframes initial-page-reveal {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
 body {
 	margin: 0;
 	padding: 0;
@@ -14,51 +28,8 @@ body {
 	text-shadow: var(--text-outline);
 }
 
-/* Hides the first desktop render until the pendulum has its initial frame. */
-html.pendulum-loading body { visibility: hidden; }
-
 /* Keeps code block glyphs sharper than the surrounding prose. */
 pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text-outline-code); }
-
-/* Soften the outgoing page into a hazy, visual-novel-style fade before the next page loads. */
-@media (prefers-reduced-motion: no-preference) {
-	.page-content,
-	.site-sidebar-right,
-	.site-sidebar:not(.site-sidebar-right) > :not(.site-header-persist) {
-		/* Keeps the return to the live page state animated after a navigation swap. */
-		transition: opacity 750ms ease-out, filter 750ms ease-out, transform 750ms ease-out;
-	}
-
-	html.is-navigating .page-content,
-	html.is-navigating .site-sidebar-right,
-	html.is-navigating .site-sidebar:not(.site-sidebar-right) > :not(.site-header-persist) {
-		opacity: 0;
-		filter: blur(0.55rem);
-		transform: scale(1.015);
-	}
-
-}
-
-@keyframes navigation-page-fade-out {
-	to { opacity: 0; }
-}
-
-@keyframes navigation-page-fade-in {
-	from { opacity: 0; }
-}
-
-/* Keeps persisted decorations visible while browser transition snapshots hand over. */
-::view-transition-old(site-background),
-::view-transition-new(site-background),
-::view-transition-old(site-foreground-pendulum),
-::view-transition-new(site-foreground-pendulum),
-::view-transition-old(site-header),
-::view-transition-new(site-header),
-::view-transition-old(site-walker),
-::view-transition-new(site-walker) {
-	animation: none;
-	mix-blend-mode: normal;
-}
 
 /* Fills the viewport with a softly blurred image behind the site content. */
 .site-background {
@@ -72,34 +43,41 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 	transform: translateZ(0);
 	will-change: transform;
 }
-.site-background::before { content: ''; position: absolute; inset: -1.5rem; background: url('/images/summer_pockets.png') center / cover no-repeat; filter: blur(0.4rem); }
-/* Floats the interactive decoration near the centre-right above normal page content. */
-.site-foreground__pendulum { position: fixed; z-index: 2; top: 0; left: calc(60% + 300px); display: block; width: auto; height: min(34.75rem, 47.5vw); transform: translateX(-50%); }
+.site-background::before { content: ''; position: absolute; inset: -1.5rem; background: var(--image-page-background) center / cover no-repeat; filter: blur(0.4rem); }
+/* Hangs the smaller decoration inside the transition between navigation and content. */
+.site-foreground__pendulum { position: fixed; z-index: 2; top: 0; left: 40%; display: block; width: auto; height: min(26.0625rem, 35.625vw); transform: translateX(-50%); }
 
-.site-layout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 40vw) minmax(0, 1fr); gap: 2rem; padding: 2rem 1rem; }
-/* Keep the main column centred while sidebars use the available outer space. */
-.site-sidebar { display: grid; grid-column: 1; gap: 1.5rem; width: min(100%, 16rem); justify-self: end; align-self: start; position: sticky; top: 2rem; }
-.page-content { grid-column: 2; box-sizing: border-box; min-width: 0; background: var(--color-content-surface); box-shadow: var(--shadow-content-smoke); padding: 1rem; }
+/* Keeps right-edge cards beyond the menu fade with a modest top gap. */
+.site-layout { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; padding: 2rem 0; padding-left: calc(var(--site-navigation-width) + var(--site-navigation-fade) + 1rem); }
+/* Centres short cards in spare viewport space while preserving the shell's minimum padding. */
+.site-content-region { display: grid; flex-shrink: 0; gap: 1.5rem; width: 100%; min-width: 0; margin-block: auto; }
+/* Stacks secondary panels without introducing another desktop column. */
+.site-sidebar { display: grid; gap: 1rem; min-width: 0; }
+/* Keeps auxiliary panels aligned with the reusable right-edge cards. */
+.site-sidebar-right .side-content { border-radius: var(--radius-panel) 0 0 var(--radius-panel); }
 .page-top { box-sizing: border-box; }
-.page-main { padding: 1.5em 1em; }
-.page-heading, .page-body { margin-bottom: 2rem; }
+.page-main { padding: 0.5em 1em; }
+.page-body { margin-bottom: 2rem; }
+/* Lets pages compose a card stack inside the main landmark without extra inset spacing. */
+.page-content--cards > .page-main { padding: 0; }
+.page-content--cards > .page-main > .page-body { display: grid; gap: 0.5rem; margin: 0; }
 
-.site-sidebar-right { grid-column: 3; grid-row: 1; justify-self: start; position: sticky; max-height: calc(100dvh - 4rem); overflow-y: auto; }
+.site-sidebar-right { max-height: 16rem; overflow-y: auto; }
 .site-sidebar-right:not(:has(> :not([hidden]))) { display: none; }
 
 @media (max-width: 800px) {
 	/* Removes the desktop-only hanging decoration from the mobile layout. */
 	.site-foreground__pendulum { display: none; }
 	/* Stacks mobile panels into one continuous column without desktop-sized gaps. */
-	.site-layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; }
-	.site-sidebar { grid-column: 1; gap: 0; width: 100%; margin: 0; justify-self: stretch; position: static; }
-	/* Hides the secondary changelog panel on small screens. */
-	.site-changelog { display: none; }
-	.page-content { grid-column: 1; width: 100%; }
+	.site-layout { padding: 0 0 2rem; }
+	/* Leaves a minimum gap below navigation before distributing remaining vertical space. */
+	.site-header { margin-bottom: 2rem; }
+	.site-content-region { gap: 1rem; max-width: none; padding-left: 0.75rem; box-sizing: border-box; }
+	.site-sidebar { gap: 0; width: 100%; margin: 0; }
+	.page-content { width: 100%; }
 	.page-top { min-height: 0rem; }
 	.page-main { padding: 1em; }
-	.site-sidebar-right { grid-column: 1; grid-row: 2; max-height: none; overflow-y: visible; }
-	.site-layout:has(.site-sidebar-right > :not([hidden])) .page-content { grid-row: 3; }
+	.site-sidebar-right { max-height: none; overflow-y: visible; }
 }
 
 .sr-only { border: 0; padding: 0; margin: 0; position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px 1px 1px 1px); clip: rect(1px, 1px, 1px, 1px); clip-path: inset(50%); white-space: nowrap; }

@@ -1,28 +1,55 @@
 ---
-import HeaderLink from './HeaderLink.astro';
+import MainNavItem from './ui/MainNavItem.astro';
 import LoginButton from './LoginButton.astro';
 import WalkerSelector from './WalkerSelector.astro';
-import SideContent from './ui/SideContent.astro';
+import Footer from './Footer.astro';
+import { SITE_TITLE } from '../consts';
+import '../styles/base/site-navigation.css';
 
 interface Props {
 	isLoggedIn?: boolean;
 }
 
 const { isLoggedIn = false } = Astro.props;
+const isNonsenseActive = Astro.url.pathname.startsWith('/nonsense/');
+const logoParts = [
+	{ text: '\u304d', position: 'start' },
+	{ text: '\u3085', position: 'crest' },
+	{ text: '\u3093', position: 'end' },
+	{ text: '\u3005', position: 'repeater' },
+	{ text: '.moe', position: 'suffix' },
+];
 ---
 
-<SideContent as="header" class="site-header">
-	<nav>
+<!-- Keeps the global navigation independent of sidebar panels. -->
+<div class="site-header">
+	<!-- Uses a wordmark until the final logo artwork is ready. -->
+	<div class="site-logo" role="img" aria-label={`${SITE_TITLE} logo`}>
+		<span class="site-logo__bubble" aria-hidden="true"></span>
+		<!-- Overlays the image-filled wordmark on its outlined shadow layer. -->
+		<span class="site-logo__layers" aria-hidden="true">
+			{
+				['shadow', 'outline', 'fill'].map((layer) => (
+					<span class={`site-logo__layer site-logo__${layer}`}>
+						{logoParts.map((part) => (
+							<span class={`site-logo__part site-logo__part--${part.position}`}>{part.text}</span>
+						))}
+					</span>
+				))
+			}
+		</span>
+	</div>
+	<nav aria-label="main navigation">
 		<div class="primary-links">
-			<HeaderLink href="/">home</HeaderLink>
-			<HeaderLink href="/me">me</HeaderLink>
-			<HeaderLink href="/blog">blog</HeaderLink>
-			<HeaderLink href="/pix">pix</HeaderLink>
-			<HeaderLink href="/tweets">tweets</HeaderLink>
+			<MainNavItem href="/" label="home" japanese="ホーム" />
+			<MainNavItem href="/me" label="me" japanese="わたし" />
+			<MainNavItem href="/blog" label="blog" japanese="ブログ" />
+			<MainNavItem href="/pix" label="pix" japanese="画像" />
+			<MainNavItem href="/tweets" label="tweets" japanese="つぶやき" />
 			<details class="nav-dropdown">
-				<summary>nonsense</summary>
+				<MainNavItem as="summary" label="nonsense" japanese="ばかなこと" active={isNonsenseActive} />
 				<div class="nav-dropdown__items">
-					<HeaderLink href="/nonsense/bash-org">bash.org quote picker</HeaderLink>
+					<MainNavItem href="/nonsense/bash-org" label="bash.org quote picker" japanese="ばかなこと１" />
 				</div>
 			</details>
 		</div>
@@ -31,78 +58,92 @@ const { isLoggedIn = false } = Astro.props;
 			<LoginButton isLoggedIn={isLoggedIn} />
 		</div>
 	</nav>
-</SideContent>
-<style>
-	nav {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 1.5rem;
+	<!-- Keeps site-wide extras with the navigation rather than inside the content card. -->
+	<Footer />
+</div>
+
+<script>
+	let stopLogoCutout: (() => void) | undefined;
+
+	// Keeps the transparent navigation cutout aligned with the scrolling logo bubble.
+	function setupLogoCutout() {
+		stopLogoCutout?.();
+		const bubble = document.querySelector<HTMLElement>('.site-logo__bubble');
+		const layout = bubble?.closest<HTMLElement>('.site-layout');
+		const header = bubble?.closest<HTMLElement>('.site-header');
+		if (!bubble || !layout || !header) return;
+
+		const controller = new AbortController();
+		let animationFrame = 0;
+		let transitionFrame = 0;
+		let isTransitioning = false;
+		const syncCutout = () => {
+			const bounds = bubble.getBoundingClientRect();
+			const borderWidth = Number.parseFloat(getComputedStyle(bubble).borderLeftWidth);
+			const renderedScale = bounds.width / bubble.offsetWidth;
+			const cutoutInset = (borderWidth + 4) * renderedScale;
+			const cutoutRadius = Math.max(0, bounds.width / 2 - cutoutInset);
+			layout.style.setProperty('--site-logo-cutout-x', `${bounds.left + bounds.width / 2}px`);
+			layout.style.setProperty('--site-logo-cutout-y', `${bounds.top + bounds.height / 2}px`);
+			layout.style.setProperty('--site-logo-cutout-radius', `${cutoutRadius}px`);
+			layout.dataset.logoCutout = '';
+		};
+		const scheduleSync = () => {
+			cancelAnimationFrame(animationFrame);
+			animationFrame = requestAnimationFrame(syncCutout);
+		};
+		const syncTransition = () => {
+			syncCutout();
+			if (isTransitioning) transitionFrame = requestAnimationFrame(syncTransition);
+		};
+		const startTransitionSync = (event: TransitionEvent) => {
+			if (event.propertyName !== 'transform') return;
+			isTransitioning = true;
+			cancelAnimationFrame(transitionFrame);
+			transitionFrame = requestAnimationFrame(syncTransition);
+		};
+		const stopTransitionSync = (event: TransitionEvent) => {
+			if (event.propertyName !== 'transform') return;
+			isTransitioning = false;
+			cancelAnimationFrame(transitionFrame);
+			scheduleSync();
+		};
+		const observer = new ResizeObserver(scheduleSync);
+		observer.observe(bubble);
+		header.addEventListener('scroll', scheduleSync, { passive: true, signal: controller.signal });
+		window.addEventListener('resize', scheduleSync, { passive: true, signal: controller.signal });
+		bubble.addEventListener('transitionrun', startTransitionSync, { signal: controller.signal });
+		bubble.addEventListener('transitionend', stopTransitionSync, { signal: controller.signal });
+		bubble.addEventListener('transitioncancel', stopTransitionSync, { signal: controller.signal });
+		bubble.addEventListener('pointerenter', scheduleSync, { signal: controller.signal });
+		bubble.addEventListener('pointerleave', scheduleSync, { signal: controller.signal });
+		syncCutout();
+
+		stopLogoCutout = () => {
+			cancelAnimationFrame(animationFrame);
+			cancelAnimationFrame(transitionFrame);
+			observer.disconnect();
+			controller.abort();
+		};
 	}
-	nav a {
-		padding: 0.25em 0;
-		color: var(--color-heading);
-		text-decoration: none;
-	}
-	nav a.active {
-		text-decoration: none;
-		font-weight: inherit;
-	}
-	nav a:hover {
-		font-weight: 700;
-	}
-	.primary-links,
-	.nav-actions {
-		display: grid;
-		gap: 0.5rem;
-	}
-	.nav-dropdown summary {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		list-style: none;
-		white-space: nowrap;
-		cursor: pointer;
-		color: var(--color-heading);
-	}
-	.nav-dropdown summary::-webkit-details-marker { display: none; }
-	.nav-dropdown summary::after {
-		content: '▸';
-		display: inline-block;
-		font-size: 0.8em;
-		transition: transform 120ms ease;
-	}
-	.nav-dropdown[open] summary::after { transform: rotate(90deg); }
-	.nav-dropdown__items {
-		display: grid;
-		gap: 0.5rem;
-		margin-top: 0.75rem;
-		padding-left: 1rem;
-	}
-	@media (max-width: 800px) {
-		nav { display: grid; gap: 0.75rem; }
-		.primary-links,
-		.nav-actions {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: center;
-		gap: 0.5rem;
-		}
-		.primary-links :global(a) { padding: 0.5rem 0.25rem; }
-		.nav-dropdown { position: relative; }
-		.nav-dropdown__items {
-			position: absolute;
-			z-index: 1;
-			left: 50%;
-			width: max-content;
-			max-width: calc(100vw - 2rem);
-			box-sizing: border-box;
-			padding: 0.75rem;
-			margin-top: 0.5rem;
-			background: var(--color-content-surface);
-			box-shadow: var(--shadow-content-smoke);
-			transform: translateX(-50%);
-		}
-	}
-</style>
+
+	setupLogoCutout();
+	document.addEventListener('astro:page-load', setupLogoCutout);
+
+	// Optimistically moves the current-page treatment to an internal link while its page loads.
+	document.addEventListener('click', (event) => {
+		if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+		if (!(event.target instanceof Element)) return;
+		const link = event.target.closest<HTMLAnchorElement>('.site-header .primary-links a.header-link-target[href]');
+		const primaryLinks = link?.closest<HTMLElement>('.primary-links');
+		if (!link || !primaryLinks || link.target || link.hasAttribute('download')) return;
+		const destination = new URL(link.href, window.location.href);
+		if (destination.origin !== window.location.origin) return;
+
+		primaryLinks.querySelectorAll('.header-link-target.active').forEach((item) => item.classList.remove('active'));
+		primaryLinks.querySelectorAll('[aria-current="page"]').forEach((item) => item.removeAttribute('aria-current'));
+		link.classList.add('active');
+		link.setAttribute('aria-current', 'page');
+		link.closest('.nav-dropdown')?.querySelector(':scope > summary')?.classList.add('active');
+	});
+</script>

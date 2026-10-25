@@ -1,0 +1,205 @@
+/* Keeps the title-screen proportions easy to tune for the next iteration. */
+:root {
+	--site-navigation-width: 27%;
+	--site-navigation-fade: 18vw;
+	--site-navigation-offset: 12vh;
+	--site-logo-size: clamp(2.25rem, min(calc(10vw - 2.5rem), 5.5vw), 8rem);
+	--site-navigation-label-size: clamp(1.55em, 2.7vw, 2.5em);
+	--site-navigation-gap: 0.4rem;
+}
+
+/* Separates the fixed backdrop from the scrollable, fully opaque controls. */
+.site-layout::before {
+	content: '';
+	position: fixed;
+	inset: 0 auto 0 0;
+	width: calc(var(--site-navigation-width) + var(--site-navigation-fade));
+	background: linear-gradient(to right, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - var(--site-navigation-fade)), transparent 100%);
+	pointer-events: none;
+	z-index: -1;
+}
+.site-layout[data-logo-cutout]::before {
+	-webkit-mask-image: radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%);
+	mask-image: radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%);
+}
+.site-header {
+	position: fixed;
+	inset: 0 auto 0 0;
+	z-index: 3;
+	box-sizing: border-box;
+	width: var(--site-navigation-width);
+	height: 100dvh;
+	padding: calc(clamp(2rem, 0vh, 6rem) + var(--site-navigation-offset)) 2rem 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	overflow-y: auto;
+	color: var(--color-navigation-text);
+	text-shadow: none;
+}
+.site-header .site-logo { position: relative; isolation: isolate; top: -4.5rem; display: block; flex-shrink: 0; width: calc(100% + 4rem); margin-inline: -2rem; color: inherit; font-family: var(--font-logo); font-size: var(--site-logo-size); font-weight: 900; line-height: 1.15; text-align: center; text-decoration: none; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+/* Places a translucent circular bubble over the cutout in the navigation backdrop. */
+.site-logo__bubble {
+	position: absolute;
+	z-index: -1;
+	top: 45%;
+	left: 50%;
+	width: 1.75em;
+	height: 1.75em;
+	border: 0.014em solid var(--color-heading);
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 24% 22%, var(--color-logo-bubble-shine) 0 4%, transparent 5%) center / 100% 100% no-repeat,
+		radial-gradient(ellipse at 72% 18%, rgb(255 255 255 / 58%) 0%, transparent 34%) center / 100% 100% no-repeat,
+		linear-gradient(135deg, transparent 28%, var(--color-logo-bubble-purple) 100%) center / 100% 100% no-repeat,
+		linear-gradient(var(--color-logo-bubble-wash), var(--color-logo-bubble-wash)) center / 100% 100% no-repeat;
+	box-shadow: inset -0.08em -0.1em 0.18em rgb(69 78 173 / 22%), var(--shadow-logo-bubble);
+	transform: translate(-50%, -50%) rotate(-3deg);
+	transition: transform 240ms ease-out;
+}
+.site-logo:hover .site-logo__bubble { transform: translate(-50%, -50%) rotate(-3deg) scale(1.07); }
+.site-logo__bubble::after {
+	content: '';
+	position: absolute;
+	top: 16%;
+	left: 27%;
+	width: 21%;
+	height: 0.16em;
+	border-top: 0.035em solid var(--color-logo-bubble-shine);
+	border-radius: 50%;
+	transform: rotate(-16deg);
+	pointer-events: none;
+}
+.site-logo__layers { position: relative; z-index: 1; display: inline-grid; }
+.site-logo__layer { display: inline-flex; align-items: baseline; grid-area: 1 / 1; padding-block: 0.2em 0.65em; margin-block: -0.2em -0.65em; }
+.site-logo__part { position: relative; display: inline-block; transition: top 220ms ease-out, margin-left 220ms ease-out; }
+/* Pulls the hiragana into a rising crest before stepping the suffix downward. */
+.site-logo__part--start { top: 0.08em; }
+.site-logo__part--crest { top: -0.14em; margin-left: -0.3em; }
+.site-logo__part--end { top: -0.06em; margin-left: -0.34em; }
+.site-logo__part--repeater { top: 0.4em; margin-left: -0.38em; }
+.site-logo__part--suffix { top: 0.82em; margin-left: -0.5em; font-size: 0.58em; }
+/* Reduces the glyph overlap to spread the wordmark without scaling it. */
+.site-logo:hover .site-logo__part--start { top: -0.02em; }
+.site-logo:hover .site-logo__part--crest { top: -0.28em; margin-left: -0.22em; }
+.site-logo:hover .site-logo__part--end { top: -0.24em; margin-left: -0.25em; }
+.site-logo:hover .site-logo__part--repeater { top: 0.18em; margin-left: -0.28em; }
+.site-logo:hover .site-logo__part--suffix { top: 0.48em; margin-left: -0.38em; }
+.site-logo__shadow { color: var(--color-logo-shadow); -webkit-text-stroke: var(--logo-outline-width) var(--color-logo-shadow); transform: translate(0.04em, 0.05em); filter: blur(0.008em); }
+.site-logo__outline { color: var(--color-heading); -webkit-text-stroke: var(--logo-outline-width) var(--color-heading); filter: drop-shadow(var(--glow-logo-outline-inner)) drop-shadow(var(--glow-logo-outline-outer)); }
+.site-logo__fill { position: relative; color: var(--color-navigation-text); }
+/* Reveals a viewport-sized copy of the page artwork through the wordmark. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	.site-header .site-logo__fill {
+		background-image:
+			radial-gradient(ellipse at 88% 4%, var(--color-logo-glint) 0 14%, var(--color-logo-glint-soft) 38%, transparent 72%),
+			var(--image-page-background);
+		background-position: center, left center;
+		background-size: 100% 100%, max(100vw, 133.333vh) max(100vh, 75vw);
+		background-repeat: no-repeat;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		-webkit-text-fill-color: transparent;
+	}
+}
+.site-header nav { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 2.5rem; }
+.site-header .primary-links { display: flex; flex-direction: column; gap: var(--site-navigation-gap); width: 100%; max-width: 20rem; text-align: center; }
+/* Matches the white outlined page-heading typography without changing link semantics. */
+.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; }
+/* Smoothly hands the selected treatment between the current and hovered items. */
+.site-header .main-nav-item { transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
+.site-header .main-nav-item:hover { text-decoration: none; }
+.site-header .main-nav-item:is(.active, :hover),
+.site-header .nav-dropdown:hover > summary { transform: scale(1.08); color: var(--color-content-surface); text-shadow: var(--shadow-card-glow); }
+
+/* Returns the page link to normal while another main item owns the hover. */
+.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .main-nav-item.active:not(:hover),
+.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active,
+.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) { transform: scale(1); color: var(--color-heading); text-shadow: var(--text-outline); }
+
+/* Layers the bubbles over blue letters with the card's neon-blue glow. */
+.main-nav-item__content { display: inline-flex; flex-direction: column; align-items: center; }
+.header-link-label { display: inline-grid; font-size: var(--site-navigation-label-size); }
+.header-link-label > span { grid-area: 1 / 1; }
+.header-link-effect { display: none; opacity: 0; pointer-events: none; }
+.main-nav-item__japanese { padding: 0.05rem 0.4rem; background: var(--color-navigation-text); color: var(--color-heading); font-size: 0.78em; font-weight: normal; line-height: 1.1; text-shadow: none; transition: background-color 180ms ease, color 180ms ease; }
+
+/* Inverts the Japanese subtitle while its nav item owns the highlight. */
+.site-header .main-nav-item:is(.active, :hover) .main-nav-item__japanese,
+.site-header .nav-dropdown:hover > summary .main-nav-item__japanese { background-color: transparent; color: var(--color-navigation-text); }
+.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .main-nav-item.active:not(:hover) .main-nav-item__japanese,
+.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active .main-nav-item__japanese,
+.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) .main-nav-item__japanese { background-color: var(--color-navigation-text); color: var(--color-heading); }
+
+/* Staggers thin bubble rings across differently sized tiles inside the letters. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	.site-header .header-link-effect {
+		display: block;
+		background-color: transparent;
+		background-image:
+			radial-gradient(circle at 17% 23%, transparent 3px, var(--color-navigation-bubble) 3.3px 3.9px, transparent 4.2px),
+			radial-gradient(circle at 71% 67%, transparent 5px, var(--color-navigation-bubble) 5.3px 5.9px, transparent 6.2px),
+			radial-gradient(circle at 43% 41%, transparent 2px, var(--color-navigation-bubble) 2.3px 2.9px, transparent 3.2px),
+			radial-gradient(circle at 89% 83%, transparent 4px, var(--color-navigation-bubble) 4.3px 4.9px, transparent 5.2px);
+		background-size: 43px 61px, 67px 83px, 53px 47px, 79px 71px;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		text-shadow: none;
+		transition: opacity 180ms ease;
+		animation: navigation-letter-bubbles 7s linear infinite;
+	}
+	.site-header .main-nav-item:is(.active, :hover) .header-link-effect,
+	.site-header .nav-dropdown:hover > summary .header-link-effect { opacity: 1; }
+	.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .main-nav-item.active:not(:hover) .header-link-effect,
+	.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active .header-link-effect,
+	.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) .header-link-effect { opacity: 0; }
+}
+
+/* Floats each layer upward by one tile for a seamless loop at varied speeds. */
+@keyframes navigation-letter-bubbles {
+	from { background-position: 0 0, 0 0, 0 0, 0 0; }
+	to { background-position: 0 -61px, 0 -83px, 0 -47px, 0 -71px; }
+}
+
+/* Preserves the selected treatment without motion when requested. */
+@media (prefers-reduced-motion: reduce) {
+	.site-header .header-link-effect { animation: none; transition: none; }
+	.site-logo__part { transition: none; }
+	.site-logo__bubble { transition: none; }
+}
+.site-header :is(a, button, select, summary):focus-visible { outline: var(--focus-ring-width) solid var(--color-navigation-text); outline-offset: 3px; }
+
+/* Keeps secondary controls near the bottom and reachable on short screens. */
+.site-header .nav-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.75rem; margin-top: auto; font-size: 0.85rem; width: 100%; }
+.site-header .nav-actions .ui-select { width: auto; max-width: 100%; }
+.site-header :is(.ui-button, .ui-select) { background-color: var(--color-navigation-highlight); color: var(--color-navigation-text); }
+.site-header :is(.ui-button, .ui-select):hover { background-color: var(--color-accent); }
+
+/* Fits the footer to the white sidebar and keeps its controls readable. */
+.site-header .site-footer { flex-shrink: 0; padding: 0; color: var(--color-navigation-text); font-size: 0.85rem; }
+.site-header .site-footer .ui-link { color: var(--color-navigation-text); }
+.site-header .site-footer .ui-link:hover { color: var(--color-surface); }
+
+/* Expands secondary links in place inside the scrollable menu. */
+.site-header .nav-dropdown summary { list-style: none; }
+.site-header .nav-dropdown summary::-webkit-details-marker { display: none; }
+.site-header .nav-dropdown summary::after { content: '\25B8'; display: inline-block; margin-left: 0.4em; font-size: 0.65em; }
+.site-header .nav-dropdown[open] summary::after { transform: rotate(90deg); }
+.site-header .nav-dropdown__items { display: grid; gap: 0.5rem; padding: 0.5rem; }
+/* Scales secondary items while preserving the complete main-navigation treatment. */
+.site-header .nav-dropdown__items .main-nav-item { padding: 0.5rem; font-size: 60%; }
+
+@media (max-width: 800px) {
+	/* Stacks a compact menu above the page on narrow screens. */
+	.site-layout::before { display: none; }
+	.site-header { position: relative; inset: auto; width: 100%; height: auto; padding: 2.5rem 1rem 3rem; gap: 1.25rem; overflow: visible; background: linear-gradient(to bottom, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - 2rem), transparent 100%); }
+	.site-header .site-logo { top: 0; width: 100%; margin-inline: 0; margin-bottom: 1rem; font-size: clamp(2rem, 15vw, 3.75rem); }
+	.site-header nav { gap: 1rem; }
+	.site-header .primary-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.25rem; max-width: none; }
+	.site-header .main-nav-item { padding: 0.6rem; }
+	.site-header .header-link-label { font-size: 1rem; }
+	.site-header .main-nav-item__japanese { display: none; }
+	.site-header .nav-dropdown__items { max-width: 12rem; }
+}

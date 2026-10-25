@@ -4,6 +4,7 @@ import TagInput from '../TagInput.astro';
 import Button from '../ui/Button.astro';
 import Link from '../ui/Link.astro';
 import FileDropzone from '../ui/FileDropzone.astro';
+import EdgeCard from '../ui/EdgeCard.astro';
 import { Textarea } from '../ui/react/Textarea.tsx';
 import type { Tweet } from '../../lib/models/tweets.ts';
 
@@ -28,45 +29,52 @@ const pageUrl = (cursor?: string) => {
 ---
 
 <section class="tweet-timeline" data-tweet-timeline data-token={accessToken ?? ''}>
-	{isTweet && (
-		<form class="tweet-composer" data-tweet-composer>
-			<Textarea client:load data-tweet-body maxLength={500} placeholder="what's happening?" aria-label="tweet text" />
-			<div class="tweet-composer__controls">
-				<FileDropzone id="tweet-media" name="media" accept="image/avif,image/gif,image/jpeg,image/png,image/webp,video/mp4,video/webm" label="attach media..." />
-				<span data-tweet-count>0/500</span>
-			</div>
-			<TagInput id="tweet-tags" name="tags" label="tags" />
-			<div class="tweet-previews" data-tweet-previews></div>
-			<div class="tweet-composer__actions">
-				<Button type="submit" data-tweet-submit>post</Button>
-				<p data-tweet-status role="status"></p>
-			</div>
-		</form>
-	)}
-	<div class="tweet-list" data-tweet-list>
-		{tweets.map((tweet) => (
-			<article class="tweet" data-tweet-id={tweet.id}>
-				<div class="tweet__meta">
-					<div class="tweet__details">
-						<FormattedDate date={new Date(tweet.createdAt)} includeTime />
-						{tweet.tags.length > 0 && <p class="tweet__tags">{tweet.tags.map((tag) => <span>#{tag} </span>)}</p>}
-					</div>
-					{tweet.authorId === userId && <Button class="tweet__delete" type="button" data-tweet-delete>delete</Button>}
+	<!-- Groups filtering and composing in a single controls card. -->
+	<EdgeCard class="tweets-controls-card" aria-label="tweet controls">
+		<slot name="filters" />
+		{isTweet && (
+			<form class="tweet-composer" data-tweet-composer>
+				<Textarea client:load data-tweet-body maxLength={500} placeholder="what's happening?" aria-label="tweet text" />
+				<div class="tweet-composer__controls">
+					<FileDropzone id="tweet-media" name="media" accept="image/avif,image/gif,image/jpeg,image/png,image/webp,video/mp4,video/webm" label="attach media..." />
+					<span data-tweet-count>0/500</span>
 				</div>
-				{tweet.body && <p class="tweet__body">{tweet.body}</p>}
-				{tweet.media.length > 0 && <div class="tweet__media">
-					{tweet.media.map((media) => media.mediaKind === 'video'
-						? <Button class="tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>
-						: <Button class="tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img src={media.publicUrl} alt="" loading="lazy" /></Button>
-					)}
-				</div>}
-			</article>
-		))}
-	</div>
-	<nav class="tweet-pagination" aria-label="Tweet pages">
-		{before && <Link class="ui-button" href={pageUrl()}>newer tweets</Link>}
-		{hasMore && <Link class="ui-button" href={pageUrl(nextBefore ?? undefined)}>older tweets</Link>}
-	</nav>
+				<TagInput id="tweet-tags" name="tags" label="tags" />
+				<div class="tweet-previews" data-tweet-previews></div>
+				<div class="tweet-composer__actions">
+					<Button type="submit" data-tweet-submit>post</Button>
+					<p data-tweet-status role="status"></p>
+				</div>
+			</form>
+		)}
+	</EdgeCard>
+	<!-- Keeps the timeline and its pagination on a separate card. -->
+	<EdgeCard aria-label="tweets">
+		<div class="tweet-list" data-tweet-list>
+			{tweets.map((tweet) => (
+				<article class="tweet" data-tweet-id={tweet.id}>
+					<div class="tweet__meta">
+						<div class="tweet__details">
+							<FormattedDate date={new Date(tweet.createdAt)} includeTime />
+							{tweet.tags.length > 0 && <p class="tweet__tags">{tweet.tags.map((tag) => <span>#{tag} </span>)}</p>}
+						</div>
+						{tweet.authorId === userId && <Button class="tweet__delete" type="button" data-tweet-delete>delete</Button>}
+					</div>
+					{tweet.body && <p class="tweet__body">{tweet.body}</p>}
+					{tweet.media.length > 0 && <div class="tweet__media">
+						{tweet.media.map((media) => media.mediaKind === 'video'
+							? <Button class="tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>
+							: <Button class="tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img src={media.publicUrl} alt="" loading="lazy" /></Button>
+						)}
+					</div>}
+				</article>
+			))}
+		</div>
+		<nav class="tweet-pagination" aria-label="Tweet pages">
+			{before && <Link class="ui-button" href={pageUrl()}>newer tweets</Link>}
+			{hasMore && <Link class="ui-button" href={pageUrl(nextBefore ?? undefined)}>older tweets</Link>}
+		</nav>
+	</EdgeCard>
 	<dialog class="tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><img data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
 </section>
 
@@ -80,12 +88,11 @@ const pageUrl = (cursor?: string) => {
 </script>
 
 <style>
-	.tweet-timeline { display: grid; }
 	/* Keeps the composer's implicit grid track from expanding past the mobile gutter. */
 	.tweet-composer { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 	.tweet-composer > * { min-inline-size: 0; }
 	.tweet-list { display: grid; gap: 0; }
-	.tweet-composer { padding-bottom: 1rem; gap: 1rem; border-bottom: var(--border-width) solid var(--color-muted); }
+	.tweet-composer { gap: 1rem; }
 	.tweet-composer__controls, .tweet-composer__actions, .tweet__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
 	.tweet-composer__controls span, .tweet-composer__actions p, .tweet__meta, .tweet__tags { color: var(--color-muted); font-size: .85rem; }
 	.tweet-composer__actions p { min-height: 1lh; margin: 0; }

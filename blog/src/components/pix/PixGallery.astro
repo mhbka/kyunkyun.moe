@@ -4,6 +4,7 @@ import Button from '../ui/Button.astro';
 import Select from '../ui/Select.astro';
 import TagInput from '../TagInput.astro';
 import FileDropzone from '../ui/FileDropzone.astro';
+import EdgeCard from '../ui/EdgeCard.astro';
 
 interface Props {
 	images: Pix[];
@@ -18,32 +19,39 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 ---
 
 <section class="moe-gallery" data-moe-gallery data-next-before={nextBefore ?? ''} data-has-more={hasMore ? 'true' : 'false'} data-tags={JSON.stringify(tags)} data-token={accessToken ?? ''} data-can-edit={isPix ? 'true' : 'false'}>
-	{isPix && (
-		<div class="moe-upload" data-moe-upload>
-			<FileDropzone id="moe-image" name="images" accept="image/avif,image/gif,image/jpeg,image/png,image/webp" label="upload pix..." />
-			<TagInput id="pix-tags" name="tags" label="tags" />
-			<Button class="moe-select-toggle" type="button" data-moe-select-toggle aria-pressed="false">select images to modify</Button>
-			<div class="moe-tag-editor" data-moe-tag-editor hidden>
-				<span data-moe-selected-count></span>
-				<Select data-moe-tag-operation aria-label="tag operation">
-					<option value="remove">delete</option>
-					<option value="add">add</option>
-					<option value="overwrite">overwrite</option>
-				</Select>
-				<Button type="button" data-moe-tag-save>save</Button>
+	<!-- Keeps filters and editing controls together within the gallery's interaction scope. -->
+	<EdgeCard class="pix-controls-card" aria-label="gallery controls">
+		<slot name="filters" />
+		{isPix && (
+			<div class="moe-upload" data-moe-upload>
+				<FileDropzone id="moe-image" name="images" accept="image/avif,image/gif,image/jpeg,image/png,image/webp" label="upload pix..." />
+				<TagInput id="pix-tags" name="tags" label="tags" />
+				<Button class="moe-select-toggle" type="button" data-moe-select-toggle aria-pressed="false">select images to modify</Button>
+				<div class="moe-tag-editor" data-moe-tag-editor hidden>
+					<span data-moe-selected-count></span>
+					<Select data-moe-tag-operation aria-label="tag operation">
+						<option value="remove">delete</option>
+						<option value="add">add</option>
+						<option value="overwrite">overwrite</option>
+					</Select>
+					<Button type="button" data-moe-tag-save>save</Button>
+				</div>
+				<p class="moe-status" data-moe-status role="status"></p>
 			</div>
-			<p class="moe-status" data-moe-status role="status"></p>
+		)}
+	</EdgeCard>
+	<!-- Gives the images and pagination their own card surface. -->
+	<EdgeCard class="pix-images-card" aria-label="images">
+		<div class="moe-grid" data-moe-grid>
+			{images.map((image) => (
+				<Button class="moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
+					<img src={image.publicUrl} alt="" loading="lazy" />
+					<span class="moe-thumbnail__tick" aria-hidden="true">✓</span>
+				</Button>
+			))}
 		</div>
-	)}
-	<div class="moe-grid" data-moe-grid>
-		{images.map((image) => (
-			<Button class="moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
-				<img src={image.publicUrl} alt="" loading="lazy" />
-				<span class="moe-thumbnail__tick" aria-hidden="true">✓</span>
-			</Button>
-		))}
-	</div>
-	<Button class="moe-load-more" type="button" data-moe-load-more hidden={!hasMore}>load more</Button>
+		<Button class="moe-load-more" type="button" data-moe-load-more hidden={!hasMore}>load more</Button>
+	</EdgeCard>
 	<dialog class="moe-portal" data-moe-portal aria-label="full-size image">
 		<div class="moe-portal__details">
 			<div class="moe-portal__info">
@@ -58,24 +66,27 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <script>
 	import { initPixGallery } from './gallery.ts';
 
-	// Initializes the gallery in the current page after each client-side navigation.
-	document.addEventListener('astro:page-load', () => {
+	const initializedGalleries = new WeakSet<HTMLElement>();
+
+	// Binds each gallery once on full-page loads and client-side navigation.
+	function bindPixGallery() {
 		const gallery = document.querySelector<HTMLElement>('[data-moe-gallery]');
-		if (gallery) initPixGallery(gallery);
-	});
+		if (!gallery || initializedGalleries.has(gallery)) return;
+		initPixGallery(gallery);
+		initializedGalleries.add(gallery);
+	}
+
+	bindPixGallery();
+	document.addEventListener('astro:page-load', bindPixGallery);
 </script>
 
 <style>
-	/* Lets the gallery shrink with the page column on narrow screens. */
-	.moe-gallery { display: grid; min-width: 0; gap: 1rem; }
 	/* Constrains the implicit upload track to the page column. */
 	.moe-upload { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 0.5rem; }
 	.moe-upload > * { min-inline-size: 0; }
 	.moe-status { min-height: 1lh; margin: 0; }
 	.moe-tag-editor { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 	.moe-tag-editor[hidden] { display: none; }
-	/* Prevents grid items from widening the mobile content column. */
-	.moe-grid { display: grid; min-width: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(8rem, 7.5vw, 12rem)), 1fr)); gap: 0.75rem; }
 	.moe-load-more[hidden] { display: none; }
 	:global(.moe-thumbnail) { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); }
 	:global(.moe-thumbnail img) { display: block; width: 100%; height: 100%; border-radius: 0; object-fit: cover; }

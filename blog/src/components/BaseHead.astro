@@ -5,7 +5,6 @@ import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { Font } from 'astro:assets';
-import { ClientRouter } from 'astro:transitions';
 
 interface Props {
 	title: string;
@@ -31,6 +30,8 @@ const { title, description, image } = Astro.props;
 	href={new URL('rss.xml', Astro.site)}
 />
 <meta name="generator" content={Astro.generator} />
+<!-- Gives the visible background a head start while the decoration loads. -->
+<link rel="preload" as="image" href="/images/summer_pockets.png" />
 <!-- Starts the pendulum's image downloads before its client-side renderer mounts. -->
 <link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-bg.png" />
 <link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-おちる….png" />
@@ -43,33 +44,21 @@ const { title, description, image } = Astro.props;
 <link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体ef12.png" />
 <link rel="preload" as="image" href="/images/nanami_hanging/sd002/SD002-七海体ef13.png" />
 
-<script is:inline>
-	// Keeps the first desktop render hidden until the pendulum has drawn its first frame.
+<script is:inline id="initial-page-reveal">
+	// Waits only on desktop, where the hanging animation is visible.
 	if (window.matchMedia('(min-width: 801px) and (prefers-reduced-motion: no-preference)').matches) {
-		document.documentElement.classList.add('pendulum-loading');
-		const revealPage = () => document.documentElement.classList.remove('pendulum-loading');
+		const root = document.documentElement;
+		root.classList.add('page-loading');
+		const timeout = window.setTimeout(revealPage, 5000);
 		window.addEventListener('nanami-pendulum-ready', revealPage, { once: true });
-		window.setTimeout(revealPage, 5000);
+
+		// Reveals content on readiness or timeout without hiding the background.
+		function revealPage() {
+			window.clearTimeout(timeout);
+			window.removeEventListener('nanami-pendulum-ready', revealPage);
+			root.classList.replace('page-loading', 'page-entering');
+		}
 	}
-</script>
-<ClientRouter />
-
-<script>
-	import { bindNavigationFade } from '../scripts/navigation-fade';
-
-	bindNavigationFade();
-
-	// Freezes the animated walker before the browser captures its transition snapshot.
-	document.addEventListener('astro:before-preparation', (event) => {
-		window.dispatchEvent(new Event('walkerpause'));
-		event.signal.addEventListener('abort', () => window.dispatchEvent(new Event('walkerresume')), { once: true });
-	});
-
-	// Restores the walker's movement only after the browser returns to the live DOM.
-	document.addEventListener('astro:before-swap', (event) => {
-		const resumeWalker = () => window.dispatchEvent(new Event('walkerresume'));
-		void event.viewTransition.finished.then(resumeWalker, resumeWalker);
-	});
 </script>
 
 <script is:inline>

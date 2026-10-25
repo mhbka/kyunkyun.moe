@@ -1,0 +1,28 @@
+/* Extends left from its container's right edge with a restrained neon outline. */
+.edge-card {
+	position: relative;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	padding: 1rem 2rem;
+	background: var(--color-content-surface);
+	border-radius: var(--radius-panel) 0 0 var(--radius-panel);
+	box-shadow: var(--shadow-card-glow);
+}
+
+/* Paints the full left edge white with a thicker glowing strip and matching corners. */
+.edge-card::after {
+	content: '';
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 1.3rem;
+	border-radius: var(--radius-panel) 0 0 var(--radius-panel);
+	background: var(--color-card-bookmark);
+	box-shadow: var(--shadow-card-bookmark);
+	pointer-events: none;
+}
+
+@media (max-width: 800px) {
+	/* Recovers horizontal space while keeping content clear of the white edge strip. */
+	.edge-card { padding-right: 0.5rem; padding-left: 1.5rem; }
+}

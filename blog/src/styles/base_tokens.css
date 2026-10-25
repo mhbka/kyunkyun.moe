@@ -1,6 +1,9 @@
 /* Defines the single, shared visual language for the site. */
 :root {
 	--font-body: var(--font-m-plus-1p);
+	--font-logo: "Yu Mincho", YuMincho, "Hiragino Mincho ProN", "Noto Serif CJK JP", serif;
+	--font-size-h1: 3.052em;
+	--image-page-background: url('/images/bg.png');
 	--color-accent: #d7eeff;
 	--color-text: #f8fbff;
 	--color-heading: #ffffff;
@@ -9,6 +12,27 @@
 	--color-page-background: #5797c9;
 	--color-surface: #2f70a9;
 	--color-content-surface: rgb(35 100 160 / 75%);
+	--color-card-bookmark: #ffffff;
+	--shadow-card-glow: 0 0 2px rgb(50 195 255 / 65%), 0 0 6px rgb(50 195 255 / 25%);
+	--shadow-card-bookmark: 0 0 3px rgb(255 255 255 / 85%), 0 0 7px rgb(255 255 255 / 35%);
+	--glow-logo-outline-inner: 0 0 0.035em rgb(255 255 255 / 90%);
+	--glow-logo-outline-outer: 0 0 0.09em rgb(255 255 255 / 48%);
+	--color-logo-glint: #55207f;
+	--color-logo-glint-soft: rgb(85 32 127 / 78%);
+	--color-logo-bubble-wash: rgb(255 255 255 / 50%);
+	--color-logo-bubble-purple: rgb(187 137 255 / 38%);
+	--color-logo-bubble-shine: rgb(255 255 255 / 88%);
+	--color-logo-shadow: #6f7780;
+	--shadow-logo-bubble: 0 0 0.04em rgb(255 255 255 / 82%), 0 0 0.18em rgb(111 187 255 / 48%), 0 0 0.36em rgb(76 82 92 / 68%);
+	--logo-outline-width: clamp(4px, 0.14em, 7px);
+	--color-navigation-background: #ffffff;
+	--color-navigation-text: #255d91;
+	--color-navigation-highlight: #e9f5ff;
+	--color-navigation-bubble: #ffffff;
+	--color-ambient-butterfly: #ffffff;
+	--color-ambient-butterfly-fill: #ffffff;
+	--shadow-ambient-butterfly: 0 0 2px rgb(255 255 255 / 95%);
+	--shadow-ambient-butterfly-pulse: 0 0 3px rgb(255 255 255 / 100%), 0 0 9px rgb(255 255 255 / 80%);
 	--color-danger: #ffe0e3;
 	--color-success: #c7f4dc;
 	--color-overlay: rgb(8 47 83 / 65%);

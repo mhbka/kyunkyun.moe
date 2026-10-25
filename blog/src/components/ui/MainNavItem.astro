@@ -1,0 +1,41 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import Link from './Link.astro';
+
+type Props = HTMLAttributes<'a'> & {
+	active?: boolean;
+	as?: 'a' | 'summary';
+	href?: string;
+	japanese: string;
+	label: string;
+};
+
+const { active = false, as = 'a', class: className, href, japanese, label, ...props } = Astro.props;
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '');
+const subpath = pathname.match(/[^\/]+/g);
+const isActive = active || (href !== undefined && (href === pathname || href === '/' + (subpath?.[0] || '')));
+const classes = ['header-link-target', 'main-nav-item', className, { active: isActive }];
+---
+
+<!-- Shares the bilingual label and animated English fill between links and dropdown headings. -->
+{as === 'summary' ? (
+	<summary class:list={classes} {...props}>
+		<span class="main-nav-item__content">
+			<span class="header-link-label">
+				<span>{label}</span>
+				<span class="header-link-effect" aria-hidden="true">{label}</span>
+			</span>
+			<span class="main-nav-item__japanese" lang="ja">{japanese}</span>
+		</span>
+	</summary>
+) : (
+	<Link href={href} class:list={classes} aria-current={isActive ? 'page' : undefined} {...props}>
+		<span class="main-nav-item__content">
+			<span class="header-link-label">
+				<span>{label}</span>
+				<span class="header-link-effect" aria-hidden="true">{label}</span>
+			</span>
+			<span class="main-nav-item__japanese" lang="ja">{japanese}</span>
+		</span>
+	</Link>
+)}

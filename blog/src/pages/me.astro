@@ -15,7 +15,7 @@ const content = await renderMarkdown(meMarkdown);
 		<BaseHead title="me" />
 	</head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} title="about me" titleClass="title-wave">
+		<PageLayout isLoggedIn={isLoggedIn} title="about me">
 			<div class="markdown-content" set:html={content} />
 		</PageLayout>
 	</body>

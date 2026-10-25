@@ -5,12 +5,8 @@ import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 import { uploadImage } from '../../lib/image-upload.ts';
 import { addTag, normalizeTag } from '../../lib/tags.ts';
 
-let activeEditor: Crepe | undefined;
-let navigationVersion = 0;
-
 /** Initializes the Milkdown editor and its post form controls. */
 async function initPostEditor() {
-	const currentNavigation = navigationVersion;
 	const form = document.querySelector<HTMLFormElement>('[data-post-editor]');
 	const root = document.querySelector<HTMLElement>('#post-content');
 	const title = document.querySelector<HTMLTextAreaElement>('#post-title');
@@ -144,11 +140,6 @@ async function initPostEditor() {
 	});
 
 	await editor.create();
-	if (currentNavigation !== navigationVersion) {
-		await editor.destroy();
-		return;
-	}
-	activeEditor = editor;
 
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
@@ -189,12 +180,5 @@ async function initPostEditor() {
 	});
 }
 
-// Initializes the editor after each client-side navigation.
-document.addEventListener('astro:page-load', () => void initPostEditor());
-// Destroys editor-owned overlays before the router replaces its page.
-document.addEventListener('astro:before-swap', () => {
-	navigationVersion += 1;
-	const editor = activeEditor;
-	activeEditor = undefined;
-	void editor?.destroy();
-});
+// Initializes the editor after the page's module scripts load.
+void initPostEditor();

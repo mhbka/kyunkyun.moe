@@ -1,0 +1,18 @@
+/* Matches the blog card spacing and inner content inset. */
+.pix-page .moe-gallery { display: grid; min-width: 0; gap: 0.5rem; }
+.pix-page .edge-card { padding: calc(1rem + 0.5em) calc(2rem + 1em); }
+
+/* Shares the gallery width evenly between four thumbnails per row. */
+.pix-page .moe-grid { display: grid; min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+
+/* Spaces controls and gallery contents within their separate cards. */
+.pix-controls-card, .pix-images-card { display: grid; gap: 1rem; }
+.pix-controls-card .tag-filter { margin: 0; }
+
+/* Matches the blog's normal-font filter heading. */
+.pix-page .pix-tags-heading { margin: 0 0 0.5rem; font: inherit; color: var(--color-text); }
+
+@media (max-width: 800px) {
+	/* Matches the mobile content inset on other card pages. */
+	.pix-page .edge-card { padding-block: calc(1rem + 1em); }
+}

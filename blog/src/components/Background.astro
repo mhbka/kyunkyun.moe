@@ -1,27 +1,16 @@
 ---
+import AmbientButterflies from './AmbientButterflies.astro';
 import NanamiPendulum from './NanamiPendulum.astro';
-
-// Keeps the decorative background mounted across client-side page navigations.
-const persistentBackgroundTransition = {
-	forwards: {
-		old: { name: 'none' },
-		new: { name: 'none' },
-	},
-	backwards: {
-		old: { name: 'none' },
-		new: { name: 'none' },
-	},
-};
 ---
 
 <div
 	class="site-background"
 	aria-hidden="true"
-	transition:name="site-background"
-	transition:persist="site-background"
-	transition:animate={persistentBackgroundTransition}
 >
 </div>
 
-<!-- Keeps the interactive decoration above page content across page navigations. -->
-<NanamiPendulum transition:animate={persistentBackgroundTransition} />
+<!-- Lets the butterflies emerge from beneath the navigation fade. -->
+<AmbientButterflies />
+
+<!-- Renders the interactive decoration above page content. -->
+<NanamiPendulum />

@@ -1,0 +1,11 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import '../../styles/base/edge-card.css';
+
+type Props = HTMLAttributes<'div'> & { as?: 'div' | 'section' | 'article' | 'aside' | 'li' };
+
+// Shares the right-edge card surface across page content and standalone sections.
+const { as: Tag = 'section', class: className, ...props } = Astro.props;
+---
+
+<Tag class:list={['edge-card', className]} {...props}><slot /></Tag>

@@ -8,8 +8,6 @@
 	data-json-url="/images/nanami_hanging/sd002.json"
 	data-image-directory-url="/images/nanami_hanging/sd002/"
 	data-image-prefix="SD002"
-	transition:name="site-foreground-pendulum"
-	transition:persist="site-foreground-pendulum"
 ></svg>
 
 <script is:inline type="module">
@@ -26,10 +24,10 @@
 			imageDirectoryUrl: svg.dataset.imageDirectoryUrl,
 			imagePrefix: svg.dataset.imagePrefix,
 		})
-			// Releases the initial page once every pendulum layer is decoded and mounted.
-			.then(() => window.dispatchEvent(new Event('nanami-pendulum-ready')))
-			// Prevents an unavailable decoration from leaving the page hidden.
-			.catch(() => window.dispatchEvent(new Event('nanami-pendulum-ready')));
+			// Reports decoration failures without blocking the page content.
+			.catch((error) => console.warn('Could not load the hanging animation.', error))
+			// Reveals the page after the first frame, including when assets fail.
+			.finally(() => requestAnimationFrame(() => window.dispatchEvent(new Event('nanami-pendulum-ready'))));
 	}
 
 	mountCurrentPendulum();

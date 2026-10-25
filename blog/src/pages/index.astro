@@ -1,11 +1,14 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import HomePreviews from '../components/HomePreviews.astro';
+import Changelog from '../components/Changelog.astro';
 import PageLayout from '../components/PageLayout.astro';
+import EdgeCard from '../components/ui/EdgeCard.astro';
 import { blogApi } from '../lib/api.ts';
 import { getPageAuth } from '../lib/page-auth.ts';
 import { renderMarkdown } from '../lib/markdown.ts';
 import homeMarkdown from '../content/index.md?raw';
+import '../styles/base/home-content.css';
 
 const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);
 const content = await renderMarkdown(homeMarkdown);
@@ -24,10 +27,16 @@ const tweet = tweetsResult.status === 'fulfilled' ? tweetsResult.value.tweets[0]
 	<head>
 		<BaseHead title={"home"}  />
 	</head>
-	<body>
-		<PageLayout isLoggedIn={isLoggedIn} renderChangelog title="home" titleClass="title-wave">
-			<HomePreviews slot="right-sidebar" images={images} post={post} tweet={tweet} />
+	<body class="home-page">
+		<PageLayout isLoggedIn={isLoggedIn} title="home">
 			<div class="markdown-content" set:html={content} />
+			<!-- Gives each homepage section its own reusable card beneath the introduction. -->
+			<EdgeCard slot="cards" class="home-update-card" aria-label="latest updates">
+				<HomePreviews images={images} post={post} tweet={tweet} />
+			</EdgeCard>
+			<EdgeCard slot="cards" class="home-update-card" aria-label="changelog">
+				<Changelog />
+			</EdgeCard>
 		</PageLayout>
 	</body>
 </html>

@@ -4,6 +4,8 @@ import FetchError from '../components/FetchError.astro';
 import PixGallery from '../components/pix/PixGallery.astro';
 import TagFilter from '../components/TagFilter.astro';
 import PageLayout from '../components/PageLayout.astro';
+import EdgeCard from '../components/ui/EdgeCard.astro';
+import '../styles/base/pix-layout.css';
 import { blogApi } from '../lib/api.ts';
 import { getPageAuth } from '../lib/page-auth.ts';
 import { readTagFilters } from '../lib/tags.ts';
@@ -25,19 +27,23 @@ try {
 <html lang="en">
 	<head><BaseHead title="pix" /></head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} title="pix" titleClass="title-wave">
+		<PageLayout isLoggedIn={isLoggedIn} title="pix" separateCards mainClass="pix-page">
 			{
-				errorMessage 
-				? <FetchError message={errorMessage} /> 
+				errorMessage
+				? <EdgeCard><FetchError message={errorMessage} /></EdgeCard>
 				: <>
-					<TagFilter tags={tags} selectedTags={selectedTags} basePath="/pix/" />
-					<PixGallery 
-						images={gallery?.images ?? []} 
-						nextBefore={gallery?.nextBefore ?? null} 
+					<PixGallery
+						images={gallery?.images ?? []}
+						nextBefore={gallery?.nextBefore ?? null}
 						hasMore={gallery?.hasMore ?? false} tags={selectedTags}
-						isPix={isPix} 
-						accessToken={accessToken} 
-					/>
+						isPix={isPix}
+						accessToken={accessToken}
+					>
+						<div slot="filters">
+							<h2 class="pix-tags-heading">tags:</h2>
+							<TagFilter tags={tags} selectedTags={selectedTags} basePath="/pix/" />
+						</div>
+					</PixGallery>
 				  </>
 			}
 		</PageLayout>

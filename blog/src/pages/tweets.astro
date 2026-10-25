@@ -4,6 +4,8 @@ import FetchError from '../components/FetchError.astro';
 import PageLayout from '../components/PageLayout.astro';
 import TagFilter from '../components/TagFilter.astro';
 import TweetTimeline from '../components/tweets/TweetTimeline.astro';
+import EdgeCard from '../components/ui/EdgeCard.astro';
+import '../styles/base/tweets-layout.css';
 import { blogApi } from '../lib/api.ts';
 import { getPageAuth } from '../lib/page-auth.ts';
 import { readTagFilters } from '../lib/tags.ts';
@@ -21,10 +23,14 @@ const [tags, result] = await Promise.all([
 <html lang="en">
 	<head><BaseHead title="tweets" /></head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} title="tweets">
-			{'error' in result ? <FetchError message="couldn't load the tweets :(" /> : <>
-				<TagFilter tags={tags} selectedTags={selectedTags} basePath="/tweets/" />
-				<TweetTimeline tweets={result.tweets.tweets} nextBefore={result.tweets.nextBefore} hasMore={result.tweets.hasMore} tags={selectedTags} before={before} isTweet={isTweet} accessToken={accessToken} userId={userId} />
+		<PageLayout isLoggedIn={isLoggedIn} title="tweets" separateCards mainClass="tweets-page">
+			{'error' in result ? <EdgeCard><FetchError message="couldn't load the tweets :(" /></EdgeCard> : <>
+				<TweetTimeline tweets={result.tweets.tweets} nextBefore={result.tweets.nextBefore} hasMore={result.tweets.hasMore} tags={selectedTags} before={before} isTweet={isTweet} accessToken={accessToken} userId={userId}>
+					<div slot="filters">
+						<h2 class="tweets-tags-heading">tags:</h2>
+						<TagFilter tags={tags} selectedTags={selectedTags} basePath="/tweets/" />
+					</div>
+				</TweetTimeline>
 			</>}
 		</PageLayout>
 	</body>

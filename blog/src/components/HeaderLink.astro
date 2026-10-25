@@ -10,8 +10,12 @@ const subpath = pathname.match(/[^\/]+/g);
 const isActive = href === pathname || href === '/' + (subpath?.[0] || '');
 ---
 
-<Link href={href} class:list={[className, { active: isActive }]} {...props}>
-	<slot />
+<Link href={href} class:list={['header-link-target', className, { active: isActive }]} aria-current={isActive ? 'page' : undefined} {...props}>
+	<!-- Keeps the original outline underneath a decorative copy of the letter fill. -->
+	<span class="header-link-label">
+		<span><slot /></span>
+		<span class="header-link-effect" aria-hidden="true"><slot /></span>
+	</span>
 </Link>
 <style>
 	a {

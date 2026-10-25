@@ -1,0 +1,5 @@
+/* Gives the homepage cards a small gap without changing spacing on other pages. */
+.home-page .site-content-region { gap: 0.5rem; }
+
+/* Uses the outer card surface instead of layering a second panel inside it. */
+.home-update-card .side-content { padding: 0.5em 1em; background: none; box-shadow: none; border-radius: 0; }
