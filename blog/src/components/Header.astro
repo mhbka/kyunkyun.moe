@@ -1,5 +1,6 @@
 ---
 import MainNavItem from './ui/MainNavItem.astro';
+import AmbientSakura from './AmbientSakura.astro';
 import LoginButton from './LoginButton.astro';
 import WalkerSelector from './WalkerSelector.astro';
 import Footer from './Footer.astro';
@@ -25,6 +26,8 @@ const logoParts = [
 
 <!-- Keeps the global navigation independent of sidebar panels. -->
 <div class="site-header">
+	<!-- Lets petals drift down from the pink wash at the top of the navigation. -->
+	<AmbientSakura />
 	<!-- Uses a wordmark until the final logo artwork is ready. -->
 	<div class="site-logo" role="img" aria-label={`${SITE_TITLE} logo`}>
 		<span class="site-logo__bubble" aria-hidden="true"></span>

@@ -1,0 +1,157 @@
+<ambient-sakura class="ambient-sakura" aria-hidden="true"></ambient-sakura>
+
+<script>
+	const MAX_SAKURA_COUNT = 10;
+	const SPAWN_INTERVAL = 500;
+	const INITIAL_SAKURA_COUNT = 5;
+
+	function randomBetween(minimum: number, maximum: number) {
+		return minimum + Math.random() * (maximum - minimum);
+	}
+
+	// A single teardrop petal pointing up from the flower's centre.
+	const PETAL = 'M16 16 C12.5 11.5 10 6.5 12.5 3 C14.5 0.5 17.5 0.5 19.5 3 C22 6.5 19.5 11.5 16 16 Z';
+	const FLOWER_MARKUP =
+		'<span class="ambient-sakura__sway"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor">' +
+		[0, 72, 144, 216, 288]
+			.map((angle) => `<path d="${PETAL}"${angle ? ` transform="rotate(${angle} 16 16)"` : ''}/>`)
+			.join('') +
+		'</g></svg></span>';
+
+	// Keeps a sparse rain of petals falling through the navigation column.
+	class AmbientSakura extends HTMLElement {
+		private animations = new Set<Animation>();
+		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		private spawnTimer = 0;
+
+		connectedCallback() {
+			this.motionPreference.addEventListener('change', this.handleMotionPreference);
+			this.updatePopulation();
+		}
+
+		disconnectedCallback() {
+			this.motionPreference.removeEventListener('change', this.handleMotionPreference);
+			this.clearPopulation();
+		}
+
+		// Rebuilds the layer when the operating-system motion preference changes.
+		private handleMotionPreference = () => this.updatePopulation();
+
+		private updatePopulation() {
+			this.clearPopulation();
+			if (this.motionPreference.matches) return;
+
+			// Seeds a few petals so the column is not empty before the first spawn tick.
+			for (let index = 0; index < INITIAL_SAKURA_COUNT; index += 1) {
+				this.spawnFlower(true);
+			}
+
+			this.spawnTimer = window.setInterval(() => {
+				const canSpawn = this.animations.size < MAX_SAKURA_COUNT;
+				if (canSpawn && Math.random() < 0.5) this.spawnFlower();
+			}, SPAWN_INTERVAL);
+		}
+
+		// Creates one falling petal that fades out between 40% and 60% of the viewport.
+		private spawnFlower(seedProgress = false) {
+			if (!this.isConnected || this.motionPreference.matches) return;
+
+			const flower = document.createElement('span');
+			flower.className = 'ambient-sakura__flower';
+			flower.innerHTML = FLOWER_MARKUP;
+			flower.style.setProperty('--sakura-sway-duration', `${randomBetween(2400, 4200)}ms`);
+			this.append(flower);
+
+			const columnWidth = this.clientWidth || window.innerWidth * 0.27;
+			flower.style.left = `${randomBetween(0, columnWidth)}px`;
+
+			const viewportHeight = window.innerHeight;
+			const startY = -48;
+			const fadeStartY = viewportHeight * 0.4;
+			const endY = viewportHeight * 0.6;
+			const fadeStartOffset = (fadeStartY - startY) / (endY - startY);
+
+			const scale = randomBetween(0.7, 1.25);
+			const duration = randomBetween(4500, 9000);
+
+			const keyframes: Keyframe[] = [
+				{ transform: `translateY(${startY}px) scale(${scale})`, opacity: 1 },
+				{ transform: `translateY(${fadeStartY}px) scale(${scale})`, opacity: 1, offset: fadeStartOffset },
+				{ transform: `translateY(${endY}px) scale(${scale})`, opacity: 0 },
+			];
+
+			const animation = flower.animate(keyframes, { duration, easing: 'linear' });
+
+			this.animations.add(animation);
+			if (seedProgress) animation.currentTime = randomBetween(0, duration * fadeStartOffset * 0.9);
+
+			animation.onfinish = () => {
+				this.animations.delete(animation);
+				flower.remove();
+			};
+		}
+
+		// Cancels active falls before rebuilding or disconnecting the layer.
+		private clearPopulation() {
+			window.clearInterval(this.spawnTimer);
+			this.spawnTimer = 0;
+			this.animations.forEach((animation) => animation.cancel());
+			this.animations.clear();
+			this.replaceChildren();
+		}
+	}
+
+	if (!customElements.get('ambient-sakura')) {
+		customElements.define('ambient-sakura', AmbientSakura);
+	}
+</script>
+
+<style>
+	/* Keeps the falling petals behind the navigation controls and above its backdrop. */
+	.ambient-sakura {
+		position: fixed;
+		inset: 0 auto 0 0;
+		z-index: -1;
+		width: var(--site-navigation-width);
+		display: block;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	:global(.ambient-sakura__flower) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 1.5rem;
+		height: 1.5rem;
+		color: var(--color-ambient-sakura);
+		filter: drop-shadow(var(--shadow-ambient-sakura));
+		transform-origin: center;
+		will-change: transform, opacity;
+	}
+
+	:global(.ambient-sakura__sway) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		animation: ambient-sakura-sway var(--sakura-sway-duration) ease-in-out infinite;
+	}
+
+	:global(.ambient-sakura__sway svg) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* Gives each petal a gentle side-to-side drift and tumble while it falls. */
+	@keyframes ambient-sakura-sway {
+		0%, 100% { transform: translateX(-0.45rem) rotate(-16deg); }
+		25% { transform: translateX(0.15rem) rotate(-6deg); }
+		50% { transform: translateX(0.5rem) rotate(9deg); }
+		75% { transform: translateX(-0.1rem) rotate(15deg); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ambient-sakura { display: none; }
+	}
+</style>

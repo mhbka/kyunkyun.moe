@@ -30,6 +30,8 @@ const { mini = false } = Astro.props;
 	// Initializes quotes in the current page after each client-side navigation.
 	function bindQuoteOutputs() {
 		document.querySelectorAll<HTMLElement>('.quote-output').forEach((output) => {
+		if (output.dataset.quoteBound === 'true') return;
+		output.dataset.quoteBound = 'true';
 		const quote = output.querySelector<HTMLElement>('.quote-text code')!;
 		const retry = output.querySelector<HTMLButtonElement>('.quote-retry')!;
 		let isLoading = false;
@@ -75,6 +77,7 @@ const { mini = false } = Astro.props;
 		});
 	}
 
+	bindQuoteOutputs();
 	document.addEventListener('astro:page-load', bindQuoteOutputs);
 </script>
 

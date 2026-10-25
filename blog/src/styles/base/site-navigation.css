@@ -14,13 +14,24 @@
 	position: fixed;
 	inset: 0 auto 0 0;
 	width: calc(var(--site-navigation-width) + var(--site-navigation-fade));
-	background: linear-gradient(to right, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - var(--site-navigation-fade)), transparent 100%);
+	background:
+		linear-gradient(to bottom, rgb(255 193 218 / 42%) 0%, rgb(255 193 218 / 42%) 20%, transparent 60%),
+		var(--color-navigation-background);
+	/* Fades the whole backdrop (pink wash and white) toward the content area. */
+	-webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
+	mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
 	pointer-events: none;
 	z-index: -1;
 }
 .site-layout[data-logo-cutout]::before {
-	-webkit-mask-image: radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%);
-	mask-image: radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%);
+	-webkit-mask-image:
+		radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%),
+		linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-image:
+		radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%),
+		linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
+	mask-composite: intersect;
 }
 .site-header {
 	position: fixed;
@@ -58,6 +69,18 @@
 	transition: transform 240ms ease-out;
 }
 .site-logo:hover .site-logo__bubble { transform: translate(-50%, -50%) rotate(-3deg) scale(1.07); }
+/* Adds a pink gradient washing down from the top of the bubble, layered above the purple gradient. */
+.site-logo__bubble::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: linear-gradient(180deg, var(--color-logo-bubble-pink) 0%, transparent 64%) center / 100% 100% no-repeat;
+	opacity: 0.5;
+	transition: opacity 240ms ease-out;
+	pointer-events: none;
+}
+.site-logo:hover .site-logo__bubble::before { opacity: 1; }
 .site-logo__bubble::after {
 	content: '';
 	position: absolute;
@@ -96,10 +119,11 @@
 @supports (background-clip: text) or (-webkit-background-clip: text) {
 	.site-header .site-logo__fill {
 		background-image:
+			linear-gradient(180deg, var(--color-logo-bubble-pink) 0%, transparent 60%),
 			radial-gradient(ellipse at 88% 4%, var(--color-logo-glint) 0 14%, var(--color-logo-glint-soft) 38%, transparent 72%),
 			var(--image-page-background);
-		background-position: center, left center;
-		background-size: 100% 100%, max(100vw, 133.333vh) max(100vh, 75vw);
+		background-position: center, center, left center;
+		background-size: 100% 100%, 100% 100%, max(100vw, 133.333vh) max(100vh, 75vw);
 		background-repeat: no-repeat;
 		background-clip: text;
 		-webkit-background-clip: text;
@@ -110,7 +134,7 @@
 .site-header nav { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 2.5rem; }
 .site-header .primary-links { display: flex; flex-direction: column; gap: var(--site-navigation-gap); width: 100%; max-width: 20rem; text-align: center; }
 /* Matches page-heading typography and smoothly hands off the selected treatment. */
-.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
+.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; user-select: none; -webkit-user-select: none; transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
 .site-header .main-nav-item:hover { text-decoration: none; }
 .site-header .main-nav-item:is(.active, :hover),
 .site-header .nav-dropdown:hover > summary { transform: scale(1.08); color: var(--color-content-surface); text-shadow: var(--shadow-card-glow); }

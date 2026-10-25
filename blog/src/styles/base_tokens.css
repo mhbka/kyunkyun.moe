@@ -21,6 +21,7 @@
 	--color-logo-glint-soft: rgb(85 32 127 / 78%);
 	--color-logo-bubble-wash: rgb(255 255 255 / 50%);
 	--color-logo-bubble-purple: rgb(187 137 255 / 38%);
+	--color-logo-bubble-pink: rgb(255 182 213 / 60%);
 	--color-logo-bubble-shine: rgb(255 255 255 / 88%);
 	--color-logo-shadow: #6f7780;
 	--shadow-logo-bubble: 0 0 0.04em rgb(255 255 255 / 82%), 0 0 0.18em rgb(111 187 255 / 48%), 0 0 0.36em rgb(76 82 92 / 68%);
@@ -33,6 +34,9 @@
 	--color-ambient-butterfly-fill: #ffffff;
 	--shadow-ambient-butterfly: 0 0 2px rgb(255 255 255 / 95%);
 	--shadow-ambient-butterfly-pulse: 0 0 3px rgb(255 255 255 / 100%), 0 0 9px rgb(255 255 255 / 80%);
+	/* Matches the nav gradient's pink (255 193 218 @ 42%) composited over white, so petals vanish against the gradient top. */
+	--color-ambient-sakura: rgb(255 229 239);
+	--shadow-ambient-sakura: 0 0 2px rgb(255 229 239 / 95%), 0 0 6px rgb(255 229 239 / 60%);
 	--color-danger: #ffe0e3;
 	--color-success: #c7f4dc;
 	--color-overlay: rgb(8 47 83 / 65%);

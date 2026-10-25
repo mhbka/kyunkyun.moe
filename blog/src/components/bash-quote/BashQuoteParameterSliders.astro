@@ -6,7 +6,6 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 ---
 
 <section class="score-limits" aria-label="quote score limits">
-	<p class="quote-count" aria-live="polite">loading matching quotes…</p>
 	{SCORE_NAMES.map((name) => (
 		<fieldset data-score={name}>
 			<legend>{scoreLabel(name)}</legend>
@@ -17,7 +16,6 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 </section>
 
 <script>
-	import { getBashQuoteCount } from '../../lib/api/bash-quotes.ts';
 	import { loadBashQuoteParameters, saveBashQuoteParameters } from '../../lib/local-storage/bash-quote-parameters.ts';
 	import type { ScoreLimits, ScoreName } from '../../lib/models/bash-quotes.ts';
 
@@ -26,7 +24,8 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 	const sliders = document.querySelector<HTMLElement>('.score-limits');
 	if (!sliders) return;
 	const root = sliders;
-	const count = root.querySelector<HTMLElement>('.quote-count')!;
+	if (root.dataset.scoreLimitsBound === 'true') return;
+	root.dataset.scoreLimitsBound = 'true';
 
 	function readParameters(): ScoreLimits {
 		const parameters = {} as ScoreLimits;
@@ -57,14 +56,6 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 		});
 	}
 
-	async function updateCount() {
-		try {
-			count.textContent = `${(await getBashQuoteCount()).toLocaleString()} matching quotes`;
-		} catch (error) {
-			count.textContent = error instanceof Error ? error.message : 'unable to load quotes';
-		}
-	}
-
 	root.querySelectorAll<HTMLInputElement>('[data-limit]').forEach((input) => {
 		input.addEventListener('input', () => {
 			const field = input.closest<HTMLElement>('[data-score]')!;
@@ -77,19 +68,17 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 			updateOutput(input);
 			saveBashQuoteParameters(readParameters());
 		});
-		input.addEventListener('change', () => void updateCount());
 	});
 
 	applySavedParameters();
-	void updateCount();
 	}
 
+	bindScoreLimits();
 	document.addEventListener('astro:page-load', bindScoreLimits);
 </script>
 
 <style>
 	.score-limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 1rem 0; }
-	.quote-count { grid-column: 1 / -1; margin: 0; color: var(--color-muted); }
 	fieldset { min-width: 0; border: var(--border-width) solid var(--color-subtle); }
 	legend { text-transform: lowercase; }
 	label { display: grid; grid-template-columns: auto 3rem; gap: 0.25rem 0.5rem; align-items: center; font-size: 0.8em; }
