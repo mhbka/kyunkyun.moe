@@ -122,12 +122,24 @@ test('gets an authenticated post by ID for editing', async () => {
 });
 
 test('sends requested pagination values when listing posts', async () => {
-	const mock = createFetch(Response.json([]));
+	const page = { posts: [{ id: 'post-41', title: 'Post 41' }], hasMore: true };
+	const mock = createFetch(Response.json(page));
 	const api = createBlogApi({ baseUrl: 'https://api.example.test', fetch: mock.fetch });
 
-	await api.listPosts(3, 20);
+	assert.deepEqual(await api.listPosts(3, 20), page);
 
 	assert.equal(mock.calls[0][0], 'https://api.example.test/posts?page=3&size=20');
+	assert.equal(mock.calls.length, 1);
+});
+
+test('returns empty and final post pages without a follow-up request', async () => {
+	for (const posts of [[], [{ id: 'last-post' }]]) {
+		const page = { posts, hasMore: false };
+		const mock = createFetch(Response.json(page));
+		const api = createBlogApi({ baseUrl: 'https://api.example.test', fetch: mock.fetch });
+		assert.deepEqual(await api.listPosts(1, 20), page);
+		assert.equal(mock.calls.length, 1);
+	}
 });
 
 test('lists tags and filters posts by a tag', async () => {
@@ -137,7 +149,7 @@ test('lists tags and filters posts by a tag', async () => {
 	assert.deepEqual(await tagsApi.listTags(), [{ tag: 'rust', count: 3 }]);
 	assert.equal(tagsMock.calls[0][0], 'https://api.example.test/tags');
 
-	const postsMock = createFetch(Response.json([]));
+	const postsMock = createFetch(Response.json({ posts: [], hasMore: false }));
 	const postsApi = createBlogApi({ baseUrl: 'https://api.example.test', fetch: postsMock.fetch });
 	await postsApi.listPosts(1, 20, 'rust');
 	assert.equal(postsMock.calls[0][0], 'https://api.example.test/posts?page=1&size=20&tag=rust');
@@ -226,7 +238,7 @@ test('throws an ApiError that includes the response status and body', async () =
 
 
 test('preserves all selected tags when paging posts and pix', async () => {
-	const mock = createFetchSequence([Response.json([]), Response.json({ images: [], hasMore: false, nextBefore: null })]);
+	const mock = createFetchSequence([Response.json({ posts: [], hasMore: false }), Response.json({ images: [], hasMore: false, nextBefore: null })]);
 	const api = createBlogApi({ baseUrl: 'https://api.example.test', fetch: mock.fetch });
 	const tags = ['astro', 'a,b', 'c++'];
 	await api.listPosts(2, 20, tags);

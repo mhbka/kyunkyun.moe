@@ -134,4 +134,9 @@ import { WALKERS } from '../consts';
 		pointer-events: auto;
 		transform: translateX(-50%) scaleX(var(--walker-mirror));
 	}
+
+	@media (max-width: 800px) {
+		/* Keeps the cursor-following decoration off compact touch layouts. */
+		.walker { display: none; }
+	}
 </style>

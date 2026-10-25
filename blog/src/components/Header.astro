@@ -13,9 +13,11 @@ interface Props {
 const { isLoggedIn = false } = Astro.props;
 const isNonsenseActive = Astro.url.pathname.startsWith('/nonsense/');
 const logoParts = [
+	{ text: '(', position: 'opening' },
 	{ text: '\u304d', position: 'start' },
 	{ text: '\u3085', position: 'crest' },
 	{ text: '\u3093', position: 'end' },
+	{ text: ')', position: 'closing' },
 	{ text: '\u3005', position: 'repeater' },
 	{ text: '.moe', position: 'suffix' },
 ];

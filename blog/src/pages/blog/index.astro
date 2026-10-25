@@ -19,7 +19,7 @@ const page = parsePage(Astro.url.searchParams.get('page'));
 const selectedTags = readTagFilters(Astro.url.searchParams);
 const [result, tagsResult] = await Promise.all([
 	fetchResult(
-	() => blogApi.listPosts(page, pageSize + 1, selectedTags),
+	() => blogApi.listPosts(page, pageSize, selectedTags),
 	'We could not load the blog posts. Please try again shortly.',
 ),
 	fetchResult(
@@ -27,8 +27,8 @@ const [result, tagsResult] = await Promise.all([
 	'We could not load the blog tags. Please try again shortly.',
 ),
 ]);
-const posts = result.data?.slice(0, pageSize) ?? [];
-const hasNext = (result.data?.length ?? 0) > pageSize;
+const posts = result.data?.posts ?? [];
+const hasNext = result.data?.hasMore ?? false;
 const tags = tagsResult.data ?? [];
 
 const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies, { includeAuthor: true });

@@ -1,5 +1,6 @@
 import { blogApi } from '../../lib/api.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
+import { createTweetPreviews } from './previews.ts';
 
 /** Defines the maximum number of attachments accepted by one tweet. */
 export const MAX_MEDIA_COUNT = 5;
@@ -21,23 +22,17 @@ export function initTweetTimeline(timeline: HTMLElement) {
 	const viewerVideo = timeline.querySelector<HTMLVideoElement>('[data-tweet-viewer-video]');
 	let selectedFiles: File[] = [];
 
-	/** Displays a lightweight preview for every selected attachment. */
-	function renderPreviews(selectedFiles: File[]) {
-		if (!previews) return;
-		previews.replaceChildren(...selectedFiles.map((file) => {
-			const url = URL.createObjectURL(file);
-			const preview = file.type.startsWith('video/') ? document.createElement('video') : document.createElement('img');
-			preview.src = url;
-			preview.onloadeddata = () => URL.revokeObjectURL(url);
-			if (preview instanceof HTMLVideoElement) preview.muted = true;
-			return preview;
-		}));
-	}
+	const attachmentPreviews = previews ? createTweetPreviews(previews) : undefined;
+	// Releases preview URLs when navigation removes the timeline.
+	window.addEventListener('pagehide', event => {
+		if (!event.persisted) attachmentPreviews?.clear();
+	});
+	document.addEventListener('astro:before-swap', () => attachmentPreviews?.clear(), { once: true });
 
 	body?.addEventListener('input', () => { if (count) count.textContent = `${body.value.length}/500`; });
 	if (dropzone) initFileDropzone(dropzone, (newFiles) => {
 		selectedFiles = [...newFiles];
-		renderPreviews(selectedFiles);
+		attachmentPreviews?.render(selectedFiles);
 	});
 
 	timeline.addEventListener('click', async (event) => {

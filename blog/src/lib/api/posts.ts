@@ -1,5 +1,5 @@
 import type { ApiRequest } from '../models/api.ts';
-import type { CreatePostInput, DraftPostSummary, Post, PostSummary, UpdatePostInput } from '../models/posts.ts';
+import type { CreatePostInput, DraftPostSummary, Post, PostPage, UpdatePostInput } from '../models/posts.ts';
 
 /** Creates requests for reading and managing blog posts. */
 export function createPostsApi(request: ApiRequest) {
@@ -9,7 +9,7 @@ export function createPostsApi(request: ApiRequest) {
 			const query = new URLSearchParams({ page: String(page), size: String(size) });
 			if (Array.isArray(tag)) query.set('tags', JSON.stringify(tag));
 			else if (tag) query.set('tag', tag);
-			return request<PostSummary[]>(`/posts?${query}`);
+			return request<PostPage>(`/posts?${query}`);
 		},
 		listDrafts: (token: string) => request<DraftPostSummary[]>('/posts/drafts', {}, token),
 		getPost: (slug: string) => request<Post>(`/posts/${encodeURIComponent(slug)}`),

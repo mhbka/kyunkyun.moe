@@ -29,7 +29,7 @@
 	box-sizing: border-box;
 	width: var(--site-navigation-width);
 	height: 100dvh;
-	padding: calc(clamp(2rem, 0vh, 6rem) + var(--site-navigation-offset)) 2rem 2rem;
+	padding: calc(2rem + var(--site-navigation-offset)) 2rem 2rem;
 	display: flex;
 	flex-direction: column;
 	gap: 2.5rem;
@@ -71,20 +71,24 @@
 	pointer-events: none;
 }
 .site-logo__layers { position: relative; z-index: 1; display: inline-grid; }
-.site-logo__layer { display: inline-flex; align-items: baseline; grid-area: 1 / 1; padding-block: 0.2em 0.65em; margin-block: -0.2em -0.65em; }
-.site-logo__part { position: relative; display: inline-block; transition: top 220ms ease-out, margin-left 220ms ease-out; }
-/* Pulls the hiragana into a rising crest before stepping the suffix downward. */
-.site-logo__part--start { top: 0.08em; }
-.site-logo__part--crest { top: -0.14em; margin-left: -0.3em; }
-.site-logo__part--end { top: -0.06em; margin-left: -0.34em; }
+.site-logo__layer { display: inline-flex; align-items: baseline; grid-area: 1 / 1; padding: 0.2em 0.3em 0.65em; margin: -0.2em -0.3em -0.65em; }
+.site-logo__part { position: relative; left: 0; display: inline-block; transition: top 220ms ease-out, left 220ms ease-out; }
+/* Keeps the parenthesized name level before stepping the suffix downward. */
+.site-logo__part--opening { top: 0; margin-right: -0.17em; }
+.site-logo__part--start { top: 0; }
+.site-logo__part--crest { top: 0; margin-left: -0.3em; }
+.site-logo__part--end { top: 0; margin-left: -0.34em; }
+.site-logo__part--closing { top: 0; margin-left: -0.18em; }
 .site-logo__part--repeater { top: 0.4em; margin-left: -0.38em; }
 .site-logo__part--suffix { top: 0.82em; margin-left: -0.5em; font-size: 0.58em; }
 /* Reduces the glyph overlap to spread the wordmark without scaling it. */
-.site-logo:hover .site-logo__part--start { top: -0.02em; }
-.site-logo:hover .site-logo__part--crest { top: -0.28em; margin-left: -0.22em; }
-.site-logo:hover .site-logo__part--end { top: -0.24em; margin-left: -0.25em; }
-.site-logo:hover .site-logo__part--repeater { top: 0.18em; margin-left: -0.28em; }
-.site-logo:hover .site-logo__part--suffix { top: 0.48em; margin-left: -0.38em; }
+.site-logo:hover .site-logo__part--opening { top: -0.14em; left: -0.26em; }
+.site-logo:hover .site-logo__part--start { top: -0.14em; left: -0.2em; }
+.site-logo:hover .site-logo__part--crest { top: -0.14em; left: -0.12em; }
+.site-logo:hover .site-logo__part--end { top: -0.14em; left: -0.04em; }
+.site-logo:hover .site-logo__part--closing { top: -0.14em; left: 0.04em; }
+.site-logo:hover .site-logo__part--repeater { top: 0.18em; left: 0.15em; }
+.site-logo:hover .site-logo__part--suffix { top: 0.48em; left: 0.27em; }
 .site-logo__shadow { color: var(--color-logo-shadow); -webkit-text-stroke: var(--logo-outline-width) var(--color-logo-shadow); transform: translate(0.04em, 0.05em); filter: blur(0.008em); }
 .site-logo__outline { color: var(--color-heading); -webkit-text-stroke: var(--logo-outline-width) var(--color-heading); filter: drop-shadow(var(--glow-logo-outline-inner)) drop-shadow(var(--glow-logo-outline-outer)); }
 .site-logo__fill { position: relative; color: var(--color-navigation-text); }

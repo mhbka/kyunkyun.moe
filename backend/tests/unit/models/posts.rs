@@ -1,6 +1,46 @@
-use super::{CreatePostRequest, DraftPostSummary, PostStatus, PostSummary, UpdatePostRequest};
+use super::{
+    CreatePostRequest, DraftPostSummary, PostPage, PostStatus, PostSummary, UpdatePostRequest,
+};
 use chrono::Utc;
 use uuid::Uuid;
+
+/// Builds ordered summaries for pagination boundary tests.
+fn summaries(count: usize) -> Vec<PostSummary> {
+    (0..count)
+        .map(|index| PostSummary {
+            id: Uuid::from_u128(index as u128),
+            title: format!("Post {index}"),
+            slug: format!("post-{index}"),
+            thumbnail_url: None,
+            tags: vec![],
+            published_at: Utc::now(),
+        })
+        .collect()
+}
+
+#[test]
+fn trims_lookahead_and_reports_more_posts() {
+    let page = PostPage::from_posts(summaries(21), 20);
+    assert!(page.has_more);
+    assert_eq!(page.posts.len(), 20);
+    assert_eq!(page.posts.first().unwrap().id, Uuid::from_u128(0));
+    assert_eq!(page.posts.last().unwrap().id, Uuid::from_u128(19));
+}
+
+#[test]
+fn empty_partial_and_exact_pages_have_no_more_posts() {
+    for count in [0, 7, 20] {
+        let page = PostPage::from_posts(summaries(count), 20);
+        assert!(!page.has_more);
+        assert_eq!(page.posts.len(), count);
+    }
+}
+
+#[test]
+fn serializes_post_page_with_camel_case_metadata() {
+    let json = serde_json::to_value(PostPage::from_posts(vec![], 20)).unwrap();
+    assert_eq!(json, serde_json::json!({ "posts": [], "hasMore": false }));
+}
 
 #[test]
 fn serializes_status_as_lowercase() {

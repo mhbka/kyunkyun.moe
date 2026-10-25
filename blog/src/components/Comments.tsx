@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient } from '../lib/auth/supabase';
 import type { Comment } from '../lib/models/comments';
 import { Button } from './ui/react/Button';
 import { Textarea } from './ui/react/Textarea';
+import { runCommentAction } from '../lib/comment-action';
 
 interface Props {
 	postId: string;
@@ -19,7 +20,7 @@ interface CommentNodeProps {
 	depth: number;
 	replyingTo?: string;
 	editingId?: string;
-	onReply: (parentCommentId: string, body: string) => Promise<void>;
+	onReply: (body: string, parentCommentId: string) => Promise<void>;
 	onEdit: (commentId: string, body: string) => Promise<void>;
 	onDelete: (commentId: string) => Promise<void>;
 	setReplyingTo: (id?: string) => void;
@@ -43,6 +44,7 @@ function CommentNode({
 	const isOwner = comment.authorId === currentUserId;
 	const isDeleted = Boolean(comment.deletedAt);
 	const children = childrenByParent.get(comment.id) ?? [];
+	const [error, setError] = useState('');
 
 	/** Submits a reply to the current comment. */
 	async function submitReply(event: SubmitEvent<HTMLFormElement>) {
@@ -50,8 +52,8 @@ function CommentNode({
 		const form = event.currentTarget;
 		const body = new FormData(form).get('body')?.toString().trim();
 		if (!body) return;
-		await onReply(comment.id, body);
-		form.reset();
+		const saved = await runCommentAction(() => onReply(body, comment.id), setError);
+		if (saved) form.reset();
 	}
 
 	/** Submits an edit to the current comment. */
@@ -59,11 +61,12 @@ function CommentNode({
 		event.preventDefault();
 		const body = new FormData(event.currentTarget).get('body')?.toString().trim();
 		if (!body) return;
-		await onEdit(comment.id, body);
+		await runCommentAction(() => onEdit(comment.id, body), setError);
 	}
 
 	return (
 		<article className="comment" style={{ '--depth': Math.min(depth, 4) } as CSSProperties}>
+			{error && <p role="alert">{error}</p>}
 			<p className="comment-meta">
 				{isOwner ? 'You' : 'Member'} · {new Date(comment.createdAt).toLocaleString()}
 			</p>
@@ -80,7 +83,7 @@ function CommentNode({
 				<div className="comment-actions">
 					<Button type="button" onClick={() => setReplyingTo(replyingTo === comment.id ? undefined : comment.id)}>Reply</Button>
 					{isOwner && <Button type="button" onClick={() => setEditingId(comment.id)}>Edit</Button>}
-					{isOwner && <Button type="button" onClick={() => void onDelete(comment.id)}>Delete</Button>}
+					{isOwner && <Button type="button" onClick={() => void runCommentAction(() => onDelete(comment.id), setError)}>Delete</Button>}
 				</div>
 			)}
 			{replyingTo === comment.id && (

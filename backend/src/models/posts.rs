@@ -42,6 +42,23 @@ pub struct PostSummary {
     pub published_at: DateTime<Utc>,
 }
 
+/// A published-post page with availability of the next page.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PostPage {
+    pub posts: Vec<PostSummary>,
+    pub has_more: bool,
+}
+
+impl PostPage {
+    /// Removes the lookahead row while retaining whether another page exists.
+    pub fn from_posts(mut posts: Vec<PostSummary>, size: usize) -> Self {
+        let has_more = posts.len() > size;
+        posts.truncate(size);
+        Self { posts, has_more }
+    }
+}
+
 /// Summary of a draft post for an author's private drafts listing.
 #[derive(Debug, Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]

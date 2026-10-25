@@ -22,7 +22,7 @@ const Item = cards ? EdgeCard : 'li';
 <ul
 	class:list={['post-list', { 'post-list--cards': cards }]}
 	id={variant === 'drafts' ? 'draft-list' : 'published-list'}
-	data-page-size={variant === 'published' ? pageSize + 1 : undefined}
+	data-page-size={variant === 'published' ? pageSize : undefined}
 	data-is-author={variant === 'published' && isAuthor ? 'true' : undefined}
 	aria-live={variant === 'published' ? 'polite' : undefined}
 >
@@ -60,15 +60,16 @@ const Item = cards ? EdgeCard : 'li';
 		import { blogApi } from '../lib/api.ts';
 		import { createSupabaseBrowserClient } from '../lib/auth/supabase.ts';
 		import type { PostSummary } from '../lib/models/posts.ts';
+		import { parsePage } from '../lib/pagination.ts';
 
 		let list: HTMLUListElement | null = null;
-		let pageSize = 21;
+		let pageSize = 20;
 		let isAuthor = false;
 
 		// Updates references to the list rendered by the current routed page.
 		function bindPublishedList() {
 			list = document.querySelector<HTMLUListElement>('#published-list');
-			pageSize = Number(list?.dataset.pageSize ?? '21');
+			pageSize = Number(list?.dataset.pageSize ?? '20');
 			isAuthor = list?.dataset.isAuthor === 'true';
 		}
 
@@ -148,33 +149,41 @@ const Item = cards ? EdgeCard : 'li';
 			return item;
 		}
 
-		function renderPagination(tags: string[], hasNext: boolean) {
+		// Rebuilds both directions so browser history restores the requested page.
+		function renderPagination(tags: string[], page: number, hasNext: boolean) {
 			const pagination = document.querySelector<HTMLElement>('.pagination');
 			if (!pagination) return;
 
-			pagination.hidden = !hasNext;
-			if (!hasNext) return;
-			const link = document.createElement('a');
-			link.className = 'ui-link ui-button';
-			const query = new URLSearchParams({ page: '2' });
-			tags.forEach(tag => query.append('tag', tag));
-			link.href = `/blog/?${query}`;
-			link.textContent = 'older posts';
-			pagination.replaceChildren(link);
+			pagination.hidden = page <= 1 && !hasNext;
+			pagination.replaceChildren();
+			const destinations = [];
+			if (page > 1) destinations.push({ page: page - 1, label: 'newer posts' });
+			if (hasNext) destinations.push({ page: page + 1, label: 'older posts' });
+			for (const destination of destinations) {
+				const link = document.createElement('a');
+				link.className = 'ui-link ui-button';
+				const query = new URLSearchParams({ page: String(destination.page) });
+				tags.forEach(tag => query.append('tag', tag));
+				link.href = `/blog/?${query}`;
+				link.textContent = destination.label;
+				pagination.append(link);
+			}
 		}
 
 		let filterRequest = 0;
+		bindPublishedList();
 		document.addEventListener('astro:page-load', bindPublishedList);
 		document.addEventListener('posts:filter', async (event) => {
 			if (!list) return;
 			const tag = (event as CustomEvent<string[]>).detail;
+			const page = parsePage(new URL(window.location.href).searchParams.get('page'));
 			const request = ++filterRequest;
 			list.setAttribute('aria-busy', 'true');
 			try {
-				const posts = await blogApi.listPosts(1, pageSize, tag);
+				const { posts, hasMore } = await blogApi.listPosts(page, pageSize, tag);
 				if (request !== filterRequest) return;
-				list.replaceChildren(...posts.slice(0, pageSize - 1).map(renderPost));
-				renderPagination(tag, posts.length === pageSize);
+				list.replaceChildren(...posts.map(renderPost));
+				renderPagination(tag, page, hasMore);
 			} catch {
 				if (request !== filterRequest) return;
 				window.alert('Unable to filter posts. Please try again shortly.');

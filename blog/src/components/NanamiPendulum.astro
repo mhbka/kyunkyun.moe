@@ -11,25 +11,35 @@
 ></svg>
 
 <script is:inline type="module">
-	import { mountPendulum } from '/simplemotion/pendulum-embed.js';
+	const desktop = window.matchMedia('(min-width: 801px)');
+	let disposePendulum;
 
 	// Reconnects the SVG if a client-side navigation supplied a fresh element.
-	function mountCurrentPendulum() {
+	async function mountCurrentPendulum() {
+		if (!desktop.matches) return;
 		const svg = document.querySelector('.site-foreground__pendulum');
 		if (!(svg instanceof SVGSVGElement) || svg.dataset.mounted) return;
 
 		svg.dataset.mounted = 'true';
-		void mountPendulum(svg, {
-			jsonUrl: svg.dataset.jsonUrl,
-			imageDirectoryUrl: svg.dataset.imageDirectoryUrl,
-			imagePrefix: svg.dataset.imagePrefix,
-		})
-			// Reports decoration failures without blocking the page content.
-			.catch((error) => console.warn('Could not load the hanging animation.', error))
-			// Reveals the page after the first frame, including when assets fail.
-			.finally(() => requestAnimationFrame(() => window.dispatchEvent(new Event('nanami-pendulum-ready'))));
+		try {
+			const { mountPendulum } = await import('/simplemotion/pendulum-embed.js');
+			const dispose = await mountPendulum(svg, {
+				jsonUrl: svg.dataset.jsonUrl,
+				imageDirectoryUrl: svg.dataset.imageDirectoryUrl,
+				imagePrefix: svg.dataset.imagePrefix,
+			});
+			if (svg.isConnected) disposePendulum = dispose;
+			else dispose();
+		} catch (error) {
+			console.warn('Could not load the hanging animation.', error);
+		} finally {
+			// Keeps the page reveal tied to readiness, including when assets fail.
+			requestAnimationFrame(() => window.dispatchEvent(new Event('nanami-pendulum-ready')));
+		}
 	}
 
 	mountCurrentPendulum();
+	desktop.addEventListener('change', mountCurrentPendulum);
+	document.addEventListener('astro:before-swap', () => disposePendulum?.());
 	document.addEventListener('astro:page-load', mountCurrentPendulum);
 </script>

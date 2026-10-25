@@ -3,7 +3,8 @@ import { Crepe } from '@milkdown/crepe';
 import { blogApi } from '../../lib/api.ts';
 import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 import { uploadImage } from '../../lib/image-upload.ts';
-import { addTag, normalizeTag } from '../../lib/tags.ts';
+import { initTagInput } from '../tag-input.ts';
+import { trackEditorChanges } from './changes.ts';
 
 /** Initializes the Milkdown editor and its post form controls. */
 async function initPostEditor() {
@@ -11,13 +12,12 @@ async function initPostEditor() {
 	const root = document.querySelector<HTMLElement>('#post-content');
 	const title = document.querySelector<HTMLTextAreaElement>('#post-title');
 	const slug = document.querySelector<HTMLInputElement>('#post-slug');
-	const tagsInput = document.querySelector<HTMLInputElement>('#post-tags');
-	const tagList = document.querySelector<HTMLUListElement>('[data-tag-list]');
+	const tagRoot = form?.querySelector<HTMLElement>('[data-tag-input]');
 	const tagSuggestions = document.querySelector<HTMLDataListElement>('#post-tag-suggestions');
 	const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
 	const status = document.querySelector<HTMLElement>('[data-editor-status]');
 
-	if (!form || !root || !title || !slug || !tagsInput || !tagList || !button || !status) return;
+	if (!form || !root || !title || !slug || !tagRoot || !button || !status) return;
 
 	const titleInput = title;
 
@@ -28,18 +28,15 @@ async function initPostEditor() {
 	}
 
 	resizeTitle();
-	// Marks the editor as dirty whenever a control or the content editor changes.
-	form.addEventListener('input', () => { form.dataset.dirty = 'true'; });
-	form.addEventListener('change', () => { form.dataset.dirty = 'true'; });
+	const changes = trackEditorChanges(form);
 	titleInput.addEventListener('input', resizeTitle);
 
 	const slugInput = slug;
-	const selectedTagsInput = tagsInput;
-	const selectedTagList = tagList;
+	const tagInput = initTagInput(tagRoot);
+	if (!tagInput) return;
 	const mediaApiUrl = `${import.meta.env.BACKEND_URL.replace(/\/$/, '')}/media/uploads`;
 	const supabaseClient = createSupabaseBrowserClient();
 	let postId = form.dataset.postId;
-	let tags: string[] = JSON.parse(form.dataset.initialTags ?? '[]');
 
 	/** Returns a validation message for an invalid custom slug. */
 	function slugError(value: string) {
@@ -56,29 +53,6 @@ async function initPostEditor() {
 		return error;
 	}
 
-	/** Renders the selected tag buttons. */
-	function renderTags() {
-		selectedTagList.replaceChildren(...tags.map((tag) => {
-			const item = document.createElement('li');
-			const removeButton = document.createElement('button');
-			removeButton.type = 'button';
-			removeButton.className = 'ui-button tag';
-			removeButton.setAttribute('aria-label', `Remove ${tag} tag`);
-			removeButton.dataset.tag = tag;
-			removeButton.textContent = `${tag} ×`;
-			item.append(removeButton);
-			return item;
-		}));
-	}
-
-	/** Adds the current input value to the selected tags. */
-	function commitTag() {
-		if (!selectedTagsInput.value) return;
-		tags = addTag(tags, selectedTagsInput.value);
-		selectedTagsInput.value = '';
-		renderTags();
-	}
-
 	/** Uploads an editor image after checking the draft and session. */
 	async function uploadImageFile(file: File): Promise<string> {
 		if (!file.type.startsWith('image/')) throw new Error('Only image files can be uploaded.');
@@ -90,7 +64,6 @@ async function initPostEditor() {
 	}
 
 	slug.addEventListener('input', validateSlug);
-	renderTags();
 
 	void blogApi.listTags().then((availableTags) => {
 		tagSuggestions?.replaceChildren(...availableTags.map(({ tag, count }) => {
@@ -101,27 +74,6 @@ async function initPostEditor() {
 		}));
 	}).catch(() => {
 		// Tag suggestions are optional; authors can always add a new tag.
-	});
-
-	tagsInput.addEventListener('input', () => {
-		tagsInput.value = normalizeTag(tagsInput.value);
-	});
-	tagsInput.addEventListener('keydown', (event) => {
-		if (event.key === ' ' || event.key === 'Enter') {
-			event.preventDefault();
-			commitTag();
-		}
-		if (event.key === 'Backspace' && !tagsInput.value && tags.length) {
-			tags = tags.slice(0, -1);
-			renderTags();
-		}
-	});
-	tagList.addEventListener('click', (event) => {
-		const removeButton = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-tag]');
-		if (!removeButton?.dataset.tag) return;
-		tags = tags.filter((tag) => tag !== removeButton.dataset.tag);
-		renderTags();
-		tagsInput.focus();
 	});
 
 	// Crepe provides the standard editing controls while preserving Markdown output.
@@ -139,11 +91,21 @@ async function initPostEditor() {
 		},
 	});
 
+	// Includes toolbar and programmatic edits, which need not fire DOM input events.
+	let ready = false;
+	let savedMarkdown = (root.dataset.initialContent ?? '').trim();
+	editor.on(listener => listener.markdownUpdated((_ctx, markdown, previous) => {
+		if (ready && markdown !== previous && markdown.trim() !== savedMarkdown) changes.markDirty();
+	}));
 	await editor.create();
+	savedMarkdown = editor.getMarkdown().trim();
+	ready = true;
 
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
-		commitTag();
+		if (button.disabled) return;
+		tagInput.commit();
+		const tags = tagInput.getTags();
 		const contentMd = editor.getMarkdown().trim();
 		const postTitle = titleInput.value.trim();
 		const postSlug = slug.value.trim();
@@ -157,6 +119,7 @@ async function initPostEditor() {
 			return;
 		}
 
+		const savedRevision = changes.getRevision();
 		button.disabled = true;
 		status.textContent = postId ? 'Saving changes...' : 'Creating draft...';
 		try {
@@ -171,7 +134,10 @@ async function initPostEditor() {
 				history.replaceState(null, '', `/posts/edit/${encodeURIComponent(post.id)}`);
 				status.textContent = 'Draft created.';
 			}
-			form.dataset.dirty = 'false';
+			savedMarkdown = contentMd;
+			// Milkdown notifications are debounced; check the current content before clearing dirty state.
+			if (editor.getMarkdown().trim() !== contentMd) changes.markDirty();
+			if (!changes.markSaved(savedRevision)) status.textContent = 'Saved. You have newer unsaved changes.';
 		} catch (error) {
 			status.textContent = error instanceof Error ? error.message : 'Unable to save the post. Please try again.';
 		} finally {

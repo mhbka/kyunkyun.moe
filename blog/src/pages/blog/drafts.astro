@@ -87,58 +87,64 @@ if (isAuthor && accessToken) {
 			import { blogApi } from '../../lib/api.ts';
 			import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 
-			// Binds draft controls in the current page after each client-side navigation.
-			document.addEventListener('astro:page-load', () => {
-			const dialog = document.querySelector<HTMLDialogElement>('#delete-dialog');
-			const title = document.querySelector<HTMLElement>('#delete-draft-title');
-			const error = document.querySelector<HTMLElement>('#delete-error');
-			const confirmButton = document.querySelector<HTMLButtonElement>('#confirm-delete');
-			let draftId: string | undefined;
+			const initializedLists = new WeakSet<Element>();
+			// Binds each draft list once, including on a normal page load.
+			function bindDraftControls() {
+				const list = document.querySelector('#draft-list');
+				if (!list || initializedLists.has(list)) return;
+				initializedLists.add(list);
+				const dialog = document.querySelector<HTMLDialogElement>('#delete-dialog');
+				const title = document.querySelector<HTMLElement>('#delete-draft-title');
+				const error = document.querySelector<HTMLElement>('#delete-error');
+				const confirmButton = document.querySelector<HTMLButtonElement>('#confirm-delete');
+				let draftId: string | undefined;
 
-			document.querySelectorAll<HTMLButtonElement>('[data-publish-id]').forEach((button) => {
-				button.addEventListener('click', async () => {
-					const draftId = button.dataset.publishId;
-					if (!draftId) return;
+				document.querySelectorAll<HTMLButtonElement>('[data-publish-id]').forEach((button) => {
+					button.addEventListener('click', async () => {
+						const draftId = button.dataset.publishId;
+						if (!draftId) return;
 
-					button.disabled = true;
+						button.disabled = true;
+						try {
+							const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
+							if (!session) throw new Error('Your session has expired. Please sign in again.');
+							await blogApi.publishPost(draftId, session.access_token);
+							document.querySelector(`[data-draft-id="${CSS.escape(draftId)}"]`)?.remove();
+						} catch (caughtError) {
+							window.alert(caughtError instanceof Error ? caughtError.message : 'Unable to publish this draft.');
+							button.disabled = false;
+						}
+					});
+				});
+
+				document.querySelectorAll<HTMLButtonElement>('[data-delete-id]').forEach((button) => {
+					button.addEventListener('click', () => {
+						draftId = button.dataset.deleteId;
+						if (title) title.textContent = button.dataset.deleteTitle ?? 'this draft';
+						if (error) error.textContent = '';
+						dialog?.showModal();
+					});
+				});
+
+				document.querySelector('#cancel-delete')?.addEventListener('click', () => dialog?.close());
+				confirmButton?.addEventListener('click', async () => {
+					if (!draftId || !confirmButton) return;
+					confirmButton.disabled = true;
 					try {
 						const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
 						if (!session) throw new Error('Your session has expired. Please sign in again.');
-						await blogApi.publishPost(draftId, session.access_token);
+						await blogApi.deletePost(draftId, session.access_token);
 						document.querySelector(`[data-draft-id="${CSS.escape(draftId)}"]`)?.remove();
+						dialog?.close();
 					} catch (caughtError) {
-						window.alert(caughtError instanceof Error ? caughtError.message : 'Unable to publish this draft.');
-						button.disabled = false;
+						if (error) error.textContent = caughtError instanceof Error ? caughtError.message : 'Unable to delete this draft.';
+					} finally {
+					confirmButton.disabled = false;
 					}
 				});
-			});
-
-			document.querySelectorAll<HTMLButtonElement>('[data-delete-id]').forEach((button) => {
-				button.addEventListener('click', () => {
-					draftId = button.dataset.deleteId;
-					if (title) title.textContent = button.dataset.deleteTitle ?? 'this draft';
-					if (error) error.textContent = '';
-					dialog?.showModal();
-				});
-			});
-
-			document.querySelector('#cancel-delete')?.addEventListener('click', () => dialog?.close());
-			confirmButton?.addEventListener('click', async () => {
-				if (!draftId || !confirmButton) return;
-				confirmButton.disabled = true;
-				try {
-					const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
-					if (!session) throw new Error('Your session has expired. Please sign in again.');
-					await blogApi.deletePost(draftId, session.access_token);
-					document.querySelector(`[data-draft-id="${CSS.escape(draftId)}"]`)?.remove();
-					dialog?.close();
-				} catch (caughtError) {
-					if (error) error.textContent = caughtError instanceof Error ? caughtError.message : 'Unable to delete this draft.';
-				} finally {
-				confirmButton.disabled = false;
-				}
-			});
-			});
+			}
+			bindDraftControls();
+			document.addEventListener('astro:page-load', bindDraftControls);
 		</script>
 	</body>
 </html>

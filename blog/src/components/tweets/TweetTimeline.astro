@@ -34,7 +34,7 @@ const pageUrl = (cursor?: string) => {
 		<slot name="filters" />
 		{isTweet && (
 			<form class="tweet-composer" data-tweet-composer>
-				<Textarea client:load data-tweet-body maxLength={500} placeholder="what's happening?" aria-label="tweet text" />
+				<Textarea data-tweet-body maxLength={500} placeholder="what's happening?" aria-label="tweet text" />
 				<div class="tweet-composer__controls">
 					<FileDropzone id="tweet-media" name="media" accept="image/avif,image/gif,image/jpeg,image/png,image/webp,video/mp4,video/webm" label="attach media..." />
 					<span data-tweet-count>0/500</span>
@@ -80,11 +80,16 @@ const pageUrl = (cursor?: string) => {
 
 <script>
 	import { initTweetTimeline } from './timeline.ts';
-	// Initializes the timeline in the current page after each client-side navigation.
-	document.addEventListener('astro:page-load', () => {
+	const initializedTimelines = new WeakSet<HTMLElement>();
+	// Initializes each timeline once on both normal loads and navigation.
+	function bindTweetTimeline() {
 		const timeline = document.querySelector<HTMLElement>('[data-tweet-timeline]');
-		if (timeline) initTweetTimeline(timeline);
-	});
+		if (!timeline || initializedTimelines.has(timeline)) return;
+		initializedTimelines.add(timeline);
+		initTweetTimeline(timeline);
+	}
+	bindTweetTimeline();
+	document.addEventListener('astro:page-load', bindTweetTimeline);
 </script>
 
 <style>

@@ -11,6 +11,12 @@ export interface PostSummary {
 	publishedAt: string;
 }
 
+/** Represents a page of published posts and whether another page is available. */
+export interface PostPage {
+	posts: PostSummary[];
+	hasMore: boolean;
+}
+
 /** Represents the fields shown for a draft post listing. */
 export interface DraftPostSummary {
 	id: string;

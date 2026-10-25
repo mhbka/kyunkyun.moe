@@ -76,7 +76,7 @@ async fn list_posts(
     State(app_state): State<AppState>,
     OptionalAuthUser(_user): OptionalAuthUser,
     Query(query): Query<ListPostsQuery>,
-) -> RouteResult<Json<Vec<PostSummary>>> {
+) -> RouteResult<Json<PostPage>> {
     let tag = super::tags::parse_filters(query.tag.as_deref(), query.tags.as_deref())?;
     let (size, offset) = query.pagination()?;
     let posts = sqlx::query_as::<_, PostSummary>(
@@ -85,17 +85,18 @@ async fn list_posts(
         from posts
         where status = 'published' and published_at <= now() and deleted_at is null
           and tags @> $1::text[]
-        order by published_at desc
+        order by published_at desc, id desc
         limit $2 offset $3
         "#,
     )
     .bind(tag)
-    .bind(size)
+    // Fetch one extra row without changing the page-size-based offset.
+    .bind(size + 1)
     .bind(offset)
     .fetch_all(&app_state.pool)
     .await?;
 
-    Ok(Json(posts))
+    Ok(Json(PostPage::from_posts(posts, size as usize)))
 }
 
 /// GET /drafts — the authenticated author's drafts, newest updated first.

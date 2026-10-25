@@ -18,7 +18,7 @@ const [pixResult, postsResult, tweetsResult] = await Promise.allSettled([
 	blogApi.listTweets(1),
 ]);
 const images = pixResult.status === 'fulfilled' ? pixResult.value.images : [];
-const post = postsResult.status === 'fulfilled' ? postsResult.value[0] : undefined;
+const post = postsResult.status === 'fulfilled' ? postsResult.value.posts[0] : undefined;
 const tweet = tweetsResult.status === 'fulfilled' ? tweetsResult.value.tweets[0] : undefined;
 ---
 

@@ -74,5 +74,6 @@ const titleParts = title.split(/(\s+)/).map((text) => ({
 		}, { signal: titleController.signal });
 	}
 
+	bindTitleWave();
 	document.addEventListener('astro:page-load', bindTitleWave);
 </script>
