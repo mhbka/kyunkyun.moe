@@ -3,7 +3,7 @@ import { basename, extname, join, relative, sep } from 'node:path';
 
 const assetNames = new Set(['pose', 'stand', 'walk-left', 'walk-right']);
 
-// Finds every directory that contains a stand image and at least one walking image.
+// Finds every directory that contains a stand image and both walking images.
 function findWalkers(directory, publicDirectory) {
 	const walkers = [];
 	const entries = readdirSync(directory, { withFileTypes: true });
@@ -20,7 +20,7 @@ function findWalkers(directory, publicDirectory) {
 		if (entry.isFile() && extname(entry.name) && assetNames.has(name)) images.set(name, fullPath);
 	}
 
-	if (images.has('stand') && (images.has('walk-left') || images.has('walk-right'))) {
+	if (images.has('stand') && images.has('walk-left') && images.has('walk-right')) {
 		const imageUrl = (name) => `/${relative(publicDirectory, images.get(name)).split(sep).join('/')}`;
 		const id = basename(directory);
 
@@ -28,10 +28,9 @@ function findWalkers(directory, publicDirectory) {
 			id,
 			label: id,
 			standSrc: imageUrl('stand'),
-			...(id === 'slime' ? { mirrorStandWithDirection: true } : {}),
 			...(images.has('pose') ? { poseSrc: imageUrl('pose') } : {}),
-			...(images.has('walk-left') ? { walkLeftSrc: imageUrl('walk-left') } : {}),
-			...(images.has('walk-right') ? { walkRightSrc: imageUrl('walk-right') } : {}),
+			walkLeftSrc: imageUrl('walk-left'),
+			walkRightSrc: imageUrl('walk-right'),
 		});
 	}
 
@@ -41,11 +40,7 @@ function findWalkers(directory, publicDirectory) {
 // Generates the client-safe walker manifest from the public asset folders.
 export function generateWalkerManifest({ publicDirectory, outputFile }) {
 	const walkerDirectory = join(publicDirectory, 'images', 'walkers');
-	const walkers = findWalkers(walkerDirectory, publicDirectory).sort((left, right) => {
-		if (left.id === 'slime') return 1;
-		if (right.id === 'slime') return -1;
-		return left.id.localeCompare(right.id);
-	});
+	const walkers = findWalkers(walkerDirectory, publicDirectory).sort((left, right) => left.id.localeCompare(right.id));
 	const source = [
 		"import type { WalkerDefinition } from '../components/walker/assets';",
 		'',

@@ -161,14 +161,6 @@ export const WALKERS = [
 		"poseSrc": "/images/walkers/uma/vodka/pose.gif",
 		"walkLeftSrc": "/images/walkers/uma/vodka/walk-left.gif",
 		"walkRightSrc": "/images/walkers/uma/vodka/walk-right.gif"
-	},
-	{
-		"id": "slime",
-		"label": "slime",
-		"standSrc": "/images/walkers/slime/stand.png",
-		"mirrorStandWithDirection": true,
-		"poseSrc": "/images/walkers/slime/pose.gif",
-		"walkLeftSrc": "/images/walkers/slime/walk-left.gif"
 	}
 ] satisfies readonly WalkerDefinition[];
 

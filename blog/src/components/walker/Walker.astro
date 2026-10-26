@@ -40,16 +40,13 @@ import { WALKERS } from '../../consts';
 		let isWalking = false;
 		let walkingDirection: -1 | 1 = -1;
 		let displayedSrc = '';
-		let isMirrored = false;
 
-		// Updates the image only when its source or orientation changes.
-		function showImage(image: { src: string; mirrored: boolean }) {
-			if (displayedSrc === image.src && isMirrored === image.mirrored) return;
+		// Updates the image only when its source changes.
+		function showImage(src: string) {
+			if (displayedSrc === src) return;
 
-			displayedSrc = image.src;
-			isMirrored = image.mirrored;
-			walker.src = image.src;
-			walker.style.setProperty('--walker-mirror', image.mirrored ? '-1' : '1');
+			displayedSrc = src;
+			walker.src = src;
 		}
 
 		// Shows the image that matches the walker's current state.
@@ -137,7 +134,6 @@ import { WALKERS } from '../../consts';
 
 <style>
 	.walker {
-		--walker-mirror: 1;
 		--walker-x: 50vw;
 		position: fixed;
 		bottom: 0;
@@ -146,7 +142,7 @@ import { WALKERS } from '../../consts';
 		width: min(12rem, 30vw);
 		height: auto;
 		pointer-events: auto;
-		transform: translateX(-50%) scaleX(var(--walker-mirror));
+		transform: translateX(-50%);
 	}
 
 	@media (max-width: 800px) {
