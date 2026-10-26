@@ -156,7 +156,8 @@ impl S3 {
         post_id: &str,
         content_type: &str,
     ) -> Result<UploadUrls, anyhow::Error> {
-        let extension = image_extension(content_type).ok_or(anyhow!("unsupported content type"))?;
+        let extension =
+            tweet_media_extension(content_type).ok_or(anyhow!("unsupported content type"))?;
         let key = format!("post-images/{}/{}.{}", post_id, Uuid::new_v4(), extension);
         tracing::info!(%post_id, %content_type, "creating post-media upload URL");
         let presigning_config = PresigningConfig::expires_in(BLOGPOST_MEDIA_PRESIGNED_URL_EXPIRY)?;
@@ -221,7 +222,7 @@ pub fn image_extension(content_type: &str) -> Option<&'static str> {
     }
 }
 
-/// Maps accepted tweet image and video MIME types to filename extensions.
+/// Maps accepted tweet and blog-post image and video MIME types to filename extensions.
 pub fn tweet_media_extension(content_type: &str) -> Option<&'static str> {
     image_extension(content_type).or(match content_type {
         "video/mp4" => Some("mp4"),

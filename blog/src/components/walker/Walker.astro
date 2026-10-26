@@ -24,6 +24,9 @@ import { WALKERS } from '../../consts';
 	const savedWalkerId = savedWalker === 'sweep' ? 'sweep_tosho' : savedWalker;
 	const activeWalker = WALKERS.find((walker) => walker.id === savedWalkerId)?.id ?? DEFAULT_WALKER_ID;
 
+	const blobUrls = new Map<string, string>();
+	const pendingSources = new Set<string>();
+
 	// Finds the image pair for the selected walker.
 	function getWalker(id: string) {
 		return WALKERS.find((walker) => walker.id === id) ?? WALKERS[0];
@@ -41,13 +44,36 @@ import { WALKERS } from '../../consts';
 		let walkingDirection: -1 | 1 = -1;
 		let displayedSrc = '';
 
+		// Fetches a walker's images once so later state changes reuse in-memory blobs instead of hitting the network.
+		function preloadWalker(definition: ReturnType<typeof getWalker>) {
+			const sources = [
+				definition.standSrc,
+				definition.poseSrc,
+				definition.walkLeftSrc,
+				definition.walkRightSrc,
+			];
+
+			for (const src of sources) {
+				if (!src || blobUrls.has(src) || pendingSources.has(src)) continue;
+
+				pendingSources.add(src);
+				fetch(src)
+					.then((response) => (response.ok ? response.blob() : Promise.reject()))
+					.then((blob) => blobUrls.set(src, URL.createObjectURL(blob)))
+					.catch(() => {})
+					.finally(() => pendingSources.delete(src));
+			}
+		}
+
 		// Updates the image only when its source changes.
 		function showImage(src: string) {
 			if (displayedSrc === src) return;
 
 			displayedSrc = src;
-			walker.src = src;
+			walker.src = blobUrls.get(src) ?? src;
 		}
+
+		preloadWalker(selectedWalker);
 
 		// Shows the image that matches the walker's current state.
 		function showCurrentImage() {
@@ -66,6 +92,7 @@ import { WALKERS } from '../../consts';
 		// Applies a newly selected walker without interrupting its movement.
 		function selectWalker(id: string) {
 			selectedWalker = getWalker(id);
+			preloadWalker(selectedWalker);
 			showCurrentImage();
 		}
 

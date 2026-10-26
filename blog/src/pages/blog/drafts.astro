@@ -7,6 +7,8 @@ import { fetchResult, type FetchResult } from '../../lib/utils/fetch-result.ts';
 import type { DraftPostSummary } from '../../lib/models/posts.ts';
 import Button from '../../components/ui/Button.astro';
 import Link from '../../components/ui/Link.astro';
+import EdgeCard from '../../components/ui/EdgeCard.astro';
+import '../../styles/base/blog-listing.css';
 import PostList from '../../components/posts/PostList.astro';
 import { getPageAuth } from '../../lib/auth/page-auth.ts';
 
@@ -30,7 +32,6 @@ if (isAuthor && accessToken) {
 	<head>
 		<BaseHead title={"drafts"}  />
 		<style>
-			.action-group { margin-bottom: 2rem; }
 			.empty { color: var(--color-muted); }
 			.confirm-dialog {
 				width: min(32rem, calc(100% - 2rem));
@@ -49,19 +50,22 @@ if (isAuthor && accessToken) {
 		</style>
 	</head>
 	<body>
-		<PageLayout isLoggedIn={isLoggedIn} title="drafts">
+		<PageLayout isLoggedIn={isLoggedIn} title="drafts" separateCards mainClass="blog-listing">
 			{isAuthor ? (
 					<>
-						<div class="action-group">
-							<Link class="ui-button" href="/posts/new/">create post</Link>
-							<Link class="ui-button" href="/blog/">view published posts</Link>
-						</div>
+						<EdgeCard aria-labelledby="drafts-author-heading">
+							<h2 id="drafts-author-heading" class="card-heading">author buttons:</h2>
+							<div class="action-group">
+								<Link class="ui-button" href="/posts/new/">create post</Link>
+								<Link class="ui-button" href="/blog/">view published posts</Link>
+							</div>
+						</EdgeCard>
 						{draftsResult?.error ? (
-							<FetchError message={draftsResult.error} />
+							<EdgeCard><FetchError message={draftsResult.error} /></EdgeCard>
 						) : draftsResult?.data?.length ? (
-							<PostList posts={draftsResult.data} variant="drafts" />
+							<PostList posts={draftsResult.data} variant="drafts" cards />
 						) : (
-							<p class="empty">You do not have any drafts yet.</p>
+							<EdgeCard><p class="empty">You do not have any drafts yet.</p></EdgeCard>
 						)}
 						<dialog class="confirm-dialog" id="delete-dialog" aria-labelledby="delete-dialog-title">
 							<div class="confirm-dialog__content">

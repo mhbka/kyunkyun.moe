@@ -7,6 +7,7 @@ import { uploadImage } from '../../lib/utils/image-upload.ts';
 import { initTagInput } from '../tags/tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
+import { insertVideoCommand, videoFeature, videoIcon } from './video/index.ts';
 
 /** Mounts the Milkdown editor on a post form; the returned cleanup runs once the page leaves it. */
 export function initPostEditor(form: HTMLFormElement) {
@@ -28,6 +29,7 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 	if (!root || !title || !slug || !tagRoot || !button || !status) return;
 
 	const titleInput = title;
+	const statusText = status;
 
 	/** Resizes the title field to fit its wrapped text. */
 	function resizeTitle() {
@@ -61,14 +63,39 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 		return error;
 	}
 
-	/** Uploads an editor image after checking the draft and session. */
-	async function uploadImageFile(file: File): Promise<string> {
-		if (!file.type.startsWith('image/')) throw new Error('Only image files can be uploaded.');
-		if (!postId) throw new Error('Save this draft before uploading images.');
+	/** Uploads an editor file after checking its type, the draft, and the session. */
+	async function uploadMedia(file: File, allowVideo: boolean): Promise<string> {
+		const isVideo = file.type === 'video/mp4' || file.type === 'video/webm';
+		if (!file.type.startsWith('image/') && !(allowVideo && isVideo)) {
+			throw new Error(allowVideo ? 'Only image, MP4, and WebM files can be uploaded.' : 'Only image files can be uploaded.');
+		}
+		if (!postId) throw new Error('Save this draft before uploading media.');
 
 		const { data: { session } } = await supabaseClient.auth.getSession();
-		if (!session) throw new Error('Please log in before uploading an image.');
+		if (!session) throw new Error('Please log in before uploading media.');
 		return uploadImage(file, mediaApiUrl, postId, session.access_token);
+	}
+
+	const uploadImageFile = (file: File) => uploadMedia(file, false);
+	const uploadGalleryFile = (file: File) => uploadMedia(file, true);
+
+	/** Prompts for a video file, uploads it, and inserts it as a video block. */
+	function pickAndInsertVideo(insert: (src: string) => void) {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'video/mp4,video/webm';
+		input.addEventListener('change', async () => {
+			const file = input.files?.[0];
+			if (!file) return;
+			statusText.textContent = `Uploading ${file.name}...`;
+			try {
+				insert(await uploadMedia(file, true));
+				statusText.textContent = '';
+			} catch (error) {
+				statusText.textContent = error instanceof Error ? error.message : 'Unable to upload the video. Please try again.';
+			}
+		}, { once: true });
+		input.click();
 	}
 
 	slug.addEventListener('input', validateSlug, { signal });
@@ -108,12 +135,20 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 							ctx.get(commandsCtx).call(insertGalleryCommand.key);
 						},
 					});
+					builder.getGroup('insert').addItem('video', {
+						icon: videoIcon,
+						active: () => false,
+						onRun: (ctx) => {
+							pickAndInsertVideo((src) => ctx.get(commandsCtx).call(insertVideoCommand.key, src));
+						},
+					});
 				},
 			},
 		},
 	});
 
-	editor.addFeature(galleryFeature, { onUpload: uploadImageFile });
+	editor.addFeature(galleryFeature, { onUpload: uploadGalleryFile });
+	editor.addFeature(videoFeature);
 
 	// Includes toolbar and programmatic edits, which need not fire DOM input events.
 	let ready = false;

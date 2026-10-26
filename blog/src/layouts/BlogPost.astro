@@ -20,9 +20,10 @@ interface Props {
 	postId?: string;
 	isLoggedIn?: boolean;
 	isAuthor?: boolean;
+	previewOf?: string;
 }
 
-const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMessage, postId, isLoggedIn = false, isAuthor = false } = Astro.props;
+const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMessage, postId, isLoggedIn = false, isAuthor = false, previewOf } = Astro.props;
 ---
 
 <html lang="en">
@@ -37,6 +38,13 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 				margin: 0 auto;
 				border-radius: var(--radius-panel);
 				box-shadow: var(--shadow-page);
+			}
+			.media-viewer img {
+				display: block;
+				object-fit: contain;
+			}
+			:global(#post-content img:not(a img)) {
+				cursor: zoom-in;
 			}
 			.post-actions {
 				display: flex;
@@ -63,7 +71,11 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 							{createdAt && <div class="post-metadata">Created on <FormattedDate date={createdAt} includeTime /></div>}
 							{publishedAt && <div class="post-metadata">Published on <FormattedDate date={publishedAt} includeTime /></div>}
 							{updatedAt && <div class="post-metadata">Last updated on <FormattedDate date={updatedAt} includeTime /></div>}
-							{isAuthor && postId && (
+							{previewOf ? (
+								<div class="post-actions">
+									<Link class="ui-button" href={`/posts/edit/${previewOf}/`}>back to editor</Link>
+								</div>
+							) : isAuthor && postId && (
 								<div class="post-actions">
 									<Link class="ui-button" href={`/posts/edit/${postId}/`}>edit</Link>
 									<MoveToDraftButton postId={postId} />
@@ -73,13 +85,32 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 						<hr />
 					</div>
 					{content && <div id="post-content" class="markdown-content" set:html={content} />}
-					{postId && <Comments postId={postId} />}
+					{content && <dialog class="media-viewer" data-post-image-viewer aria-label="full-size image"><img alt="" /></dialog>}
+					{postId && !previewOf && <Comments postId={postId} />}
 				</div>
 			</article>
 			)}
 		</PageLayout>
 	<script>
 	import { bindPage } from '../scripts/bind-page';
+
+	// Opens post images, including gallery slides, in a full-size viewer.
+	bindPage('#post-content', (content) => {
+		const viewer = document.querySelector<HTMLDialogElement>('[data-post-image-viewer]');
+		const viewerImage = viewer?.querySelector('img');
+		if (!viewer || !viewerImage) return;
+
+		content.addEventListener('click', (event) => {
+			const target = event.target;
+			if (!(target instanceof HTMLImageElement) || target.closest('a')) return;
+			viewerImage.src = target.currentSrc || target.src;
+			viewerImage.alt = target.alt;
+			viewer.showModal();
+		});
+		viewer.addEventListener('click', (event) => {
+			if (event.target === viewer || event.target === viewerImage) viewer.close();
+		});
+	});
 
 	// Binds prev/next navigation for in-post galleries.
 	bindPage('[data-gallery]', (gallery) => {
@@ -95,6 +126,7 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 			index = (nextIndex + slides.length) % slides.length;
 			slides.forEach((slide, i) => {
 				slide.hidden = i !== index;
+				if (slide.hidden) slide.querySelector('video')?.pause();
 			});
 				if (currentLabel) currentLabel.textContent = String(index + 1);
 			};

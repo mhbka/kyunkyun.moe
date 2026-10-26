@@ -50,6 +50,56 @@ export function escapeHtml(value: string): string {
 		.replace(/'/g, '&#39;');
 }
 
+/** Whether a media URL points at a video, judged by its file extension. */
+export function isVideoSrc(src: string): boolean {
+	return /\.(mp4|webm)$/i.test(src.split(/[?#]/)[0]);
+}
+
+/** Renders the `<img>` or `<video>` element for one media URL. */
+export function renderMediaHtml(src: string, options: { alt?: string; lazy?: boolean } = {}): string {
+	const url = escapeHtml(src);
+	if (isVideoSrc(src)) return `<video src="${url}" controls playsinline preload="metadata"></video>`;
+	const alt = options.alt ? ` alt="${escapeHtml(options.alt)}"` : '';
+	return `<img src="${url}"${alt}${options.lazy ? ' loading="lazy"' : ''}>`;
+}
+
+/** A standalone video: a `::video{src caption}` leaf directive. */
+export interface Video {
+	src: string;
+	caption?: string;
+}
+
+/** A `video` leaf directive with required fields. */
+export interface VideoDirectiveNode {
+	type: 'leafDirective';
+	name: 'video';
+	attributes: Record<string, string>;
+}
+
+/** Parses a `video` leaf directive. Returns `null` for other nodes or a missing `src`. */
+export function parseVideo(node: DirectiveNode): Video | null {
+	if (node.type !== 'leafDirective' || node.name !== 'video') return null;
+	const src = node.attributes?.src?.trim();
+	if (!src) return null;
+	const caption = node.attributes?.caption?.trim();
+	return caption ? { src, caption } : { src };
+}
+
+/** Builds the `video` leaf directive node; the inverse of {@link parseVideo}. */
+export function videoToDirectiveNode(video: Video): VideoDirectiveNode {
+	const attributes: Record<string, string> = { src: video.src };
+	if (video.caption) attributes.caption = video.caption;
+	return { type: 'leafDirective', name: 'video', attributes };
+}
+
+/** Renders a standalone video to its published HTML markup. */
+export function renderVideoHtml(video: Video): string {
+	const caption = video.caption
+		? `<figcaption class="video__caption">${escapeHtml(video.caption)}</figcaption>`
+		: '';
+	return `<figure class="video">${renderMediaHtml(video.src)}${caption}</figure>`;
+}
+
 /** Reads the attributes that describe one `::pic{...}` leaf directive. */
 function readImage(node: DirectiveNode): GalleryImage | null {
 	const attrs = node.attributes ?? {};
@@ -110,13 +160,11 @@ export function renderGalleryHtml(gallery: Gallery): string {
 
 	const slides = gallery.images
 		.map((image, index) => {
-			const alt = image.alt ? ` alt="${escapeHtml(image.alt)}"` : '';
-			const loading = index === 0 ? '' : ' loading="lazy"';
 			const caption = image.caption
 				? `<figcaption class="gallery__item-caption">${escapeHtml(image.caption)}</figcaption>`
 				: '';
 			const hidden = index === 0 ? '' : ' hidden';
-			return `<figure class="gallery__item"${hidden}><img src="${escapeHtml(image.src)}"${alt}${loading}>${caption}</figure>`;
+			return `<figure class="gallery__item"${hidden}>${renderMediaHtml(image.src, { alt: image.alt, lazy: index > 0 })}${caption}</figure>`;
 		})
 		.join('');
 

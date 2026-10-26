@@ -2,7 +2,7 @@ import { $view } from '@milkdown/kit/utils';
 import type { NodeViewConstructor } from '@milkdown/kit/prose/view';
 import type { Node } from '@milkdown/kit/prose/model';
 
-import { addImage, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
+import { addImage, isVideoSrc, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
 import { galleryConfig } from './config.ts';
 import { gallerySchema } from './schema.ts';
 
@@ -30,7 +30,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 		const uploadButton = document.createElement('button');
 		uploadButton.className = 'ui-button gallery-editor__upload';
 		uploadButton.type = 'button';
-		uploadButton.textContent = 'upload images';
+		uploadButton.textContent = 'upload media';
 
 		const removeGalleryButton = document.createElement('button');
 		removeGalleryButton.className = 'ui-button gallery-editor__remove';
@@ -40,7 +40,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 
 		const fileInput = document.createElement('input');
 		fileInput.type = 'file';
-		fileInput.accept = 'image/*';
+		fileInput.accept = 'image/*,video/mp4,video/webm';
 		fileInput.multiple = true;
 		fileInput.hidden = true;
 
@@ -81,7 +81,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			if (!images.length) {
 				const empty = document.createElement('p');
 				empty.className = 'gallery-editor__empty';
-				empty.textContent = 'no images yet — upload some';
+				empty.textContent = 'nothing here yet — upload some images or videos';
 				track.append(empty);
 				return;
 			}
@@ -96,9 +96,17 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			const item = document.createElement('div');
 			item.className = 'gallery-editor__item';
 
-			const img = document.createElement('img');
-			img.src = image.src;
-			img.alt = image.alt ?? '';
+			let preview: HTMLImageElement | HTMLVideoElement;
+			if (isVideoSrc(image.src)) {
+				preview = document.createElement('video');
+				preview.muted = true;
+				preview.preload = 'metadata';
+				preview.controls = true;
+			} else {
+				preview = document.createElement('img');
+				preview.alt = image.alt ?? '';
+			}
+			preview.src = image.src;
 
 			const caption = document.createElement('input');
 			caption.className = 'ui-input gallery-editor__item-caption';
@@ -126,7 +134,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 				}),
 			);
 
-			item.append(img, caption, controls);
+			item.append(preview, caption, controls);
 			return item;
 		}
 

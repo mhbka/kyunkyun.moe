@@ -3,7 +3,7 @@ export interface ImageUploadRequestResponse {
 	publicUrl: string;
 }
 
-/** Uploads a post image through a backend-issued presigned URL. */
+/** Uploads a post image or video through a backend-issued presigned URL. */
 export async function uploadImage(
 	file: File,
 	mediaApiUrl: string,

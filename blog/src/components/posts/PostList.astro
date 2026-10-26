@@ -42,7 +42,6 @@ const Item = cards ? EdgeCard : 'li';
 			)}
 			{variant === 'drafts' && (
 				<div class="post-list__actions">
-					<Link class="ui-button" href={`/posts/edit/${post.id}/`}>edit</Link>
 					<Button type="button" data-publish-id={post.id}>publish</Button>
 					<Button type="button" data-delete-id={post.id} data-delete-title={post.title}>delete</Button>
 				</div>

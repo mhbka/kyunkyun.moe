@@ -1,0 +1,34 @@
+---
+import BlogPost from '../../../layouts/BlogPost.astro';
+import { blogApi } from '../../../lib/api/index.ts';
+import { getPageAuth } from '../../../lib/auth/page-auth.ts';
+import { renderMarkdown } from '../../../lib/content/markdown.ts';
+import type { Post } from '../../../lib/models/posts.ts';
+
+const { isLoggedIn, isAuthor, accessToken } = await getPageAuth(Astro.request, Astro.cookies, { includeAuthor: true });
+let post: Post | undefined;
+
+if (isAuthor && accessToken) {
+	try {
+		post = await blogApi.getPostById(Astro.params.id ?? '', accessToken);
+	} catch (error) {
+		console.warn(`Unable to load post for preview: ${error}`);
+	}
+}
+
+const content = post ? await renderMarkdown(post.contentMd) : undefined;
+---
+
+<BlogPost
+	title={post?.title ?? 'Preview unavailable'}
+	createdAt={post ? new Date(post.createdAt) : undefined}
+	publishedAt={post?.publishedAt ? new Date(post.publishedAt) : undefined}
+	updatedAt={post ? new Date(post.updatedAt) : undefined}
+	thumbnailUrl={post?.thumbnailUrl}
+	content={content}
+	errorMessage={post ? undefined : 'This post could not be found or you do not have access to preview it.'}
+	postId={post?.id}
+	isLoggedIn={isLoggedIn}
+	isAuthor={isAuthor}
+	previewOf={post?.id}
+/>

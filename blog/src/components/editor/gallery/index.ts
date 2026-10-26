@@ -2,7 +2,7 @@ import type { Editor } from '@milkdown/kit/core';
 
 import { galleryConfig, type GalleryFeatureConfig } from './config.ts';
 import { gallerySchema } from './schema.ts';
-import { galleryRemarkPlugin } from './remark.ts';
+import { galleryRemarkPlugin, restoreTextDirectivesPlugin } from './remark.ts';
 import { galleryNodeView } from './node-view.ts';
 import { galleryInputRule, insertGalleryCommand } from './command.ts';
 
@@ -18,6 +18,7 @@ export function galleryFeature(editor: Editor, config?: GalleryFeatureConfig) {
 			ctx.set(galleryConfig.key, config ?? { onUpload: async () => '' });
 		})
 		.use(galleryRemarkPlugin)
+		.use(restoreTextDirectivesPlugin)
 		.use(gallerySchema)
 		.use(galleryNodeView)
 		.use(galleryInputRule)

@@ -1,5 +1,5 @@
 /* Shared Markdown and Crepe geometry consume the site's visual tokens. */
-:root { --markdown-block-gap: 1rem; --markdown-section-gap: 1.5rem; }
+:root { --markdown-block-gap: 1rem; --markdown-section-gap: 1.5rem; --markdown-media-max-height: 30rem; }
 .markdown-content { color: var(--color-text); }
 .markdown-content :where(h1, h2, h3, h4, h5, h6), .editor-surface .milkdown .ProseMirror :where(h1, h2, h3, h4, h5, h6) { margin: var(--markdown-section-gap) 0 var(--markdown-block-gap); color: var(--color-heading); font-weight: var(--font-weight-heading); line-height: var(--line-height-heading); }
 .markdown-content :where(h1), .editor-surface .milkdown .ProseMirror :where(h1) { font-size: 2.25em; }
@@ -16,6 +16,10 @@
 .editor-surface .milkdown .ProseMirror :where(li + li) { margin-top: 0.125rem; }
 .markdown-content :where(a), .editor-surface .milkdown .ProseMirror :where(a) { color: var(--color-accent); }
 .markdown-content :where(img), .editor-surface .milkdown .ProseMirror :where(img) { display: block; margin-bottom: var(--markdown-block-gap); }
+/* Keeps wide images and videos from filling the whole column on desktop; the ratio is preserved and the media stays centred. */
+@media (min-width: 801px) {
+	.markdown-content :is(img, video), .editor-surface .milkdown .ProseMirror :is(img, video):not(.gallery-editor *) { max-height: var(--markdown-media-max-height); width: auto; max-width: 100%; margin-inline: auto; }
+}
 .markdown-content :where(code), .editor-surface .milkdown .ProseMirror :where(code) { padding: 2px 5px; border-radius: var(--radius-code); background-color: var(--color-subtle); }
 .markdown-content :where(pre), .editor-surface .milkdown .ProseMirror :where(pre) { padding: 1.5em; border-radius: var(--radius-media); overflow-x: auto; background-color: var(--color-subtle); }
 .markdown-content :where(pre code), .editor-surface .milkdown .ProseMirror :where(pre code) { padding: 0; background: var(--color-transparent); }

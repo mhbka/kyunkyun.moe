@@ -17,7 +17,7 @@ pub fn router() -> Router<AppState> {
     Router::new().route("/uploads", post(create_upload))
 }
 
-/// Accepts the post and image type for a media upload.
+/// Accepts the post and image or video type for a media upload.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateUploadRequest {
@@ -25,7 +25,7 @@ struct CreateUploadRequest {
     content_type: String,
 }
 
-/// Creates a one-time, short-lived URL for uploading a post image directly to
+/// Creates a one-time, short-lived URL for uploading a post image or video directly to
 /// object storage. The caller never receives storage credentials.
 async fn create_upload(
     State(app_state): State<AppState>,

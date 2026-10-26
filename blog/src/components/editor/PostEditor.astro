@@ -4,6 +4,7 @@ import { getPostEditorLabels } from '../../lib/editor/labels.ts';
 import Button from '../ui/Button.astro';
 import FormattedDate from '../FormattedDate.astro';
 import Input from '../ui/Input.astro';
+import Link from '../ui/Link.astro';
 import TagInput from '../tags/TagInput.astro';
 import '../../styles/base/crepe-vendor.css';
 
@@ -44,6 +45,7 @@ const labels = getPostEditorLabels(post?.status);
 
 	<div class="editor-actions">
 		<Button type="submit">{labels.submit}</Button>
+		{post && <Link class="ui-button" href={`/posts/preview/${post.id}/`}>preview</Link>}
 		<p class="editor-status" data-editor-status role="status" aria-live="polite"></p>
 	</div>
 </form>

@@ -40,6 +40,13 @@ test('renders gallery directives as an image carousel', async () => {
 	assert.match(html, /data-gallery-next/);
 });
 
+test('renders video directives as video players', async () => {
+	const html = await renderMarkdown('::video{src="https://x/clip.mp4" caption="Clip"}');
+
+	assert.match(html, /<figure class="video"><video src="https:\/\/x\/clip.mp4"/);
+	assert.match(html, /<figcaption class="video__caption">Clip<\/figcaption>/);
+});
+
 test('ignores non-gallery directives', async () => {
 	const html = await renderMarkdown(':::note\nNot a gallery.\n:::');
 

@@ -12,8 +12,11 @@ import {
 	galleryToDirectiveNode,
 	moveImage,
 	parseGallery,
+	parseVideo,
 	removeImage,
 	renderGalleryHtml,
+	renderVideoHtml,
+	videoToDirectiveNode,
 	type DirectiveNode,
 	type Gallery,
 } from '../../../../src/lib/content/gallery.ts';
@@ -74,6 +77,21 @@ test('renderGalleryHtml renders a single image without navigation', () => {
 	assert.match(html, /<figure class="gallery__item"><img src="https:\/\/x\/1.jpg">/);
 	assert.equal(html.includes('gallery__nav'), false);
 	assert.equal(html.includes('gallery__counter'), false);
+});
+
+test('renderGalleryHtml renders video sources as video players', () => {
+	const html = renderGalleryHtml({ images: [{ src: 'https://x/1.mp4?v=1' }, { src: 'https://x/2.jpg' }] });
+
+	assert.match(html, /<video src="https:\/\/x\/1.mp4\?v=1" controls playsinline preload="metadata"><\/video>/);
+	assert.match(html, /<img src="https:\/\/x\/2.jpg" loading="lazy">/);
+});
+
+test('video directives parse, render, and round-trip', () => {
+	const node = videoToDirectiveNode({ src: 'https://x/clip.webm', caption: 'Clip' });
+
+	assert.deepEqual(parseVideo(node), { src: 'https://x/clip.webm', caption: 'Clip' });
+	assert.equal(parseVideo({ type: 'leafDirective', name: 'video', attributes: {} }), null);
+	assert.match(renderVideoHtml({ src: 'https://x/clip.webm', caption: 'Clip' }), /<figure class="video"><video src="https:\/\/x\/clip.webm"[^>]*><\/video><figcaption class="video__caption">Clip<\/figcaption>/);
 });
 
 test('renderGalleryHtml escapes the gallery and image captions', () => {
