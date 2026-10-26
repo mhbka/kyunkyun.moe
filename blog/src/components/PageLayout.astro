@@ -24,7 +24,7 @@ const Content = separateCards ? 'div' : EdgeCard;
 <MobileNotice />
 <div class="site-layout">
 	<Header isLoggedIn={isLoggedIn} />
-	<div class="site-content-region" data-fade>
+	<div class="site-content-region">
 		{Astro.slots.has('right-sidebar') && (
 			<aside class="site-sidebar site-sidebar-right" aria-label="page navigation">
 				<slot name="right-sidebar" />

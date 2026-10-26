@@ -13,6 +13,7 @@ interface Props {
 
 const { isLoggedIn = false } = Astro.props;
 const isNonsenseActive = Astro.url.pathname.startsWith('/nonsense/');
+const isBlogActive = Astro.url.pathname.startsWith('/posts/');
 const logoParts = [
 	{ text: '(', position: 'opening' },
 	{ text: '\u304d', position: 'start' },
@@ -48,7 +49,7 @@ const logoParts = [
 		<div class="primary-links">
 			<MainNavItem href="/" label="home" japanese="ホーム" />
 			<MainNavItem href="/me" label="me" japanese="わたし" />
-			<MainNavItem href="/blog" label="blog" japanese="ブログ" />
+			<MainNavItem href="/blog" label="blog" japanese="ブログ" active={isBlogActive} />
 			<MainNavItem href="/pix" label="pix" japanese="画像" />
 			<MainNavItem href="/tweets" label="tweets" japanese="つぶやき" />
 			<details class="nav-dropdown">

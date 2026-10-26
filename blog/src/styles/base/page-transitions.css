@@ -2,7 +2,13 @@
  * Keeps the document out of native view-transition snapshots. The router still
  * wraps swaps in startViewTransition for lifecycle timing, but with nothing
  * captured the foreground decorations stay live in the ordinary DOM and keep
- * their stacking order. The content fade itself is a WAAPI opacity animation
+ * their stacking order. The card slide itself is a WAAPI transform animation
  * driven by src/scripts/page-fade.ts.
  */
 html { view-transition-name: none !important; }
+
+/* Stops cards parked beyond the right edge from creating a horizontal scrollbar. */
+html.page-transitioning { overflow-x: clip; }
+
+/* Keeps the scrollable sidebar from showing a scrollbar while its cards slide. */
+html.page-transitioning .site-sidebar-right { overflow-x: hidden; }
