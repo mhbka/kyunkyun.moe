@@ -10,8 +10,8 @@ html { view-transition-name: none !important; }
 /* Stops cards parked beyond the right edge from creating a horizontal scrollbar. */
 html.page-transitioning { overflow-x: clip; }
 
-/* Keeps the scrollable sidebar from showing a scrollbar while its cards slide. */
-html.page-transitioning .site-sidebar-right { overflow-x: hidden; }
+/* Lets side cards slide past their scrollable wrapper without clipping or a scrollbar. */
+html.page-transitioning .site-sidebar-stick { overflow: visible; }
 
 /* On mobile, clips the layout permanently so the root's overflow never toggles and resizes the viewport. */
 @media (max-width: 800px) {

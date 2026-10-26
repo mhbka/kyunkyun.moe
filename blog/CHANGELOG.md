@@ -1,5 +1,10 @@
 # (functional) changelog
 
+## 2026-10-26
+```
+- re-implemented page transitions; much much better now
+```
+
 ## 2026-10-25
 ```
 - massive overhaul of design again, this time it's quite VN-like i think

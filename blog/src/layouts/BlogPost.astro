@@ -48,7 +48,7 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} mainClass="post-page">
-			<PostContents slot="right-sidebar" target="post-content" />
+			<PostContents slot="left-sidebar" target="post-content" />
 			{errorMessage ? (
 				<div><FetchError message={errorMessage} /></div>
 			) : (

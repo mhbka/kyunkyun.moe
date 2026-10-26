@@ -15,7 +15,7 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 	</head>
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} mainClass="post-page">
-			<PostContents slot="right-sidebar" target="post-content" editable />
+			<PostContents slot="left-sidebar" target="post-content" editable />
 			{isAuthor ? <PostEditor /> : <p>You must be logged in with author access to create a post.</p>}
 		</PageLayout>
 	</body>

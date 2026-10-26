@@ -1,7 +1,5 @@
 post-contents { display: block; min-width: 0; }
 post-contents[hidden] { display: none; }
-/* Keeps the floating directory legible while it overlaps the post below. */
-post-contents :is(.contents-toggle, .contents-panel) { background: var(--color-overlay-surface); }
 .contents-title { margin: 0 0 0.75rem; color: var(--color-heading); font-weight: var(--font-weight-heading); }
 post-contents ol { list-style: none; padding: 0; margin: 0; }
 post-contents li { padding-inline-start: calc(var(--heading-depth) * 0.7rem); }
@@ -20,8 +18,10 @@ post-contents .contents-toggle { display: none; }
 	font-weight: 700;
 }
 @media (max-width: 800px) {
-	.site-sidebar.site-sidebar-right { position: sticky; top: 0; z-index: 10; }
+	.site-sidebar.site-sidebar-left { position: sticky; top: 0; z-index: 10; }
 	post-contents { position: relative; }
+	/* Keeps the sticky mobile directory legible while the post scrolls beneath it. */
+	post-contents :is(.contents-toggle, .contents-panel) { background: var(--color-overlay-surface); }
 	post-contents .contents-toggle {
 		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 		min-height: 3rem; padding: 0.65rem 0.75rem 0.65rem 2rem;

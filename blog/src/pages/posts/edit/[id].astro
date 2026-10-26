@@ -26,7 +26,7 @@ if (isAuthor && accessToken) {
 	</head>
 	<body>
 		<PageLayout isLoggedIn={isLoggedIn} mainClass="post-page">
-			<PostContents slot="right-sidebar" target="post-content" editable />
+			<PostContents slot="left-sidebar" target="post-content" editable />
 			{post ? <PostEditor post={post} /> : <p>This post could not be found or you do not have access to edit it.</p>}
 		</PageLayout>
 	</body>

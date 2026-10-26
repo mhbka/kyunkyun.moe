@@ -25,20 +25,25 @@ const Content = separateCards ? 'div' : EdgeCard;
 <div class="site-layout">
 	<Header isLoggedIn={isLoggedIn} />
 	<div class="site-content-region">
-		{Astro.slots.has('right-sidebar') && (
-			<aside class="site-sidebar site-sidebar-right" aria-label="page navigation">
-				<slot name="right-sidebar" />
-			</aside>
-		)}
-		<Content as="div" class:list={['page-content', { 'page-content--cards': separateCards }]}>
-			<PageTop><slot name="page-top" /></PageTop>
-			<!-- Keeps the page landmark named without repeating the navigation label visually. -->
-			<main class:list={['page-main', mainClass]} aria-label={title}>
-				<div class="page-body">
-					<slot />
-				</div>
-			</main>
-		</Content>
+		<!-- Anchors side cards to the main card's left edge whatever its width. -->
+		<div class="page-primary">
+			{Astro.slots.has('left-sidebar') && (
+				<aside class="site-sidebar site-sidebar-left" aria-label="page navigation">
+					<div class="site-sidebar-stick">
+						<slot name="left-sidebar" />
+					</div>
+				</aside>
+			)}
+			<Content as="div" class:list={['page-content', { 'page-content--cards': separateCards }]}>
+				<PageTop><slot name="page-top" /></PageTop>
+				<!-- Keeps the page landmark named without repeating the navigation label visually. -->
+				<main class:list={['page-main', mainClass]} aria-label={title}>
+					<div class="page-body">
+						<slot />
+					</div>
+				</main>
+			</Content>
+		</div>
 		<!-- Allows pages to add independent cards beneath their primary content. -->
 		<slot name="cards" />
 	</div>
