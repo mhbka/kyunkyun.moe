@@ -1,8 +1,8 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import PageLayout from '../components/PageLayout.astro';
-import { getPageAuth } from '../lib/page-auth.ts';
-import { renderMarkdown } from '../lib/markdown.ts';
+import BaseHead from '../components/layout/BaseHead.astro';
+import PageLayout from '../components/layout/PageLayout.astro';
+import { getPageAuth } from '../lib/auth/page-auth.ts';
+import { renderMarkdown } from '../lib/content/markdown.ts';
 import meMarkdown from '../content/me.md?raw';
 
 const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);

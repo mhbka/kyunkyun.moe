@@ -1,12 +1,12 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import HomePreviews from '../components/HomePreviews.astro';
-import Changelog from '../components/Changelog.astro';
-import PageLayout from '../components/PageLayout.astro';
+import BaseHead from '../components/layout/BaseHead.astro';
+import HomePreviews from '../components/home/HomePreviews.astro';
+import Changelog from '../components/home/Changelog.astro';
+import PageLayout from '../components/layout/PageLayout.astro';
 import EdgeCard from '../components/ui/EdgeCard.astro';
-import { blogApi } from '../lib/api.ts';
-import { getPageAuth } from '../lib/page-auth.ts';
-import { renderMarkdown } from '../lib/markdown.ts';
+import { blogApi } from '../lib/api/index.ts';
+import { getPageAuth } from '../lib/auth/page-auth.ts';
+import { renderMarkdown } from '../lib/content/markdown.ts';
 import homeMarkdown from '../content/index.md?raw';
 import '../styles/base/home-content.css';
 

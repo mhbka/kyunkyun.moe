@@ -1,14 +1,14 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
+import BaseHead from '../components/layout/BaseHead.astro';
 import FetchError from '../components/FetchError.astro';
-import PageLayout from '../components/PageLayout.astro';
-import TagFilter from '../components/TagFilter.astro';
+import PageLayout from '../components/layout/PageLayout.astro';
+import TagFilter from '../components/tags/TagFilter.astro';
 import TweetTimeline from '../components/tweets/TweetTimeline.astro';
 import EdgeCard from '../components/ui/EdgeCard.astro';
 import '../styles/base/tweets-layout.css';
-import { blogApi } from '../lib/api.ts';
-import { getPageAuth } from '../lib/page-auth.ts';
-import { readTagFilters } from '../lib/tags.ts';
+import { blogApi } from '../lib/api/index.ts';
+import { getPageAuth } from '../lib/auth/page-auth.ts';
+import { readTagFilters } from '../lib/utils/tags.ts';
 
 const { isLoggedIn, isTweet, accessToken, userId } = await getPageAuth(Astro.request, Astro.cookies, { includeTweet: true });
 const selectedTags = readTagFilters(Astro.url.searchParams);

@@ -1,13 +1,13 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
+import BaseHead from '../components/layout/BaseHead.astro';
 import FetchError from '../components/FetchError.astro';
 import FormattedDate from '../components/FormattedDate.astro';
-import PageLayout from '../components/PageLayout.astro';
-import Comments from '../components/Comments.astro';
-import MoveToDraftButton from '../components/MoveToDraftButton.astro';
-import PageTitle from '../components/PageTitle.astro';
+import PageLayout from '../components/layout/PageLayout.astro';
+import Comments from '../components/comments/Comments.astro';
+import MoveToDraftButton from '../components/posts/MoveToDraftButton.astro';
+import PageTitle from '../components/layout/PageTitle.astro';
 import Link from '../components/ui/Link.astro';
-import PostContents from '../components/PostContents.astro';
+import PostContents from '../components/posts/PostContents.astro';
 
 interface Props {
 	title: string;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createClickFeedback, findFeedbackTarget, resolveSoundName } from '../../../src/handlers/click-feedback.ts';
+import { createClickFeedback, findFeedbackTarget, resolveSoundName } from '../../../src/scripts/handlers/click-feedback.ts';
 
 /** Minimal fake DOM covering the selectors the feedback module matches against. */
 class FakeElement {

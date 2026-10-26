@@ -16,7 +16,7 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 ## Styling
 
-- Shared visual tokens live in `src/styles/base_tokens.css`. Use its semantic tokens for colours, fonts, shadows, borders, and radii.
+- Shared visual tokens live in `src/styles/tokens.css`. Use its semantic tokens for colours, fonts, shadows, borders, and radii.
 - Shared layout, spacing, sizing, responsive rules, and Markdown/Milkdown geometry live in `src/styles/base/`. Keep these independent from individual component styling.
 - Keep Astro-rendered Markdown and Milkdown aligned through `src/styles/base/markdown-content.css`; do not add separate visual systems for the editor and published posts.
 

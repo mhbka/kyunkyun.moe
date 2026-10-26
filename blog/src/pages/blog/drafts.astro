@@ -1,14 +1,14 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
+import BaseHead from '../../components/layout/BaseHead.astro';
 import FetchError from '../../components/FetchError.astro';
-import PageLayout from '../../components/PageLayout.astro';
-import { blogApi } from '../../lib/api.ts';
-import { fetchResult, type FetchResult } from '../../lib/fetch-result.ts';
+import PageLayout from '../../components/layout/PageLayout.astro';
+import { blogApi } from '../../lib/api/index.ts';
+import { fetchResult, type FetchResult } from '../../lib/utils/fetch-result.ts';
 import type { DraftPostSummary } from '../../lib/models/posts.ts';
 import Button from '../../components/ui/Button.astro';
 import Link from '../../components/ui/Link.astro';
-import PostList from '../../components/PostList.astro';
-import { getPageAuth } from '../../lib/page-auth.ts';
+import PostList from '../../components/posts/PostList.astro';
+import { getPageAuth } from '../../lib/auth/page-auth.ts';
 
 const { isLoggedIn, isAuthor, accessToken } = await getPageAuth(Astro.request, Astro.cookies, { includeAuthor: true });
 let draftsResult: FetchResult<DraftPostSummary[]> | undefined;
@@ -80,7 +80,7 @@ if (isAuthor && accessToken) {
 			)}
 		</PageLayout>
 		<script>
-			import { blogApi } from '../../lib/api.ts';
+			import { blogApi } from '../../lib/api/index.ts';
 			import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 
 			import { bindPage } from '../../scripts/bind-page.ts';

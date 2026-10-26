@@ -1,6 +1,6 @@
 import { $nodeSchema } from '@milkdown/kit/utils';
 
-import { galleryToDirectiveNode, parseGallery, type GalleryImage } from '../../../lib/gallery.ts';
+import { galleryToDirectiveNode, parseGallery, type GalleryImage } from '../../../lib/content/gallery.ts';
 
 /** ProseMirror + markdown schema for the in-post gallery block node. */
 export const gallerySchema = $nodeSchema('gallery', () => ({

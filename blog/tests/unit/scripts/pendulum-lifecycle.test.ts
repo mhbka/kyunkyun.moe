@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
-const component = readFileSync(new URL('../../../src/components/NanamiPendulum.astro', import.meta.url), 'utf8');
+const component = readFileSync(new URL('../../../src/components/ambient/NanamiPendulum.astro', import.meta.url), 'utf8');
 const script = component
 	.match(/<script is:inline type="module">([\s\S]*?)<\/script>/)![1]
 	// Substitutes the embed module so tests control when and how mounting settles.
-	.replace("await import('/simplemotion/pendulum-embed.js')", 'await loadEmbed()');
+	.replace("await import('/external/simplemotion/pendulum-embed.js')", 'await loadEmbed()');
 
 /** Runs the component script with a controllable desktop query and SVG presence. */
 function setup(desktopMatches = true) {

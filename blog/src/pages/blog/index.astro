@@ -1,18 +1,18 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import PageLayout from '../../components/PageLayout.astro';
+import BaseHead from '../../components/layout/BaseHead.astro';
+import PageLayout from '../../components/layout/PageLayout.astro';
 import FetchError from '../../components/FetchError.astro';
-import Pagination from '../../components/Pagination.astro';
-import PostList from '../../components/PostList.astro';
-import TagFilter from '../../components/TagFilter.astro';
+import Pagination from '../../components/layout/Pagination.astro';
+import PostList from '../../components/posts/PostList.astro';
+import TagFilter from '../../components/tags/TagFilter.astro';
 import Link from '../../components/ui/Link.astro';
 import EdgeCard from '../../components/ui/EdgeCard.astro';
 import '../../styles/base/blog-listing.css';
-import { blogApi } from '../../lib/api.ts';
-import { fetchResult } from '../../lib/fetch-result.ts';
-import { getPageAuth } from '../../lib/page-auth.ts';
-import { parsePage } from '../../lib/pagination.ts';
-import { readTagFilters } from '../../lib/tags.ts';
+import { blogApi } from '../../lib/api/index.ts';
+import { fetchResult } from '../../lib/utils/fetch-result.ts';
+import { getPageAuth } from '../../lib/auth/page-auth.ts';
+import { parsePage } from '../../lib/utils/pagination.ts';
+import { readTagFilters } from '../../lib/utils/tags.ts';
 
 const pageSize = 20;
 const page = parsePage(Astro.url.searchParams.get('page'));

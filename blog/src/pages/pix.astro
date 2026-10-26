@@ -1,14 +1,14 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
+import BaseHead from '../components/layout/BaseHead.astro';
 import FetchError from '../components/FetchError.astro';
 import PixGallery from '../components/pix/PixGallery.astro';
-import TagFilter from '../components/TagFilter.astro';
-import PageLayout from '../components/PageLayout.astro';
+import TagFilter from '../components/tags/TagFilter.astro';
+import PageLayout from '../components/layout/PageLayout.astro';
 import EdgeCard from '../components/ui/EdgeCard.astro';
 import '../styles/base/pix-layout.css';
-import { blogApi } from '../lib/api.ts';
-import { getPageAuth } from '../lib/page-auth.ts';
-import { readTagFilters } from '../lib/tags.ts';
+import { blogApi } from '../lib/api/index.ts';
+import { getPageAuth } from '../lib/auth/page-auth.ts';
+import { readTagFilters } from '../lib/utils/tags.ts';
 
 const { isLoggedIn, isPix, accessToken } = await getPageAuth(Astro.request, Astro.cookies, { includePix: true });
 const selectedTags = readTagFilters(Astro.url.searchParams);

@@ -1,4 +1,4 @@
-import { blogApi, type Pix } from '../../lib/api.ts';
+import { blogApi, type Pix } from '../../lib/api/index.ts';
 import { restoreScrollPosition, type ScrollPosition } from './scroll.ts';
 import { savePixTagEdits, type PixTagOperation } from './tag-edit.ts';
 import { uploadPixFiles } from './upload.ts';

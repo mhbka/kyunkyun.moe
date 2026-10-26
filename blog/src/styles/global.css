@@ -1,5 +1,5 @@
 /* Load shared visual values before the rules that consume them. */
-@import './base_tokens.css';
+@import './tokens.css';
 @import './base/site-shell.css';
 @import './base/typography.css';
 @import './base/ui.css';

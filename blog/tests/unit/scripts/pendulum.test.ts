@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
-const source = readFileSync(new URL('../../../public/simplemotion/pendulum-embed.js', import.meta.url), 'utf8')
+const source = readFileSync(new URL('../../../public/external/simplemotion/pendulum-embed.js', import.meta.url), 'utf8')
 	.replace(/^import .*;$/gm, '').replace('export async function', 'async function');
 
 /** Runs the animation lifecycle without image downloads or WebAssembly. */

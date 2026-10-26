@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
-const head = readFileSync(new URL('../../../src/components/BaseHead.astro', import.meta.url), 'utf8');
+const head = readFileSync(new URL('../../../src/components/layout/BaseHead.astro', import.meta.url), 'utf8');
 const script = head.match(/<script is:inline id="initial-page-reveal">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(script);
 

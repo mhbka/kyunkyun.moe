@@ -1,4 +1,4 @@
-import { blogApi } from '../../lib/api.ts';
+import { blogApi } from '../../lib/api/index.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
 import { createTweetPreviews } from './previews.ts';
 

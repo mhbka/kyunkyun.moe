@@ -2,7 +2,7 @@ import { $view } from '@milkdown/kit/utils';
 import type { NodeViewConstructor } from '@milkdown/kit/prose/view';
 import type { Node } from '@milkdown/kit/prose/model';
 
-import { addImage, moveImage, removeImage, type GalleryImage } from '../../../lib/gallery.ts';
+import { addImage, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
 import { galleryConfig } from './config.ts';
 import { gallerySchema } from './schema.ts';
 

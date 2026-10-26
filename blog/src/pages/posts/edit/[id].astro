@@ -1,10 +1,10 @@
 ---
-import BaseHead from '../../../components/BaseHead.astro';
-import PageLayout from '../../../components/PageLayout.astro';
+import BaseHead from '../../../components/layout/BaseHead.astro';
+import PageLayout from '../../../components/layout/PageLayout.astro';
 import PostEditor from '../../../components/editor/PostEditor.astro';
-import PostContents from '../../../components/PostContents.astro';
-import { blogApi } from '../../../lib/api.ts';
-import { getPageAuth } from '../../../lib/page-auth.ts';
+import PostContents from '../../../components/posts/PostContents.astro';
+import { blogApi } from '../../../lib/api/index.ts';
+import { getPageAuth } from '../../../lib/auth/page-auth.ts';
 import type { Post } from '../../../lib/models/posts.ts';
 
 const { isLoggedIn, isAuthor, accessToken } = await getPageAuth(Astro.request, Astro.cookies, { includeAuthor: true });

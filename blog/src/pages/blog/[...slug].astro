@@ -1,9 +1,9 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
-import { blogApi } from '../../lib/api.ts';
-import { fetchResult } from '../../lib/fetch-result.ts';
-import { renderMarkdown } from '../../lib/markdown.ts';
-import { getPageAuth } from '../../lib/page-auth.ts';
+import { blogApi } from '../../lib/api/index.ts';
+import { fetchResult } from '../../lib/utils/fetch-result.ts';
+import { renderMarkdown } from '../../lib/content/markdown.ts';
+import { getPageAuth } from '../../lib/auth/page-auth.ts';
 
 const result = await fetchResult(
 	() => blogApi.getPost(Astro.params.slug ?? ''),

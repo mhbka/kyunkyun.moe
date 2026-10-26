@@ -1,4 +1,4 @@
-import type { PixTagUpdate } from '../../lib/api.ts';
+import type { PixTagUpdate } from '../../lib/api/index.ts';
 
 export type PixTagOperation = 'add' | 'remove' | 'overwrite';
 

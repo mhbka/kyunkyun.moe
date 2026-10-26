@@ -1,10 +1,10 @@
 import { Crepe } from '@milkdown/crepe';
 import { commandsCtx } from '@milkdown/kit/core';
 
-import { blogApi } from '../../lib/api.ts';
+import { blogApi } from '../../lib/api/index.ts';
 import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
-import { uploadImage } from '../../lib/image-upload.ts';
-import { initTagInput } from '../tag-input.ts';
+import { uploadImage } from '../../lib/utils/image-upload.ts';
+import { initTagInput } from '../tags/tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
 

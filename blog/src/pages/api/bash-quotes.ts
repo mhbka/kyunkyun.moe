@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 
-import { bashQuoteStore, SCORE_NAMES, unrestrictedScoreLimits, type ScoreLimits } from '../../lib/bash-quotes.ts';
+import { bashQuoteStore, SCORE_NAMES, unrestrictedScoreLimits, type ScoreLimits } from '../../lib/server/bash-quotes.ts';
 
 function getScoreLimits(url: URL): ScoreLimits {
 	const limits = unrestrictedScoreLimits();
