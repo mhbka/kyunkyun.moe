@@ -1,5 +1,5 @@
 /* Shared Markdown and Crepe geometry consume the site's visual tokens. */
-:root { --markdown-block-gap: 1rem; --markdown-section-gap: 1.5rem; --markdown-media-max-height: 30rem; }
+:root { --markdown-block-gap: 1rem; --markdown-section-gap: 1.5rem; --markdown-media-max-height: 41rem; }
 .markdown-content { color: var(--color-text); }
 .markdown-content :where(h1, h2, h3, h4, h5, h6), .editor-surface .milkdown .ProseMirror :where(h1, h2, h3, h4, h5, h6) { margin: var(--markdown-section-gap) 0 var(--markdown-block-gap); color: var(--color-heading); font-weight: var(--font-weight-heading); line-height: var(--line-height-heading); }
 .markdown-content :where(h1), .editor-surface .milkdown .ProseMirror :where(h1) { font-size: 2.25em; }

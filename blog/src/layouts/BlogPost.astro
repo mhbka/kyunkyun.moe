@@ -43,6 +43,11 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 				display: block;
 				object-fit: contain;
 			}
+			.media-viewer img[data-loading] {
+				width: min(20rem, calc(100vw - 2rem));
+				height: min(20rem, calc(100dvh - 2rem));
+				background: var(--color-surface);
+			}
 			:global(#post-content img:not(a img)) {
 				cursor: zoom-in;
 			}
@@ -103,10 +108,22 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 		content.addEventListener('click', (event) => {
 			const target = event.target;
 			if (!(target instanceof HTMLImageElement) || target.closest('a')) return;
-			viewerImage.src = target.currentSrc || target.src;
+			// Browsers keep painting the previous image until a new src loads, so drop it first.
+			viewerImage.removeAttribute('src');
 			viewerImage.alt = target.alt;
+			viewerImage.dataset.loading = '';
+			viewerImage.src = target.currentSrc || target.src;
 			viewer.showModal();
 		});
+		// Esc doubles as the browser's "stop loading" key, which would abort post images still downloading.
+		viewer.addEventListener('keydown', (event) => {
+			if (event.key !== 'Escape') return;
+			event.preventDefault();
+			viewer.close();
+		});
+		const finishLoading = () => delete viewerImage.dataset.loading;
+		viewerImage.addEventListener('load', finishLoading);
+		viewerImage.addEventListener('error', finishLoading);
 		viewer.addEventListener('click', (event) => {
 			if (event.target === viewer || event.target === viewerImage) viewer.close();
 		});
