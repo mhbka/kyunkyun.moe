@@ -55,7 +55,7 @@
 		private animations = new Set<Animation>();
 		private stopClicks: (() => void) | undefined;
 		private interactionTimers = new Set<number>();
-		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 800px)');
 		private spawnTimer = 0;
 
 		// Starts the swarm; called once per element, which survives navigation via transition:persist.
@@ -371,7 +371,7 @@
 		55% { transform: translateY(0.02rem) rotateX(2deg); }
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@media (prefers-reduced-motion: reduce), (max-width: 800px) {
 		.ambient-butterflies { display: none; }
 	}
 </style>

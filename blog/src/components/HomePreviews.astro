@@ -58,6 +58,9 @@ const tweetPreview = tweet
 	/* Keeps the four latest images in a single compact row at every screen size. */
 	.home-preview__images { display: grid; min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .25rem; }
 	.home-preview__images img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+	@media (min-width: 801px) {
+		.home-preview__images { grid-template-columns: repeat(4, minmax(0, 10rem)); }
+	}
 	:global(.home-preview:hover .home-preview__heading) { color: var(--color-accent); }
 	:global(.home-preview:hover .home-preview__text) { color: var(--color-accent); }
 	:global(.home-preview:hover .mini-code-block) { color: var(--color-accent); }

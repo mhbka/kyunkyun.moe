@@ -219,12 +219,13 @@
 @media (max-width: 800px) {
 	/* Stacks a compact menu above the page on narrow screens. */
 	.site-layout::before { display: none; }
-	.site-header { position: relative; inset: auto; width: 100%; height: auto; padding: 2.5rem 1rem 3rem; gap: 1.25rem; overflow: visible; background: linear-gradient(to bottom, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - 2rem), transparent 100%); }
+	.site-header { position: relative; inset: auto; width: 100%; height: auto; padding: 2.5rem 1rem 3rem; gap: 1.25rem; overflow: visible; background: linear-gradient(to bottom, rgb(255 193 218 / 42%) 0%, rgb(255 193 218 / 42%) 20%, transparent 60%), linear-gradient(to bottom, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - 2rem), transparent 100%); }
 	.site-header .site-logo { top: 0; width: 100%; margin-inline: 0; margin-bottom: 1rem; font-size: clamp(2rem, 15vw, 3.75rem); }
 	.site-header nav { gap: 1rem; }
 	.site-header .primary-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.25rem; max-width: none; }
 	.site-header .main-nav-item { padding: 0.6rem; }
-	.site-header .header-link-label { font-size: 1rem; }
+	.site-header .header-link-label { font-size: clamp(0.95rem, 4vw, 1.75rem); }
 	.site-header .main-nav-item__japanese { display: none; }
 	.site-header .nav-dropdown__items { max-width: 12rem; }
+	.site-header .nav-actions .ui-select { display: none; }
 }

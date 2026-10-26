@@ -73,6 +73,8 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 @media (max-width: 800px) {
 	/* Removes the desktop-only hanging decoration from the mobile layout. */
 	.site-foreground__pendulum { display: none; }
+	/* Sizes the background to the largest viewport so the browser toolbar showing or hiding never re-crops it. */
+	.site-background { inset: 0 auto auto 0; width: 100%; height: 100lvh; }
 	/* Stacks mobile panels into one continuous column without desktop-sized gaps. */
 	.site-layout { padding: 0 0 2rem; }
 	/* Leaves a minimum gap below navigation before distributing remaining vertical space. */

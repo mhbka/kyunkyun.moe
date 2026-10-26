@@ -12,3 +12,9 @@ html.page-transitioning { overflow-x: clip; }
 
 /* Keeps the scrollable sidebar from showing a scrollbar while its cards slide. */
 html.page-transitioning .site-sidebar-right { overflow-x: hidden; }
+
+/* On mobile, clips the layout permanently so the root's overflow never toggles and resizes the viewport. */
+@media (max-width: 800px) {
+	html.page-transitioning { overflow-x: visible; }
+	.site-layout { overflow-x: clip; }
+}
