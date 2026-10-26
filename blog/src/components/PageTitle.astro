@@ -29,6 +29,9 @@ const titleParts = title.split(/(\s+)/).map((text) => ({
 </h1>
 
 <script>
+	import { onPointerMove } from '../handlers/document-events';
+	import { bindPage } from '../scripts/bind-page';
+
 	const hoverRadius = 96;
 	const maxHoverLift = 18;
 
@@ -59,21 +62,12 @@ const titleParts = title.split(/(\s+)/).map((text) => ({
 		return Math.hypot(event.clientX - closestX, event.clientY - closestY) <= hoverRadius;
 	}
 
-	let titleController: AbortController | undefined;
-
-	// Updates title letters for the title currently rendered by the router.
-	function bindTitleWave() {
-		titleController?.abort();
+	// Lifts the letters of each rendered title toward the pointer.
+	bindPage('.title-wave', (title) => {
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		titleController = new AbortController();
-		document.addEventListener('pointermove', (event) => {
-			document.querySelectorAll<HTMLElement>('.title-wave').forEach((title) => {
-				if (isNearTitle(title, event)) updateLetterLifts(title, event);
-				else resetLetterLifts(title);
-			});
-		}, { signal: titleController.signal });
-	}
-
-	bindTitleWave();
-	document.addEventListener('astro:page-load', bindTitleWave);
+		return onPointerMove((event) => {
+			if (isNearTitle(title, event)) updateLetterLifts(title, event);
+			else resetLetterLifts(title);
+		});
+	});
 </script>

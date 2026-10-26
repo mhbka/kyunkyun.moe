@@ -58,7 +58,7 @@ const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies,
 						<h2 id="blog-tags-heading" class="card-heading">tags:</h2>
 						<TagFilter tags={tags} selectedTags={selectedTags} />
 					</EdgeCard>
-					<PostList posts={posts} variant="published" isAuthor={isAuthor} pageSize={pageSize} cards />
+					<PostList posts={posts} variant="published" isAuthor={isAuthor} cards />
 					<Pagination page={page} hasNext={hasNext} tags={selectedTags} />
 				</>
 			)}

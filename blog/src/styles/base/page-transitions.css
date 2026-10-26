@@ -1,0 +1,8 @@
+/*
+ * Keeps the document out of native view-transition snapshots. The router still
+ * wraps swaps in startViewTransition for lifecycle timing, but with nothing
+ * captured the foreground decorations stay live in the ordinary DOM and keep
+ * their stacking order. The content fade itself is a WAAPI opacity animation
+ * driven by src/scripts/page-fade.ts.
+ */
+html { view-transition-name: none !important; }

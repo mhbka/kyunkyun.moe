@@ -7,11 +7,14 @@ import { WALKERS } from '../consts';
 	src={WALKERS[0].standSrc}
 	alt=""
 	aria-hidden="true"
+	transition:persist="walker"
 />
 
 
 <script>
 	import { DEFAULT_WALKER_ID, WALKERS } from '../consts';
+	import { onPointerMove } from '../handlers/document-events';
+	import { bindPage } from '../scripts/bind-page';
 	import { getWalkerImage } from './walker/assets';
 	import { moveTowardsCursor, shouldRestartWalking } from './walker/movement';
 
@@ -26,11 +29,8 @@ import { WALKERS } from '../consts';
 		return WALKERS.find((walker) => walker.id === id) ?? WALKERS[0];
 	}
 
-	document.querySelectorAll<HTMLImageElement>('.walker').forEach((walker) => {
-		// Prevents duplicate initialization if this component is rendered twice.
-		if (walker.dataset.initialized === 'true') return;
-		walker.dataset.initialized = 'true';
-
+	// Starts one walker's movement and interaction, returning its teardown.
+	bindPage<HTMLImageElement>('.walker', (walker) => {
 		let selectedWalker = getWalker(activeWalker);
 		let position = window.innerWidth / 2;
 		let target = position;
@@ -92,32 +92,46 @@ import { WALKERS } from '../consts';
 		}
 
 		// Sets the cursor X coordinate as the next destination.
-		document.addEventListener('pointermove', (event) => {
+		const handlePointerMove = (event: PointerEvent) => {
 			target = event.clientX;
 
 			if (!reducedMotion && animationFrame === 0 && shouldRestartWalking(position, target)) {
 				previousTime = performance.now();
 				animationFrame = requestAnimationFrame(walk);
 			}
-		});
+		};
 
 		// Shows a character's pose while the pointer is over it.
-		walker.addEventListener('pointerenter', () => {
+		const onPointerEnter = () => {
 			isHovered = true;
 			showCurrentImage();
-		});
+		};
 
 		// Restores the standing or walking image after hover ends.
-		walker.addEventListener('pointerleave', () => {
+		const onPointerLeave = () => {
 			isHovered = false;
 			showCurrentImage();
-		});
+		};
 
-		window.addEventListener('walkerchange', (event) => {
+		const onWalkerChange = (event: Event) => {
 			if (event instanceof CustomEvent && typeof event.detail === 'string') {
 				selectWalker(event.detail);
 			}
-		});
+		};
+
+		const stopPointerTracking = onPointerMove(handlePointerMove);
+		walker.addEventListener('pointerenter', onPointerEnter);
+		walker.addEventListener('pointerleave', onPointerLeave);
+		window.addEventListener('walkerchange', onWalkerChange);
+
+		// Releases listeners and the movement loop only when the walker is genuinely removed.
+		return () => {
+			cancelAnimationFrame(animationFrame);
+			stopPointerTracking();
+			walker.removeEventListener('pointerenter', onPointerEnter);
+			walker.removeEventListener('pointerleave', onPointerLeave);
+			window.removeEventListener('walkerchange', onWalkerChange);
+		};
 	});
 </script>
 

@@ -1,8 +1,9 @@
 # (functional) changelog
 
-## 2026-10-26
+## 2026-10-25
 ```
 - massive overhaul of design again, this time it's quite VN-like i think
+- add "galleries" feature for blogposts
 ```
 
 ## 2026-10-22

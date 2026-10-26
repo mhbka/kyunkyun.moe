@@ -3,6 +3,7 @@
 // all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
+import { ClientRouter } from 'astro:transitions';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { Font } from 'astro:assets';
 
@@ -24,6 +25,7 @@ const { title, description, image } = Astro.props;
 <link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 <meta name="generator" content={Astro.generator} />
+<ClientRouter fallback="swap" />
 <!-- Gives the visible background a head start while the decoration loads. -->
 <link rel="preload" as="image" href="/images/bg.png" />
 <!-- Starts the pendulum's image downloads before its client-side renderer mounts. -->
@@ -39,6 +41,7 @@ const { title, description, image } = Astro.props;
 <link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-七海体ef13.png" />
 
 <script is:inline id="initial-page-reveal">
+	// Runs once per document entry: the router never re-executes an already-run script.
 	// Waits only on desktop, where the hanging animation is visible.
 	if (window.matchMedia('(min-width: 801px) and (prefers-reduced-motion: no-preference)').matches) {
 		const root = document.documentElement;
@@ -52,34 +55,25 @@ const { title, description, image } = Astro.props;
 			window.removeEventListener('nanami-pendulum-ready', revealPage);
 			root.classList.replace('page-loading', 'page-entering');
 		}
+
+		// A client-side swap supersedes this document; settle outstanding callbacks
+		// so they cannot fade or hide the incoming page.
+		document.addEventListener('astro:before-swap', () => {
+			window.clearTimeout(timeout);
+			window.removeEventListener('nanami-pendulum-ready', revealPage);
+			root.classList.remove('page-loading', 'page-entering');
+		}, { once: true });
 	}
 </script>
 
-<script is:inline>
-	// Warn before leaving an editor with unsaved changes through an internal link.
-	document.addEventListener('click', (event) => {
-		if (!(event.target instanceof Element)) return;
-		const link = event.target.closest('a[href]');
-		const editor = document.querySelector('[data-post-editor][data-dirty="true"]');
-		if (!link || !editor || event.defaultPrevented || event.button !== 0 || link.target || link.hasAttribute('download') || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-		const destination = new URL(link.href, window.location.href);
-		if (destination.origin === window.location.origin && destination.pathname === window.location.pathname && destination.search === window.location.search && destination.hash) return;
-		if (!window.confirm('You have unsaved changes. Leave this page?')) {
-			event.preventDefault();
-			return;
-		}
-		// Avoids a second browser prompt for the same confirmed navigation.
-		editor.dataset.dirty = 'false';
-	}, true);
-
-	// Warn before a browser refresh closes a dirty editor.
-	window.addEventListener('beforeunload', (event) => {
-		if (!document.querySelector('[data-post-editor][data-dirty="true"]')) return;
-		event.preventDefault();
-	});
-</script>
-
 <Font cssVariable="--font-m-plus-1p" preload />
+
+<script>
+	import { initHandlers } from '../handlers';
+	import { initPageFade } from '../scripts/page-fade';
+	initHandlers();
+	initPageFade();
+</script>
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />

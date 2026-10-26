@@ -22,12 +22,9 @@ const { id, name, label, initialTags = [], list } = Astro.props;
 
 <script>
 	import { initTagInput } from './tag-input.ts';
-	// Initializes shared tag controls on normal loads and client-side navigation.
-	function bindTagInputs() {
-		document.querySelectorAll<HTMLElement>('[data-tag-input]').forEach(initTagInput);
-	}
-	bindTagInputs();
-	document.addEventListener('astro:page-load', bindTagInputs);
+	import { bindPage } from '../scripts/bind-page';
+
+	bindPage('[data-tag-input]', (root) => void initTagInput(root));
 </script>
 
 <style>

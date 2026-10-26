@@ -13,7 +13,7 @@ const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 ---
 
 {tags.length > 0 && (
-	<nav class="tag-filter" aria-label="Filter posts by tag" data-tag-filter data-client-filter={basePath === '/blog/' ? 'true' : 'false'}>
+	<nav class="tag-filter" aria-label="Filter posts by tag">
 		<Link class:list={['tag-filter__tag', !selectedTags.length && 'tag-filter__tag--selected']} href={basePath} data-tag="">all</Link>
 		{tags.map(({ tag, count }) => (
 			<Link class:list={['tag-filter__tag', selectedTags.includes(tag) && 'tag-filter__tag--selected']} href={toggleTagUrl(basePath, selectedTags, tag)} data-tag={tag} aria-current={selectedTags.includes(tag) ? "true" : undefined}>
@@ -22,48 +22,6 @@ const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 		))}
 	</nav>
 )}
-
-<script>
-	import { readTagFilters, toggleTagUrl } from '../lib/tags.ts';
-	let filterController: AbortController | undefined;
-
-	// Binds the current filter and clears listeners belonging to the previous page.
-	function bindTagFilter() {
-		filterController?.abort();
-		const filter = document.querySelector<HTMLElement>('[data-tag-filter]');
-		if (!filter || filter.dataset.clientFilter !== 'true') return;
-		filterController = new AbortController();
-		const { signal } = filterController;
-		const currentTag = () => readTagFilters(new URL(window.location.href).searchParams);
-		const updateSelection = (tags: string[]) => {
-			filter.querySelectorAll<HTMLAnchorElement>('[data-tag]').forEach((link) => {
-				link.classList.toggle('tag-filter__tag--selected', link.dataset.tag ? tags.includes(link.dataset.tag) : tags.length === 0);
-				link.href = toggleTagUrl(window.location.pathname, tags, link.dataset.tag ?? '');
-				if (link.dataset.tag && tags.includes(link.dataset.tag)) link.setAttribute('aria-current', 'true');
-				else link.removeAttribute('aria-current');
-			});
-		};
-		const filterPosts = (tags: string[]) => {
-			updateSelection(tags);
-			document.dispatchEvent(new CustomEvent('posts:filter', { detail: tags }));
-		};
-
-		filter.addEventListener('click', (event) => {
-			const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('[data-tag]');
-			if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-			event.preventDefault();
-			const url = new URL(link.href);
-			window.history.pushState(null, '', url);
-			filterPosts(readTagFilters(url.searchParams));
-		}, { signal });
-
-		window.addEventListener('popstate', () => filterPosts(currentTag()), { signal });
-	}
-
-	bindTagFilter();
-	document.addEventListener('astro:page-load', bindTagFilter);
-</script>
 
 <style>
 	/* Keeps long tag names inside the mobile page width. */

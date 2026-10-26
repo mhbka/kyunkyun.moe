@@ -13,13 +13,10 @@ import Select from './ui/Select.astro';
 
 	const walkerStorageKey = 'site-walker';
 
-	// Binds the newly rendered selector after every client-side navigation.
-	function bindWalkerSelector() {
-		const walkerSelector = document.querySelector('[data-walker-selector]');
-		if (!(walkerSelector instanceof HTMLSelectElement)) return;
-		if (walkerSelector.dataset.initialized === 'true') return;
-		walkerSelector.dataset.initialized = 'true';
+	import { bindPage } from '../scripts/bind-page';
 
+	// Binds each newly rendered selector to the surviving walker through `walkerchange`.
+	bindPage<HTMLSelectElement>('[data-walker-selector]', (walkerSelector) => {
 		const savedWalker = localStorage.getItem(walkerStorageKey);
 		const savedWalkerId = savedWalker === 'sweep' ? 'sweep_tosho' : savedWalker;
 		const activeWalker = WALKERS.find((walker) => walker.id === savedWalkerId)?.id ?? DEFAULT_WALKER_ID;
@@ -28,8 +25,5 @@ import Select from './ui/Select.astro';
 			localStorage.setItem(walkerStorageKey, walkerSelector.value);
 			window.dispatchEvent(new CustomEvent('walkerchange', { detail: walkerSelector.value }));
 		});
-	}
-
-	bindWalkerSelector();
-	document.addEventListener('astro:page-load', bindWalkerSelector);
+	});
 </script>

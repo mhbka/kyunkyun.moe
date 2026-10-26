@@ -80,16 +80,9 @@ const pageUrl = (cursor?: string) => {
 
 <script>
 	import { initTweetTimeline } from './timeline.ts';
-	const initializedTimelines = new WeakSet<HTMLElement>();
-	// Initializes each timeline once on both normal loads and navigation.
-	function bindTweetTimeline() {
-		const timeline = document.querySelector<HTMLElement>('[data-tweet-timeline]');
-		if (!timeline || initializedTimelines.has(timeline)) return;
-		initializedTimelines.add(timeline);
-		initTweetTimeline(timeline);
-	}
-	bindTweetTimeline();
-	document.addEventListener('astro:page-load', bindTweetTimeline);
+	import { bindPage } from '../../scripts/bind-page';
+
+	bindPage('[data-tweet-timeline]', initTweetTimeline);
 </script>
 
 <style>

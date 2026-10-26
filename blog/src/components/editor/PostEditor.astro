@@ -49,7 +49,10 @@ const labels = getPostEditorLabels(post?.status);
 </form>
 
 <script>
-	import './post-editor.ts';
+	import { bindPage } from '../../scripts/bind-page';
+	import { initPostEditor } from './post-editor.ts';
+
+	bindPage<HTMLFormElement>('[data-post-editor]', initPostEditor);
 </script>
 
 <style>

@@ -8,18 +8,24 @@ import { initTagInput } from '../tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
 
-/** Initializes the Milkdown editor and its post form controls. */
-async function initPostEditor() {
-	const form = document.querySelector<HTMLFormElement>('[data-post-editor]');
-	const root = document.querySelector<HTMLElement>('#post-content');
-	const title = document.querySelector<HTMLTextAreaElement>('#post-title');
-	const slug = document.querySelector<HTMLInputElement>('#post-slug');
-	const tagRoot = form?.querySelector<HTMLElement>('[data-tag-input]');
-	const tagSuggestions = document.querySelector<HTMLDataListElement>('#post-tag-suggestions');
-	const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-	const status = document.querySelector<HTMLElement>('[data-editor-status]');
+/** Mounts the Milkdown editor on a post form; the returned cleanup runs once the page leaves it. */
+export function initPostEditor(form: HTMLFormElement) {
+	const lifetime = new AbortController();
+	void mountPostEditor(form, lifetime.signal);
+	return () => lifetime.abort();
+}
 
-	if (!form || !root || !title || !slug || !tagRoot || !button || !status) return;
+/** Initializes the Milkdown editor and its post form controls. */
+async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
+	const root = form.querySelector<HTMLElement>('#post-content');
+	const title = form.querySelector<HTMLTextAreaElement>('#post-title');
+	const slug = form.querySelector<HTMLInputElement>('#post-slug');
+	const tagRoot = form.querySelector<HTMLElement>('[data-tag-input]');
+	const tagSuggestions = form.querySelector<HTMLDataListElement>('#post-tag-suggestions');
+	const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+	const status = form.querySelector<HTMLElement>('[data-editor-status]');
+
+	if (!root || !title || !slug || !tagRoot || !button || !status) return;
 
 	const titleInput = title;
 
@@ -31,7 +37,7 @@ async function initPostEditor() {
 
 	resizeTitle();
 	const changes = trackEditorChanges(form);
-	titleInput.addEventListener('input', resizeTitle);
+	titleInput.addEventListener('input', resizeTitle, { signal });
 
 	const slugInput = slug;
 	const tagInput = initTagInput(tagRoot);
@@ -65,7 +71,7 @@ async function initPostEditor() {
 		return uploadImage(file, mediaApiUrl, postId, session.access_token);
 	}
 
-	slug.addEventListener('input', validateSlug);
+	slug.addEventListener('input', validateSlug, { signal });
 
 	void blogApi.listTags().then((availableTags) => {
 		tagSuggestions?.replaceChildren(...availableTags.map(({ tag, count }) => {
@@ -116,6 +122,12 @@ async function initPostEditor() {
 		if (ready && markdown !== previous && markdown.trim() !== savedMarkdown) changes.markDirty();
 	}));
 	await editor.create();
+	// Navigation may have removed the form while Milkdown was loading.
+	if (signal.aborted) {
+		await editor.destroy();
+		return;
+	}
+	signal.addEventListener('abort', () => void editor.destroy(), { once: true });
 	savedMarkdown = editor.getMarkdown().trim();
 	ready = true;
 
@@ -148,10 +160,13 @@ async function initPostEditor() {
 				status.textContent = 'Changes saved.';
 			} else {
 				const post = await blogApi.createPost({ title: postTitle, contentMd, slug: postSlug, tags }, session.access_token);
+				if (signal.aborted) return;
 				postId = post.id;
-				history.replaceState(null, '', `/posts/edit/${encodeURIComponent(post.id)}`);
+				// Preserves existing router history metadata while promoting the draft URL.
+				history.replaceState(history.state, '', `/posts/edit/${encodeURIComponent(post.id)}`);
 				status.textContent = 'Draft created.';
 			}
+			if (signal.aborted) return;
 			savedMarkdown = contentMd;
 			// Milkdown notifications are debounced; check the current content before clearing dirty state.
 			if (editor.getMarkdown().trim() !== contentMd) changes.markDirty();
@@ -161,8 +176,5 @@ async function initPostEditor() {
 		} finally {
 			button.disabled = false;
 		}
-	});
+	}, { signal });
 }
-
-// Initializes the editor after the page's module scripts load.
-void initPostEditor();

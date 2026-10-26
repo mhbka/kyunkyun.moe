@@ -66,18 +66,9 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 <script>
 	import { initPixGallery } from './gallery.ts';
 
-	const initializedGalleries = new WeakSet<HTMLElement>();
+	import { bindPage } from '../../scripts/bind-page';
 
-	// Binds each gallery once on full-page loads and client-side navigation.
-	function bindPixGallery() {
-		const gallery = document.querySelector<HTMLElement>('[data-moe-gallery]');
-		if (!gallery || initializedGalleries.has(gallery)) return;
-		initPixGallery(gallery);
-		initializedGalleries.add(gallery);
-	}
-
-	bindPixGallery();
-	document.addEventListener('astro:page-load', bindPixGallery);
+	bindPage('[data-moe-gallery]', initPixGallery);
 </script>
 
 <style>

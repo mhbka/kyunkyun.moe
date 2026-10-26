@@ -1,6 +1,8 @@
-<ambient-sakura class="ambient-sakura" aria-hidden="true"></ambient-sakura>
+<ambient-sakura class="ambient-sakura" aria-hidden="true" transition:persist="sakura"></ambient-sakura>
 
 <script>
+	import { bindPage } from '../scripts/bind-page';
+
 	const MAX_SAKURA_COUNT = 10;
 	const SPAWN_INTERVAL = 500;
 	const INITIAL_SAKURA_COUNT = 5;
@@ -24,12 +26,14 @@
 		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 		private spawnTimer = 0;
 
-		connectedCallback() {
+		// Starts the petals; called once per element, which survives navigation via transition:persist.
+		start() {
 			this.motionPreference.addEventListener('change', this.handleMotionPreference);
 			this.updatePopulation();
 		}
 
-		disconnectedCallback() {
+		// Releases timers once the element has genuinely left the document.
+		stop() {
 			this.motionPreference.removeEventListener('change', this.handleMotionPreference);
 			this.clearPopulation();
 		}
@@ -104,6 +108,11 @@
 	if (!customElements.get('ambient-sakura')) {
 		customElements.define('ambient-sakura', AmbientSakura);
 	}
+
+	bindPage<AmbientSakura>('ambient-sakura', (layer) => {
+		layer.start();
+		return () => layer.stop();
+	});
 </script>
 
 <style>

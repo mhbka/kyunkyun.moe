@@ -7,7 +7,7 @@ export const MAX_MEDIA_COUNT = 5;
 /** Defines the browser-side attachment size limit. */
 export const MAX_MEDIA_BYTES = 100 * 1024 * 1024;
 
-/** Wires tweet composition, attachment viewing, and author deletion. */
+/** Wires tweet composition, attachment viewing, and author deletion; returns its cleanup. */
 export function initTweetTimeline(timeline: HTMLElement) {
 	const composer = timeline.querySelector<HTMLFormElement>('[data-tweet-composer]');
 	const body = timeline.querySelector<HTMLTextAreaElement>('[data-tweet-body]');
@@ -23,12 +23,6 @@ export function initTweetTimeline(timeline: HTMLElement) {
 	let selectedFiles: File[] = [];
 
 	const attachmentPreviews = previews ? createTweetPreviews(previews) : undefined;
-	// Releases preview URLs when navigation removes the timeline.
-	window.addEventListener('pagehide', event => {
-		if (!event.persisted) attachmentPreviews?.clear();
-	});
-	document.addEventListener('astro:before-swap', () => attachmentPreviews?.clear(), { once: true });
-
 	body?.addEventListener('input', () => { if (count) count.textContent = `${body.value.length}/500`; });
 	if (dropzone) initFileDropzone(dropzone, (newFiles) => {
 		selectedFiles = [...newFiles];
@@ -79,4 +73,7 @@ export function initTweetTimeline(timeline: HTMLElement) {
 			submit.disabled = false;
 		}
 	});
+
+	// Releases preview URLs once navigation removes the timeline.
+	return () => attachmentPreviews?.clear();
 }

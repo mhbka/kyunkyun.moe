@@ -3,6 +3,8 @@
 @import './base/site-shell.css';
 @import './base/typography.css';
 @import './base/ui.css';
+@import './base/click-feedback.css';
+@import './base/page-transitions.css';
 @import './base/markdown-content.css';
 @import './base/gallery.css';
 @import './base/crepe.css';

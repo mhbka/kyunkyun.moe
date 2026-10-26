@@ -20,6 +20,8 @@ const { target, editable = false } = Astro.props;
 		<template><li>{editable ? <Button type="button" /> : <Link />}</li></template>
 	</post-contents>
 <script>
+	import { onDocumentClick } from '../handlers/document-events';
+
 	class PostContents extends HTMLElement {
 		observer?: MutationObserver;
 		frame = 0;
@@ -42,9 +44,10 @@ const { target, editable = false } = Astro.props;
 			toggle.addEventListener('click', () => {
 				toggle.setAttribute('aria-expanded', String(toggle.getAttribute('aria-expanded') !== 'true'));
 			}, { signal });
-			document.addEventListener('click', (event) => {
+			const stopOutsideClicks = onDocumentClick((event) => {
 				if (!this.contains(event.target as Node)) close();
-			}, { signal });
+			});
+			signal.addEventListener('abort', stopOutsideClicks, { once: true });
 			document.addEventListener('keydown', (event) => {
 				if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') close(true);
 			}, { signal });

@@ -11,10 +11,11 @@ import Button from './ui/Button.astro';
 <script>
 	import { markMobileNoticeShown, shouldShowMobileNotice } from '../lib/mobile-notice.ts';
 
+	import { bindPage } from '../scripts/bind-page';
+
 	// Shows the one-time notice only when the current viewport uses the mobile layout.
-	function bindMobileNotice() {
-		const notice = document.querySelector<HTMLDialogElement>('[data-mobile-notice]');
-		if (!notice || !window.matchMedia('(max-width: 800px)').matches) return;
+	bindPage<HTMLDialogElement>('[data-mobile-notice]', (notice) => {
+		if (!window.matchMedia('(max-width: 800px)').matches) return;
 		try {
 			if (!shouldShowMobileNotice(localStorage)) return;
 			markMobileNoticeShown(localStorage);
@@ -24,9 +25,7 @@ import Button from './ui/Button.astro';
 			return;
 		}
 		notice.querySelector<HTMLButtonElement>('[data-mobile-notice-continue]')?.addEventListener('click', () => notice.close());
-	}
-
-	document.addEventListener('astro:page-load', bindMobileNotice);
+	});
 </script>
 
 <style>

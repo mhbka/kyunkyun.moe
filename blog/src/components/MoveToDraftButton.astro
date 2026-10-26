@@ -14,9 +14,10 @@ const { postId } = Astro.props;
 	import { blogApi } from '../lib/api.ts';
 	import { createSupabaseBrowserClient } from '../lib/auth/supabase.ts';
 
-	// Binds current-page controls after each client-side navigation.
-	function bindMoveToDraftButtons() {
-		document.querySelectorAll<HTMLButtonElement>('[data-move-to-draft-id]').forEach((button) => {
+	import { navigate } from 'astro:transitions/client';
+	import { bindPage } from '../scripts/bind-page';
+
+	bindPage<HTMLButtonElement>('[data-move-to-draft-id]', (button) => {
 		button.addEventListener('click', async () => {
 			const postId = button.dataset.moveToDraftId;
 			if (!postId) return;
@@ -26,15 +27,11 @@ const { postId } = Astro.props;
 				const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
 				if (!session) throw new Error('Your session has expired. Please sign in again.');
 				await blogApi.movePostToDraft(postId, session.access_token);
-				window.location.assign(`/posts/edit/${encodeURIComponent(postId)}/`);
+				await navigate(`/posts/edit/${encodeURIComponent(postId)}/`);
 			} catch (error) {
 				window.alert(error instanceof Error ? error.message : 'Unable to move this post to drafts.');
 				button.disabled = false;
 			}
 		});
-		});
-	}
-
-	bindMoveToDraftButtons();
-	document.addEventListener('astro:page-load', bindMoveToDraftButtons);
+	});
 </script>

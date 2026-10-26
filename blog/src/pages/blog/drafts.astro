@@ -83,12 +83,9 @@ if (isAuthor && accessToken) {
 			import { blogApi } from '../../lib/api.ts';
 			import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 
-			const initializedLists = new WeakSet<Element>();
-			// Binds each draft list once, including on a normal page load.
-			function bindDraftControls() {
-				const list = document.querySelector('#draft-list');
-				if (!list || initializedLists.has(list)) return;
-				initializedLists.add(list);
+			import { bindPage } from '../../scripts/bind-page.ts';
+
+			bindPage('#draft-list', () => {
 				const dialog = document.querySelector<HTMLDialogElement>('#delete-dialog');
 				const title = document.querySelector<HTMLElement>('#delete-draft-title');
 				const error = document.querySelector<HTMLElement>('#delete-error');
@@ -135,12 +132,10 @@ if (isAuthor && accessToken) {
 					} catch (caughtError) {
 						if (error) error.textContent = caughtError instanceof Error ? caughtError.message : 'Unable to delete this draft.';
 					} finally {
-					confirmButton.disabled = false;
+						confirmButton.disabled = false;
 					}
 				});
-			}
-			bindDraftControls();
-			document.addEventListener('astro:page-load', bindDraftControls);
+			});
 		</script>
 	</body>
 </html>

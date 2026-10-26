@@ -19,62 +19,54 @@ const scoreLabel = (name: string) => name.replaceAll('_', ' ');
 	import { loadBashQuoteParameters, saveBashQuoteParameters } from '../../lib/local-storage/bash-quote-parameters.ts';
 	import type { ScoreLimits, ScoreName } from '../../lib/models/bash-quotes.ts';
 
-	// Initializes sliders in the current page after each client-side navigation.
-	function bindScoreLimits() {
-	const sliders = document.querySelector<HTMLElement>('.score-limits');
-	if (!sliders) return;
-	const root = sliders;
-	if (root.dataset.scoreLimitsBound === 'true') return;
-	root.dataset.scoreLimitsBound = 'true';
+	import { bindPage } from '../../scripts/bind-page';
 
-	function readParameters(): ScoreLimits {
-		const parameters = {} as ScoreLimits;
-		root.querySelectorAll<HTMLElement>('[data-score]').forEach((field) => {
-			const name = field.dataset.score as ScoreName;
-			parameters[name] = {
-				lower: Number(field.querySelector<HTMLInputElement>('[data-limit="lower"]')!.value),
-				upper: Number(field.querySelector<HTMLInputElement>('[data-limit="upper"]')!.value),
-			};
-		});
-		return parameters;
-	}
+	bindPage('.score-limits', (root) => {
+		function readParameters(): ScoreLimits {
+			const parameters = {} as ScoreLimits;
+			root.querySelectorAll<HTMLElement>('[data-score]').forEach((field) => {
+				const name = field.dataset.score as ScoreName;
+				parameters[name] = {
+					lower: Number(field.querySelector<HTMLInputElement>('[data-limit="lower"]')!.value),
+					upper: Number(field.querySelector<HTMLInputElement>('[data-limit="upper"]')!.value),
+				};
+			});
+			return parameters;
+		}
 
-	function updateOutput(input: HTMLInputElement) {
-		input.closest<HTMLElement>('[data-score]')!
-			.querySelector<HTMLOutputElement>(`[data-${input.dataset.limit}-output]`)!.value = Number(input.value).toFixed(2);
-	}
+		function updateOutput(input: HTMLInputElement) {
+			input.closest<HTMLElement>('[data-score]')!
+				.querySelector<HTMLOutputElement>(`[data-${input.dataset.limit}-output]`)!.value = Number(input.value).toFixed(2);
+		}
 
-	function applySavedParameters() {
-		const parameters = loadBashQuoteParameters();
-		root.querySelectorAll<HTMLElement>('[data-score]').forEach((field) => {
-			const limits = parameters[field.dataset.score as ScoreName];
-			for (const limit of ['lower', 'upper'] as const) {
-				const input = field.querySelector<HTMLInputElement>(`[data-limit="${limit}"]`)!;
-				input.value = String(limits[limit]);
+		function applySavedParameters() {
+			const parameters = loadBashQuoteParameters();
+			root.querySelectorAll<HTMLElement>('[data-score]').forEach((field) => {
+				const limits = parameters[field.dataset.score as ScoreName];
+				for (const limit of ['lower', 'upper'] as const) {
+					const input = field.querySelector<HTMLInputElement>(`[data-limit="${limit}"]`)!;
+					input.value = String(limits[limit]);
+					updateOutput(input);
+				}
+			});
+		}
+
+		root.querySelectorAll<HTMLInputElement>('[data-limit]').forEach((input) => {
+			input.addEventListener('input', () => {
+				const field = input.closest<HTMLElement>('[data-score]')!;
+				const otherLimit = input.dataset.limit === 'lower' ? 'upper' : 'lower';
+				const otherInput = field.querySelector<HTMLInputElement>(`[data-limit="${otherLimit}"]`)!;
+				if ((input.dataset.limit === 'lower' && input.value > otherInput.value) || (input.dataset.limit === 'upper' && input.value < otherInput.value)) {
+					otherInput.value = input.value;
+					updateOutput(otherInput);
+				}
 				updateOutput(input);
-			}
+				saveBashQuoteParameters(readParameters());
+			});
 		});
-	}
 
-	root.querySelectorAll<HTMLInputElement>('[data-limit]').forEach((input) => {
-		input.addEventListener('input', () => {
-			const field = input.closest<HTMLElement>('[data-score]')!;
-			const otherLimit = input.dataset.limit === 'lower' ? 'upper' : 'lower';
-			const otherInput = field.querySelector<HTMLInputElement>(`[data-limit="${otherLimit}"]`)!;
-			if ((input.dataset.limit === 'lower' && input.value > otherInput.value) || (input.dataset.limit === 'upper' && input.value < otherInput.value)) {
-				otherInput.value = input.value;
-				updateOutput(otherInput);
-			}
-			updateOutput(input);
-			saveBashQuoteParameters(readParameters());
-		});
+		applySavedParameters();
 	});
-
-	applySavedParameters();
-	}
-
-	bindScoreLimits();
-	document.addEventListener('astro:page-load', bindScoreLimits);
 </script>
 
 <style>

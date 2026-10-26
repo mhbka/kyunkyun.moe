@@ -1,0 +1,17 @@
+/* Site-wide click feedback visuals; behaviour lives in src/scripts/click-feedback.ts. */
+/* Tune the bounce per element with --click-feedback-squash / --click-feedback-stretch. */
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes click-feedback-pop {
+		0% { transform: scale(1); }
+		35% { transform: scale(var(--click-feedback-squash, 0.92)); }
+		70% { transform: scale(var(--click-feedback-stretch, 1.04)); }
+		100% { transform: scale(1); }
+	}
+	.click-feedback-pop { animation: click-feedback-pop var(--click-feedback-duration, 180ms) ease-out; }
+
+	/* Large surfaces read heavy at full strength, so cards nudge instead. */
+	.post-card {
+		--click-feedback-squash: 0.98;
+		--click-feedback-stretch: 1.01;
+	}
+}

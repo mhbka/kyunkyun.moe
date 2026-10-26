@@ -10,11 +10,10 @@ interface Props {
 	posts: Array<PostSummary | DraftPostSummary>;
 	variant: 'published' | 'drafts';
 	isAuthor?: boolean;
-	pageSize?: number;
 	cards?: boolean;
 }
 
-const { posts, variant, isAuthor = false, pageSize = 20, cards = false } = Astro.props;
+const { posts, variant, isAuthor = false, cards = false } = Astro.props;
 // Keeps list semantics while optionally giving each post its own edge card.
 const Item = cards ? EdgeCard : 'li';
 ---
@@ -22,9 +21,6 @@ const Item = cards ? EdgeCard : 'li';
 <ul
 	class:list={['post-list', { 'post-list--cards': cards }]}
 	id={variant === 'drafts' ? 'draft-list' : 'published-list'}
-	data-page-size={variant === 'published' ? pageSize : undefined}
-	data-is-author={variant === 'published' && isAuthor ? 'true' : undefined}
-	aria-live={variant === 'published' ? 'polite' : undefined}
 >
 	{posts.map((post) => (
 		<Item as={cards ? 'li' : undefined} data-draft-id={variant === 'drafts' ? post.id : undefined}>
@@ -54,145 +50,6 @@ const Item = cards ? EdgeCard : 'li';
 		</Item>
 	))}
 </ul>
-
-{variant === 'published' && (
-	<script>
-		import { blogApi } from '../lib/api.ts';
-		import { createSupabaseBrowserClient } from '../lib/auth/supabase.ts';
-		import type { PostSummary } from '../lib/models/posts.ts';
-		import { parsePage } from '../lib/pagination.ts';
-
-		let list: HTMLUListElement | null = null;
-		let pageSize = 20;
-		let isAuthor = false;
-
-		// Updates references to the list rendered by the current routed page.
-		function bindPublishedList() {
-			list = document.querySelector<HTMLUListElement>('#published-list');
-			pageSize = Number(list?.dataset.pageSize ?? '20');
-			isAuthor = list?.dataset.isAuthor === 'true';
-		}
-
-		function formatDate(value: string) {
-			return new Date(value).toLocaleDateString('en-us', {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric',
-			});
-		}
-
-		async function moveToDraft(postId: string, button: HTMLButtonElement) {
-			button.disabled = true;
-			try {
-				const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
-				if (!session) throw new Error('Your session has expired. Please sign in again.');
-				await blogApi.movePostToDraft(postId, session.access_token);
-				window.location.assign(`/posts/edit/${encodeURIComponent(postId)}/`);
-			} catch (error) {
-				window.alert(error instanceof Error ? error.message : 'Unable to move this post to drafts.');
-				button.disabled = false;
-			}
-		}
-
-		function renderPost(post: PostSummary) {
-			const item = document.createElement('li');
-			// Preserves the card surface when tag filtering replaces the list items.
-			if (list?.classList.contains('post-list--cards')) item.className = 'edge-card';
-			const link = document.createElement('a');
-			link.className = 'ui-link post-card';
-			link.href = `/blog/${encodeURIComponent(post.slug)}/`;
-
-			if (post.thumbnailUrl) {
-				const image = document.createElement('img');
-				image.width = 720;
-				image.height = 360;
-				image.src = post.thumbnailUrl;
-				image.alt = '';
-				link.append(image);
-			}
-
-			const title = document.createElement('h4');
-			title.className = 'post-card__title';
-			title.textContent = post.title;
-			link.append(title);
-
-			const date = document.createElement('p');
-			date.className = 'post-card__date';
-			date.textContent = formatDate(post.publishedAt);
-			link.append(date);
-
-			if (post.tags.length) {
-				const tags = document.createElement('p');
-				tags.className = 'post-card__tags';
-				tags.textContent = post.tags.map((tag) => `#${tag}`).join(' ');
-				link.append(tags);
-			}
-
-			item.append(link);
-			if (isAuthor) {
-				const actions = document.createElement('div');
-				actions.className = 'post-list__actions';
-				const editLink = document.createElement('a');
-				editLink.className = 'ui-link ui-button';
-				editLink.href = `/posts/edit/${encodeURIComponent(post.id)}/`;
-				editLink.textContent = 'edit';
-				actions.append(editLink);
-				const button = document.createElement('button');
-				button.className = 'ui-button';
-				button.type = 'button';
-				button.textContent = 'move to draft';
-				button.addEventListener('click', () => void moveToDraft(post.id, button));
-				actions.append(button);
-				item.append(actions);
-			}
-
-			return item;
-		}
-
-		// Rebuilds both directions so browser history restores the requested page.
-		function renderPagination(tags: string[], page: number, hasNext: boolean) {
-			const pagination = document.querySelector<HTMLElement>('.pagination');
-			if (!pagination) return;
-
-			pagination.hidden = page <= 1 && !hasNext;
-			pagination.replaceChildren();
-			const destinations = [];
-			if (page > 1) destinations.push({ page: page - 1, label: 'newer posts' });
-			if (hasNext) destinations.push({ page: page + 1, label: 'older posts' });
-			for (const destination of destinations) {
-				const link = document.createElement('a');
-				link.className = 'ui-link ui-button';
-				const query = new URLSearchParams({ page: String(destination.page) });
-				tags.forEach(tag => query.append('tag', tag));
-				link.href = `/blog/?${query}`;
-				link.textContent = destination.label;
-				pagination.append(link);
-			}
-		}
-
-		let filterRequest = 0;
-		bindPublishedList();
-		document.addEventListener('astro:page-load', bindPublishedList);
-		document.addEventListener('posts:filter', async (event) => {
-			if (!list) return;
-			const tag = (event as CustomEvent<string[]>).detail;
-			const page = parsePage(new URL(window.location.href).searchParams.get('page'));
-			const request = ++filterRequest;
-			list.setAttribute('aria-busy', 'true');
-			try {
-				const { posts, hasMore } = await blogApi.listPosts(page, pageSize, tag);
-				if (request !== filterRequest) return;
-				list.replaceChildren(...posts.map(renderPost));
-				renderPagination(tag, page, hasMore);
-			} catch {
-				if (request !== filterRequest) return;
-				window.alert('Unable to filter posts. Please try again shortly.');
-			} finally {
-				if (request === filterRequest) list.removeAttribute('aria-busy');
-			}
-		});
-	</script>
-)}
 
 <style>
 	:global(.post-list) { display: grid; gap: 2rem; margin: 0; padding: 0; list-style: none; }

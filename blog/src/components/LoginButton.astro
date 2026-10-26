@@ -11,12 +11,11 @@ const buttonText = isLoggedIn ? 'logout' : 'login';
 
 <script>
 	import { createSupabaseBrowserClient } from '../lib/auth/supabase';
+	import { bindPage } from '../scripts/bind-page';
 
 	const supabaseClient = createSupabaseBrowserClient();
-	// Binds the newly rendered login control after every client-side navigation.
-	function bindLoginButton() {
-		const loginButton = document.querySelector<HTMLButtonElement>('[data-login-button]');
-		if (!loginButton) return;
+
+	bindPage<HTMLButtonElement>('[data-login-button]', (loginButton) => {
 		const buttonCallback = loginButton.dataset.loggedIn === 'true'
 			? async () => {
 				await supabaseClient.auth.signOut();
@@ -30,9 +29,7 @@ const buttonText = isLoggedIn ? 'logout' : 'login';
 			});
 
 		loginButton.addEventListener('click', buttonCallback);
-	}
-
-	document.addEventListener('astro:page-load', bindLoginButton);
+	});
 </script>
 
 <Button data-login-button data-logged-in={isLoggedIn} class:list={[className]} {...props}>

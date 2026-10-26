@@ -11,14 +11,20 @@ assert.ok(script);
 function setup(matches = true) {
 	const classes = new Set<string>();
 	const events = new EventTarget();
+	const documentEvents = new EventTarget();
 	let timeout: (() => void) | undefined;
 	runInNewContext(script!, {
-		document: { documentElement: { classList: {
-			add(value: string) { classes.add(value); },
-			replace(before: string, after: string) {
-				if (classes.delete(before)) classes.add(after);
-			},
-		} } },
+		document: {
+			documentElement: { classList: {
+				add(value: string) { classes.add(value); },
+				remove(...values: string[]) { values.forEach((value) => classes.delete(value)); },
+				replace(before: string, after: string) {
+					if (classes.delete(before)) classes.add(after);
+				},
+			} },
+			addEventListener: documentEvents.addEventListener.bind(documentEvents),
+			removeEventListener: documentEvents.removeEventListener.bind(documentEvents),
+		},
 		window: {
 			matchMedia: () => ({ matches }),
 			setTimeout(callback: () => void, delay: number) {
@@ -31,7 +37,7 @@ function setup(matches = true) {
 			removeEventListener: events.removeEventListener.bind(events),
 		},
 	});
-	return { classes, events, getTimeout: () => timeout };
+	return { classes, events, documentEvents, getTimeout: () => timeout };
 }
 
 test('reveals the page when the pendulum settles and cancels the timeout', () => {
@@ -54,4 +60,15 @@ test('skips waiting when the desktop motion query does not match', () => {
 	const page = setup(false);
 	assert.equal(page.classes.size, 0);
 	assert.equal(page.getTimeout(), undefined);
+});
+
+test('a client-side swap settles the pending reveal without touching the next page', () => {
+	const page = setup();
+	assert.ok(page.classes.has('page-loading'));
+	page.documentEvents.dispatchEvent(new Event('astro:before-swap'));
+	assert.equal(page.classes.size, 0);
+	assert.equal(page.getTimeout(), undefined);
+	// Readiness arriving after the swap must not replay the reveal.
+	page.events.dispatchEvent(new Event('nanami-pendulum-ready'));
+	assert.equal(page.classes.size, 0);
 });

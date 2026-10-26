@@ -1,6 +1,9 @@
-<ambient-butterflies class="ambient-butterflies" aria-hidden="true"></ambient-butterflies>
+<ambient-butterflies class="ambient-butterflies" aria-hidden="true" transition:persist="butterflies"></ambient-butterflies>
 
 <script>
+	import { onDocumentClick } from '../handlers/document-events';
+	import { bindPage } from '../scripts/bind-page';
+
 	const INITIAL_BUTTERFLY_COUNT = 10;
 	const MAX_BUTTERFLY_COUNT = 30;
 	const SPAWN_INTERVAL = 500;
@@ -50,20 +53,22 @@
 	// Maintains a small population of independently animated ambient butterflies.
 	class AmbientButterflies extends HTMLElement {
 		private animations = new Set<Animation>();
-		private controller: AbortController | undefined;
+		private stopClicks: (() => void) | undefined;
 		private interactionTimers = new Set<number>();
 		private motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 		private spawnTimer = 0;
 
-		connectedCallback() {
-			this.controller = new AbortController();
+		// Starts the swarm; called once per element, which survives navigation via transition:persist.
+		start() {
 			this.motionPreference.addEventListener('change', this.handleMotionPreference);
-			document.addEventListener('click', this.handleBackgroundClick, { signal: this.controller.signal });
+			this.stopClicks = onDocumentClick(this.handleBackgroundClick);
 			this.updatePopulation();
 		}
 
-		disconnectedCallback() {
-			this.controller?.abort();
+		// Releases listeners and timers once the element has genuinely left the document.
+		stop() {
+			this.stopClicks?.();
+			this.stopClicks = undefined;
 			this.motionPreference.removeEventListener('change', this.handleMotionPreference);
 			this.clearPopulation();
 		}
@@ -239,6 +244,11 @@
 	if (!customElements.get('ambient-butterflies')) {
 		customElements.define('ambient-butterflies', AmbientButterflies);
 	}
+
+	bindPage<AmbientButterflies>('ambient-butterflies', (layer) => {
+		layer.start();
+		return () => layer.stop();
+	});
 </script>
 
 <style>
