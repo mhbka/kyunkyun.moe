@@ -10,6 +10,8 @@
  *   pick a specific sound); `data-sfx="none"` opts a subtree out.
  */
 
+import { createAfterimage } from '../afterimage';
+
 interface SoundDefinition {
 	src: string;
 	volume: number;
@@ -59,6 +61,32 @@ function playPop(element: Element) {
 	element.addEventListener('animationend', () => element.classList.remove('click-feedback-pop'), { once: true });
 }
 
+const ECHO_DURATION = 320;
+const ECHO_OPACITY = 0.3;
+const ECHO_GROWTH = 1.1;
+// Large surfaces grow less so the echo stays a nudge.
+const ECHO_GROWTH_LARGE = 1.025;
+const LARGE_ECHO_AREA = 40000;
+
+/** Plays a faded copy that expands from the element and fades out, as an afterimage of the pop. */
+function playEcho(element: Element) {
+	if (!(element instanceof HTMLElement)) return;
+	const ghost = createAfterimage(element, 'afterend');
+	if (!ghost) return;
+	const { width, height } = element.getBoundingClientRect();
+	const growth = width * height > LARGE_ECHO_AREA ? ECHO_GROWTH_LARGE : ECHO_GROWTH;
+	const echo = ghost.animate(
+		[
+			{ transform: 'scale(1)', opacity: ECHO_OPACITY },
+			{ transform: `scale(${growth})`, opacity: 0 },
+		],
+		{ duration: ECHO_DURATION, easing: 'ease-out', fill: 'both' },
+	);
+	const remove = () => ghost.remove();
+	echo.addEventListener('finish', remove);
+	echo.addEventListener('cancel', remove);
+}
+
 export interface ClickFeedbackOptions {
 	/** Injectable for tests; defaults to real audio playback. */
 	playSound?: (sound: SoundDefinition) => void;
@@ -91,6 +119,8 @@ export function createClickFeedback(options: ClickFeedbackOptions = {}) {
 	});
 	const playEffect = options.playEffect ?? ((element: Element) => {
 		if (!motionAllowed()) return;
+		// The echo clones before the pop class is added so the copy does not inherit the squash.
+		playEcho(element);
 		playPop(element);
 	});
 

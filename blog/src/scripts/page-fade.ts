@@ -10,6 +10,8 @@
  * restore the cards, and reduced motion skips the animation entirely.
  */
 
+import { createAfterimage } from './afterimage';
+
 const SLIDE_OUT_DURATION = 400;
 const SLIDE_IN_DURATION = 400;
 // Eases strongly at both ends so cards accelerate and settle gently.
@@ -20,13 +22,23 @@ const MAX_STAGGER = 240;
 const GLOW_MARGIN = 64;
 const TRANSITIONING_CLASS = 'page-transitioning';
 
+// Trailing copies of each departing card: start delay (ms) behind the card and peak opacity.
+const AFTERIMAGES = [
+	{ lag: 50, opacity: 0.35 },
+	{ lag: 100, opacity: 0.22 },
+	{ lag: 150, opacity: 0.12 },
+];
+
 let animations: Animation[] = [];
+let ghosts: HTMLElement[] = [];
 let owner: object | undefined;
 
-/** Cancels unfinished slides, returning cards to their resting position. */
+/** Cancels unfinished slides, returning cards to their resting position and dropping afterimages. */
 function clearSlide() {
 	for (const animation of animations) animation.cancel();
 	animations = [];
+	for (const ghost of ghosts) ghost.remove();
+	ghosts = [];
 	document.documentElement.classList.remove(TRANSITIONING_CLASS);
 }
 
@@ -46,20 +58,37 @@ async function slideCards(direction: 'out' | 'in') {
 	const out = direction === 'out';
 	document.documentElement.classList.add(TRANSITIONING_CLASS);
 	let mainIndex = 0;
-	animations = cards.map((card) => {
+	cards.forEach((card) => {
 		// Sidebar cards move with the first main card instead of queueing behind it.
 		const index = card.closest('.site-sidebar') ? 0 : mainIndex++;
 		const distance = window.innerWidth - card.getBoundingClientRect().left + GLOW_MARGIN;
 		const offscreen = `translateX(${distance}px)`;
-		return card.animate(
+		const delay = Math.min(index * STAGGER, MAX_STAGGER);
+		if (out) {
+			// Faded copies start slightly later and finish together with the card, trailing behind it mid-slide.
+			AFTERIMAGES.forEach(({ lag, opacity }) => {
+				const ghost = createAfterimage(card);
+				if (!ghost) return;
+				ghosts.push(ghost);
+				animations.push(ghost.animate(
+					[
+						{ transform: 'translateX(0)', opacity: 0, offset: 0 },
+						{ transform: 'translateX(0)', opacity, offset: 0.001 },
+						{ transform: offscreen, opacity, offset: 1 },
+					],
+					{ duration: SLIDE_OUT_DURATION - lag, delay: delay + lag, fill: 'both', easing: EASING },
+				));
+			});
+		}
+		animations.push(card.animate(
 			[{ transform: out ? 'translateX(0)' : offscreen }, { transform: out ? offscreen : 'translateX(0)' }],
 			{
 				duration: out ? SLIDE_OUT_DURATION : SLIDE_IN_DURATION,
-				delay: Math.min(index * STAGGER, MAX_STAGGER),
+				delay,
 				fill: 'both',
 				easing: EASING,
 			},
-		);
+		));
 	});
 	await Promise.all(animations.map((animation) => animation.finished.catch(() => {})));
 	if (!out) clearSlide();
