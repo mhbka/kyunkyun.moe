@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createClickFeedback, findFeedbackTarget, resolveSoundName } from '../../../src/scripts/handlers/click-feedback.ts';
+import {
+	createClickFeedback,
+	createClickFeedbackController,
+	findFeedbackTarget,
+	resolveSoundName,
+} from '../../../src/scripts/handlers/click-feedback.ts';
 
 /** Minimal fake DOM covering the selectors the feedback module matches against. */
 class FakeElement {
@@ -146,4 +151,56 @@ test('mute suppresses only the sound, not the animation', () => {
 	click(new FakeElement('button'));
 	assert.deepEqual(played, []);
 	assert.equal(effects.length, 1);
+});
+
+test('pointer press holds down, then click plays the release effect and sound', () => {
+	g.localStorage = { getItem: () => null };
+	const pressed: Element[] = [];
+	const released: Element[] = [];
+	const effects: Element[] = [];
+	const played: string[] = [];
+	const button = new FakeElement('button');
+	const controller = createClickFeedbackController({
+		startPress: (element) => pressed.push(element),
+		endPress: (element) => released.push(element),
+		playEffect: (element) => effects.push(element),
+		playSound: (sound) => played.push(sound.src),
+	});
+	const pointer = {
+		target: asElement(button),
+		pointerId: 1,
+		isPrimary: true,
+		button: 0,
+		defaultPrevented: false,
+	} as unknown as PointerEvent;
+	controller.handlePointerDown(pointer);
+	controller.handlePointerUp(pointer);
+	assert.deepEqual(effects, []);
+	controller.handleClick({ ...pointer, target: asElement(button) } as MouseEvent);
+	assert.deepEqual(pressed, [asElement(button)]);
+	assert.deepEqual(released, [asElement(button)]);
+	assert.deepEqual(effects, [asElement(button)]);
+	assert.deepEqual(played, ['/sfx/confirm_soft.wav']);
+});
+
+test('cancelled pointer clears the held state without activating', () => {
+	const released: Element[] = [];
+	const effects: Element[] = [];
+	const button = new FakeElement('button');
+	const controller = createClickFeedbackController({
+		startPress: () => {},
+		endPress: (element) => released.push(element),
+		playEffect: (element) => effects.push(element),
+	});
+	const pointer = {
+		target: asElement(button),
+		pointerId: 2,
+		isPrimary: true,
+		button: 0,
+		defaultPrevented: false,
+	} as unknown as PointerEvent;
+	controller.handlePointerDown(pointer);
+	controller.handlePointerCancel(pointer);
+	assert.deepEqual(released, [asElement(button)]);
+	assert.deepEqual(effects, []);
 });

@@ -1,5 +1,10 @@
 import { handleActiveLink } from './active-link';
-import { handleClickFeedback } from './click-feedback';
+import {
+	handleClickFeedback,
+	handlePointerCancelFeedback,
+	handlePointerDownFeedback,
+	handlePointerUpFeedback,
+} from './click-feedback';
 import { handleDirtyEditorClick, registerNavigationGuards } from './navigation-guard';
 import { initMediaLoading } from '../media-loading';
 import { initImagePrefetch } from '../image-prefetch';
@@ -20,6 +25,10 @@ export function initHandlers() {
 		handleActiveLink(event);
 		handleClickFeedback(event);
 	}, true);
+	// Pointer events provide a held state before the click activation fires.
+	document.addEventListener('pointerdown', handlePointerDownFeedback, true);
+	document.addEventListener('pointerup', handlePointerUpFeedback, true);
+	document.addEventListener('pointercancel', handlePointerCancelFeedback, true);
 	initMediaLoading();
 	initImagePrefetch();
 	registerNavigationGuards();

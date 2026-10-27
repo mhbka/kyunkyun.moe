@@ -12,6 +12,7 @@ export function createAfterimage(element: HTMLElement, placement: 'beforebegin' 
 	const ghost = element.cloneNode(true) as HTMLElement;
 	ghost.removeAttribute('id');
 	ghost.removeAttribute('data-sfx');
+	ghost.classList.remove('click-feedback-pressed');
 	ghost.classList.remove('click-feedback-pop');
 	ghost.setAttribute('aria-hidden', 'true');
 	ghost.setAttribute('inert', '');

@@ -1,5 +1,5 @@
 /**
- * Site-wide click feedback: a game-style sound plus a pop animation.
+ * Site-wide click feedback: a held press followed by a game-style sound and pop.
  * Registered once by the click dispatcher (handlers/index.ts); no per-component wiring.
  *
  * Usage:
@@ -10,7 +10,7 @@
  *   pick a specific sound); `data-sfx="none"` opts a subtree out.
  */
 
-import { createAfterimage } from '../afterimage';
+import { createAfterimage } from '../afterimage.ts';
 
 interface SoundDefinition {
 	src: string;
@@ -54,6 +54,7 @@ function motionAllowed(): boolean {
 
 /** Plays the pop animation by toggling a class until the keyframes finish. */
 function playPop(element: Element) {
+	element.classList.remove('click-feedback-pressed');
 	element.classList.remove('click-feedback-pop');
 	// Restarts the animation when clicks land during an ongoing pop.
 	void (element as HTMLElement).offsetWidth;
@@ -92,12 +93,34 @@ export interface ClickFeedbackOptions {
 	playSound?: (sound: SoundDefinition) => void;
 	/** Injectable for tests; defaults to the DOM animation. */
 	playEffect?: (element: Element) => void;
+	/** Injectable for tests; defaults to applying the held state. */
+	startPress?: (element: Element) => void;
+	/** Injectable for tests; defaults to clearing the held state. */
+	endPress?: (element: Element) => void;
 }
 
-/** Creates a click handler with a pooled player so rapid clicks overlap cleanly. */
-export function createClickFeedback(options: ClickFeedbackOptions = {}) {
+export interface ClickFeedbackController {
+	handlePointerDown: (event: PointerEvent) => void;
+	handlePointerUp: (event: PointerEvent) => void;
+	handlePointerCancel: (event: PointerEvent) => void;
+	handleClick: (event: MouseEvent) => void;
+}
+
+/** Resolves a valid primary-button feedback target for pointer and click events. */
+function findEventTarget(event: MouseEvent | PointerEvent): Element | null {
+	const hasModifier = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+	if (event.defaultPrevented || event.button !== 0 || hasModifier) return null;
+	if (!(event.target instanceof Element)) return null;
+	const target = findFeedbackTarget(event.target);
+	if (target instanceof HTMLButtonElement && target.disabled) return null;
+	return target;
+}
+
+/** Creates coordinated press, release, click, sound, and animation feedback. */
+export function createClickFeedbackController(options: ClickFeedbackOptions = {}): ClickFeedbackController {
 	// A small pool lets overlapping clicks each play instead of cutting off.
 	const pool = new Map<string, { players: HTMLAudioElement[]; next: number }>();
+	const activePointers = new Map<number, Element>();
 	const playSound = options.playSound ?? ((sound: SoundDefinition) => {
 		let entry = pool.get(sound.src);
 		if (!entry) {
@@ -123,18 +146,56 @@ export function createClickFeedback(options: ClickFeedbackOptions = {}) {
 		playEcho(element);
 		playPop(element);
 	});
+	const startPress = options.startPress ?? ((element: Element) => {
+		if (motionAllowed()) element.classList.add('click-feedback-pressed');
+	});
+	const endPress = options.endPress ?? ((element: Element) => element.classList.remove('click-feedback-pressed'));
 
-	return (event: MouseEvent) => {
-		if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-		if (!(event.target instanceof Element)) return;
-		const target = findFeedbackTarget(event.target);
+	/** Holds the target down for as long as its primary pointer remains pressed. */
+	function handlePointerDown(event: PointerEvent) {
+		if (event.isPrimary === false) return;
+		const target = findEventTarget(event);
 		if (!target) return;
-		if (target instanceof HTMLButtonElement && target.disabled) return;
+		activePointers.set(event.pointerId, target);
+		startPress(target);
+	}
+
+	/** Clears the held state before the following click activates the target. */
+	function handlePointerUp(event: PointerEvent) {
+		const target = activePointers.get(event.pointerId);
+		if (!target) return;
+		activePointers.delete(event.pointerId);
+		endPress(target);
+	}
+
+	/** Clears a cancelled pointer without treating it as an activation. */
+	function handlePointerCancel(event: PointerEvent) {
+		const target = activePointers.get(event.pointerId);
+		if (!target) return;
+		activePointers.delete(event.pointerId);
+		endPress(target);
+	}
+
+	/** Plays the release effect after navigation state settles, plus the click sound. */
+	function handleClick(event: MouseEvent) {
+		const target = findEventTarget(event);
+		if (!target) return;
 		playEffect(target);
 		if (localStorage.getItem(MUTE_STORAGE_KEY) === 'true') return;
 		playSound(SOUNDS[resolveSoundName(target)]);
-	};
+	}
+
+	return { handlePointerDown, handlePointerUp, handlePointerCancel, handleClick };
 }
 
-/** Shared handler registered once by the click dispatcher. */
-export const handleClickFeedback = createClickFeedback();
+/** Creates the legacy click-only handler used by isolated callers and tests. */
+export function createClickFeedback(options: ClickFeedbackOptions = {}) {
+	return createClickFeedbackController(options).handleClick;
+}
+
+/** Shared handlers registered once by the document dispatcher. */
+const clickFeedback = createClickFeedbackController();
+export const handlePointerDownFeedback = clickFeedback.handlePointerDown;
+export const handlePointerUpFeedback = clickFeedback.handlePointerUp;
+export const handlePointerCancelFeedback = clickFeedback.handlePointerCancel;
+export const handleClickFeedback = clickFeedback.handleClick;
