@@ -16,7 +16,7 @@ const tags = await blogApi.listPixTags().catch(() => []);
 let gallery;
 let errorMessage: string | undefined;
 try {
-	gallery = await blogApi.listPix(60, undefined, selectedTags);
+	gallery = await blogApi.listPix(24, undefined, selectedTags);
 } catch (error) {
 	console.warn(`Unable to load pix gallery: ${error}`);
 	errorMessage = "couldn't load the gallery :(";

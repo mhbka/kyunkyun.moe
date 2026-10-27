@@ -3,6 +3,8 @@ import { restoreScrollPosition, type ScrollPosition } from './scroll.ts';
 import { savePixTagEdits, type PixTagOperation } from './tag-edit.ts';
 import { uploadPixFiles } from './upload.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
+import { getPixThumbnailSources } from './image-url.ts';
+import { finishPixPortalImageLoad, startPixPortalImageLoad } from './portal-image.ts';
 
 type PixImage = Pick<Pix, 'id' | 'publicUrl' | 'tags' | 'createdAt'>;
 
@@ -44,9 +46,16 @@ export function initPixGallery(gallery: HTMLElement) {
 		button.dataset.imageTags = JSON.stringify(pix.tags);
 		button.dataset.imageCreatedAt = pix.createdAt;
 		const thumbnailImage = document.createElement('img');
-		thumbnailImage.src = pix.publicUrl;
+		const thumbnail = getPixThumbnailSources(pix.publicUrl);
+		thumbnailImage.src = thumbnail.src;
+		thumbnailImage.srcset = thumbnail.srcSet;
+		thumbnailImage.sizes = thumbnail.sizes;
 		thumbnailImage.alt = '';
+		thumbnailImage.width = 320;
+		thumbnailImage.height = 320;
 		thumbnailImage.loading = 'lazy';
+		thumbnailImage.fetchPriority = 'low';
+		thumbnailImage.decoding = 'async';
 		button.append(thumbnailImage);
 		const tick = document.createElement('span');
 		tick.className = 'moe-thumbnail__tick';
@@ -76,7 +85,7 @@ export function initPixGallery(gallery: HTMLElement) {
 	/** Populates the image viewer with the selected image details. */
 	function showImage(image: PixImage) {
 		if (!portalImage) return;
-		portalImage.src = image.publicUrl;
+		startPixPortalImageLoad(portalImage, image.publicUrl);
 		const createdAt = new Date(image.createdAt);
 		if (portalCreatedAt) {
 			portalCreatedAt.dateTime = image.createdAt;
@@ -130,7 +139,11 @@ export function initPixGallery(gallery: HTMLElement) {
 		} finally { saveTags.disabled = false; }
 	});
 	portal?.addEventListener('click', (event) => { if (event.target === portal) portal.close(); });
+	portalImage?.addEventListener('load', () => finishPixPortalImageLoad(portalImage));
+	portalImage?.addEventListener('error', () => finishPixPortalImageLoad(portalImage));
 	portal?.addEventListener('close', () => {
+		portalImage?.removeAttribute('src');
+		if (portalImage) finishPixPortalImageLoad(portalImage);
 		restoreViewerScrollPosition();
 		viewerScrollPosition = undefined;
 	});
@@ -139,7 +152,7 @@ export function initPixGallery(gallery: HTMLElement) {
 		if (!grid || gallery.dataset.hasMore !== 'true' || !gallery.dataset.nextBefore) return;
 		loadMore.disabled = true;
 		try {
-			const page = await blogApi.listPix(60, gallery.dataset.nextBefore, JSON.parse(gallery.dataset.tags ?? '[]') as string[]);
+			const page = await blogApi.listPix(24, gallery.dataset.nextBefore, JSON.parse(gallery.dataset.tags ?? '[]') as string[]);
 			page.images.forEach((image) => grid.append(createThumbnail(image)));
 			renderSelection();
 			gallery.dataset.nextBefore = page.nextBefore ?? '';

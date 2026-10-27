@@ -1,18 +1,6 @@
 /* Token-driven site structure. */
 html { background: var(--color-page-background); }
 
-/* Keeps the background visible while desktop content waits for its decoration. */
-@media (min-width: 801px) and (prefers-reduced-motion: no-preference) {
-	html.page-loading :is(.site-layout, .site-foreground__pendulum, .walker) { visibility: hidden; }
-	html.page-entering :is(.site-layout, .site-foreground__pendulum, .walker) { animation: initial-page-reveal 600ms ease-out; }
-}
-
-/* Fades each foreground layer together without moving the layout. */
-@keyframes initial-page-reveal {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
 body {
 	margin: 0;
 	padding: 0;

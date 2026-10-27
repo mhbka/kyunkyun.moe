@@ -17,7 +17,7 @@ use crate::{
     state::AppState,
 };
 
-const DEFAULT_PAGE_SIZE: i64 = 60;
+const DEFAULT_PAGE_SIZE: i64 = 24;
 const MAX_PAGE_SIZE: i64 = 100;
 
 /// Builds the Pix gallery API routes.

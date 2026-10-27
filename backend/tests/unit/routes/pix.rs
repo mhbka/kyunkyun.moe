@@ -9,7 +9,14 @@ use uuid::Uuid;
 
 use crate::models::pix::PixPage;
 
-use super::{normalize_tags, CreateUploadResponse, TagOperation, UpdateTagsRequest};
+use super::{
+    normalize_tags, CreateUploadResponse, TagOperation, UpdateTagsRequest, DEFAULT_PAGE_SIZE,
+};
+
+#[test]
+fn defaults_to_a_small_gallery_page() {
+    assert_eq!(DEFAULT_PAGE_SIZE, 24);
+}
 
 #[test]
 fn serializes_upload_response_as_camel_case() {

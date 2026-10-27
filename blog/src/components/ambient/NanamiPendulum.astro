@@ -47,8 +47,6 @@
 				pendingMount = undefined;
 				// A swap during the pending mount may have left a fresh SVG waiting.
 				if (!svg.isConnected) mountCurrentPendulum();
-				// Keeps the page reveal tied to readiness, including when assets fail.
-				requestAnimationFrame(() => window.dispatchEvent(new Event('nanami-pendulum-ready')));
 			}
 		})();
 		await pendingMount;

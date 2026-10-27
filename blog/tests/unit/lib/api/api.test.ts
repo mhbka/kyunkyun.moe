@@ -180,8 +180,8 @@ test('gets the current user author status with their access token', async () => 
 test('lists pix and requests uploads with the current user token', async () => {
 	const listMock = createFetch(Response.json({ images: [], nextBefore: null, hasMore: false }));
 	const listApi = createBlogApi({ baseUrl: 'https://api.example.test', fetch: listMock.fetch });
-	assert.deepEqual(await listApi.listPix(60, 'image-1', 'cats'), { images: [], nextBefore: null, hasMore: false });
-	assert.equal(listMock.calls[0][0], 'https://api.example.test/pix?limit=60&before=image-1&tag=cats');
+	assert.deepEqual(await listApi.listPix(undefined, 'image-1', 'cats'), { images: [], nextBefore: null, hasMore: false });
+	assert.equal(listMock.calls[0][0], 'https://api.example.test/pix?limit=24&before=image-1&tag=cats');
 
 	const uploadMock = createFetch(Response.json({ imageId: 'image-1', uploadUrl: 'upload', publicUrl: 'public' }));
 	const uploadApi = createBlogApi({ baseUrl: 'https://api.example.test', fetch: uploadMock.fetch });

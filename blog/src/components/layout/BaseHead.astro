@@ -26,45 +26,6 @@ const { title, description, image } = Astro.props;
 <link rel="sitemap" href="/sitemap-index.xml" />
 <meta name="generator" content={Astro.generator} />
 <ClientRouter fallback="swap" />
-<!-- Gives the visible background a head start while the decoration loads. -->
-<link rel="preload" as="image" href="/images/bg.png" />
-<!-- Starts the pendulum's image downloads before its client-side renderer mounts. -->
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-bg.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-おちる….png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-たすけっ….png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-たすけっ…as1.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-たすけっ…as2.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-スマホ.png32.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-七海体.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-七海体ef1.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-七海体ef12.png" />
-<link rel="preload" as="image" media="(min-width: 801px)" href="/images/nanami_hanging/sd002/SD002-七海体ef13.png" />
-
-<script is:inline id="initial-page-reveal">
-	// Runs once per document entry: the router never re-executes an already-run script.
-	// Waits only on desktop, where the hanging animation is visible.
-	if (window.matchMedia('(min-width: 801px) and (prefers-reduced-motion: no-preference)').matches) {
-		const root = document.documentElement;
-		root.classList.add('page-loading');
-		const timeout = window.setTimeout(revealPage, 5000);
-		window.addEventListener('nanami-pendulum-ready', revealPage, { once: true });
-
-		// Reveals content on readiness or timeout without hiding the background.
-		function revealPage() {
-			window.clearTimeout(timeout);
-			window.removeEventListener('nanami-pendulum-ready', revealPage);
-			root.classList.replace('page-loading', 'page-entering');
-		}
-
-		// A client-side swap supersedes this document; settle outstanding callbacks
-		// so they cannot fade or hide the incoming page.
-		document.addEventListener('astro:before-swap', () => {
-			window.clearTimeout(timeout);
-			window.removeEventListener('nanami-pendulum-ready', revealPage);
-			root.classList.remove('page-loading', 'page-entering');
-		}, { once: true });
-	}
-</script>
 
 <Font cssVariable="--font-m-plus-1p" preload={[{ weight: 400, style: 'normal', subset: 'latin' }]} />
 

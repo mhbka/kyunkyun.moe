@@ -3,6 +3,7 @@ import type { Pix } from '../../lib/models/pix.ts';
 import type { PostSummary } from '../../lib/models/posts.ts';
 import type { Tweet } from '../../lib/models/tweets.ts';
 import { truncatePreviewText } from '../../lib/utils/home-preview.ts';
+import { getPixThumbnailSources } from '../pix/image-url.ts';
 import Link from '../ui/Link.astro';
 
 interface Props {
@@ -31,7 +32,10 @@ const tweetPreview = tweet
 		<h2 class="home-preview__heading">latest pix</h2>
 		{images.length > 0 && (
 			<div class="home-preview__images">
-				{images.map((image) => <img src={image.publicUrl} alt="" loading="lazy" />)}
+				{images.map((image) => {
+					const thumbnail = getPixThumbnailSources(image.publicUrl);
+					return <img src={thumbnail.src} srcset={thumbnail.srcSet} sizes="(max-width: 800px) 25vw, 10rem" alt="" width="320" height="320" loading="lazy" decoding="async" />;
+				})}
 			</div>
 		)}
 		{images.length === 0 && <pre class="mini-code-block"><code>no pix yet</code></pre>}
