@@ -1,23 +1,16 @@
 /* Site-wide click feedback visuals; behaviour lives in src/scripts/handlers/click-feedback.ts. */
-/* Tune the bounce per element with --click-feedback-squash / --click-feedback-stretch. */
+/* JavaScript derives squash and stretch from each target's longest rendered side. */
 @media (prefers-reduced-motion: no-preference) {
 	@keyframes click-feedback-pop {
-		0% { scale: var(--click-feedback-squash, 0.92); translate: 0 var(--click-feedback-press-depth, 2px); }
-		55% { scale: var(--click-feedback-stretch, 1.04); translate: 0 -1px; }
-		100% { scale: 1; translate: 0; }
+		0% { scale: var(--click-feedback-squash, 0.92); }
+		55% { scale: var(--click-feedback-stretch, 1.04); }
+		100% { scale: 1; }
 	}
+	.click-feedback-pressed, .click-feedback-pop { transform-origin: center center; }
 	.click-feedback-pressed {
 		scale: var(--click-feedback-squash, 0.92);
-		translate: 0 var(--click-feedback-press-depth, 2px);
-		transition:
-			scale var(--click-feedback-press-duration, 70ms) ease-out,
-			translate var(--click-feedback-press-duration, 70ms) ease-out;
+		transition: scale var(--click-feedback-press-duration, 70ms) ease-out;
 	}
 	.click-feedback-pop { animation: click-feedback-pop var(--click-feedback-duration, 180ms) ease-out; }
 
-	/* Large surfaces read heavy at full strength, so cards nudge instead. */
-	.post-card {
-		--click-feedback-squash: 0.98;
-		--click-feedback-stretch: 1.01;
-	}
 }

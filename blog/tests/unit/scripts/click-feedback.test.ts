@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+	calculateFeedbackScale,
 	createClickFeedback,
 	createClickFeedbackController,
 	findFeedbackTarget,
 	resolveSoundName,
 } from '../../../src/scripts/handlers/click-feedback.ts';
+
+test('feedback strength eases by longest side and clamps at both ends', () => {
+	assert.deepEqual(calculateFeedbackScale(80, 120), { squash: 0.92, stretch: 1.04 });
+	assert.deepEqual(calculateFeedbackScale(300, 100), { squash: 0.95, stretch: 1.025 });
+	assert.deepEqual(calculateFeedbackScale(900, 200), { squash: 0.98, stretch: 1.01 });
+});
 
 /** Minimal fake DOM covering the selectors the feedback module matches against. */
 class FakeElement {

@@ -26,6 +26,13 @@ export const DEFAULT_SOUND = 'confirm';
 
 const MUTE_STORAGE_KEY = 'site-sfx-muted';
 
+const SMALL_TARGET_LENGTH = 120;
+const LARGE_TARGET_LENGTH = 480;
+const SMALL_TARGET_SQUASH = 0.92;
+const LARGE_TARGET_SQUASH = 0.98;
+const SMALL_TARGET_STRETCH = 1.04;
+const LARGE_TARGET_STRETCH = 1.01;
+
 /** Elements that receive feedback without needing an explicit data-sfx. */
 const DEFAULT_TARGET_SELECTOR = 'button, summary, [role="button"], .ui-button, .ui-link, .main-nav-item, .post-card, .home-preview, [data-sfx]';
 
@@ -50,6 +57,31 @@ export function resolveSoundName(element: Element): string {
 /** True while the user has not asked for reduced motion. */
 function motionAllowed(): boolean {
 	return window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+}
+
+export interface FeedbackScale {
+	squash: number;
+	stretch: number;
+}
+
+/** Scales feedback strength down as the target's longest side grows. */
+export function calculateFeedbackScale(width: number, height: number): FeedbackScale {
+	const longestSide = Math.max(width, height);
+	const lengthRange = LARGE_TARGET_LENGTH - SMALL_TARGET_LENGTH;
+	const progress = Math.min(1, Math.max(0, (longestSide - SMALL_TARGET_LENGTH) / lengthRange));
+	return {
+		squash: SMALL_TARGET_SQUASH + (LARGE_TARGET_SQUASH - SMALL_TARGET_SQUASH) * progress,
+		stretch: SMALL_TARGET_STRETCH + (LARGE_TARGET_STRETCH - SMALL_TARGET_STRETCH) * progress,
+	};
+}
+
+/** Writes the target's size-adjusted feedback values to its CSS variables. */
+function applyFeedbackScale(element: Element) {
+	if (!(element instanceof HTMLElement)) return;
+	const { width, height } = element.getBoundingClientRect();
+	const { squash, stretch } = calculateFeedbackScale(width, height);
+	element.style.setProperty('--click-feedback-squash', String(squash));
+	element.style.setProperty('--click-feedback-stretch', String(stretch));
 }
 
 /** Plays the pop animation by toggling a class until the keyframes finish. */
@@ -142,12 +174,15 @@ export function createClickFeedbackController(options: ClickFeedbackOptions = {}
 	});
 	const playEffect = options.playEffect ?? ((element: Element) => {
 		if (!motionAllowed()) return;
+		applyFeedbackScale(element);
 		// The echo clones before the pop class is added so the copy does not inherit the squash.
 		playEcho(element);
 		playPop(element);
 	});
 	const startPress = options.startPress ?? ((element: Element) => {
-		if (motionAllowed()) element.classList.add('click-feedback-pressed');
+		if (!motionAllowed()) return;
+		applyFeedbackScale(element);
+		element.classList.add('click-feedback-pressed');
 	});
 	const endPress = options.endPress ?? ((element: Element) => element.classList.remove('click-feedback-pressed'));
 
