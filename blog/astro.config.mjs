@@ -7,12 +7,18 @@ import { defineConfig, fontProviders } from 'astro/config';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
+import { generateBackground } from './scripts/generate-background.mjs';
 import { generateWalkerManifest } from './scripts/generate-walker-manifest.mjs';
 
 import node from '@astrojs/node';
 
 const exposedEnvPrefixes = ['PUBLIC_', 'SUPABASE_', 'BACKEND_'];
 const isBuild = process.argv.includes('build');
+
+await generateBackground({
+	sourceFile: fileURLToPath(new URL('./public/images/bg.png', import.meta.url)),
+	outputFile: fileURLToPath(new URL('./public/images/bg.webp', import.meta.url)),
+});
 
 generateWalkerManifest({
 	publicDirectory: fileURLToPath(new URL('./public', import.meta.url)),

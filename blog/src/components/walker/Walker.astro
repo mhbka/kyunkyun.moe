@@ -166,7 +166,8 @@ import { WALKERS } from '../../consts';
 		bottom: 0;
 		left: var(--walker-x);
 		z-index: 10;
-		width: min(12rem, 30vw);
+		/* Shrinks the character smoothly across the desktop viewport range. */
+		width: clamp(8.5rem, calc(4rem + 9vw), 12rem);
 		height: auto;
 		pointer-events: auto;
 		transform: translateX(-50%);

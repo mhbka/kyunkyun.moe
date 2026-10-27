@@ -3,7 +3,7 @@
 	--font-body: var(--font-m-plus-1p);
 	--font-logo: "Yu Mincho", YuMincho, "Hiragino Mincho ProN", "Noto Serif CJK JP", serif;
 	--font-size-h1: 3.052em;
-	--image-page-background: url('/images/bg.png');
+	--image-page-background: url('/images/bg.webp');
 	--color-accent: #d7eeff;
 	--color-text: #f8fbff;
 	--color-heading: #ffffff;
