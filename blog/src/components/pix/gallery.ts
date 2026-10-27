@@ -5,6 +5,7 @@ import { uploadPixFiles } from './upload.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
 import { getPixThumbnailSources } from './image-url.ts';
 import { finishPixPortalImageLoad, startPixPortalImageLoad } from './portal-image.ts';
+import { startMediaLoading } from '../../scripts/media-loading.ts';
 
 type PixImage = Pick<Pix, 'id' | 'publicUrl' | 'tags' | 'createdAt'>;
 
@@ -47,6 +48,8 @@ export function initPixGallery(gallery: HTMLElement) {
 		button.dataset.imageCreatedAt = pix.createdAt;
 		const thumbnailImage = document.createElement('img');
 		const thumbnail = getPixThumbnailSources(pix.publicUrl);
+		thumbnailImage.className = 'media-loadable';
+		startMediaLoading(thumbnailImage);
 		thumbnailImage.src = thumbnail.src;
 		thumbnailImage.srcset = thumbnail.srcSet;
 		thumbnailImage.sizes = thumbnail.sizes;

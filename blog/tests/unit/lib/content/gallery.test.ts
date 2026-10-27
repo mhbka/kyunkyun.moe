@@ -86,6 +86,12 @@ test('renderGalleryHtml renders video sources as video players', () => {
 	assert.match(html, /<img src="https:\/\/x\/2.jpg" loading="lazy">/);
 });
 
+test('renderMediaHtml marks transformed gallery images as loading', () => {
+	const html = renderGalleryHtml({ images: [{ src: 'https://blogmedia.kyunkyun.moe/post-images/post/image.jpg' }] });
+
+	assert.match(html, /<img class="media-loadable" data-loading src="https:\/\/blogmedia\.kyunkyun\.moe\/cdn-cgi\/image\/width=640/);
+});
+
 test('video directives parse, render, and round-trip', () => {
 	const node = videoToDirectiveNode({ src: 'https://x/clip.webm', caption: 'Clip' });
 

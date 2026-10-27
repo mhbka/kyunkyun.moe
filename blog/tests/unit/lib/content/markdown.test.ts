@@ -10,6 +10,22 @@ test('renders backend Markdown as HTML', async () => {
 	assert.match(html, /<strong>blog post<\/strong>/);
 });
 
+test('adds responsive sources to blog media images only', async () => {
+	const html = await renderMarkdown(
+		'![Stored](https://blogmedia.kyunkyun.moe/post-images/post-id/image.jpg)\n\n' +
+		'![External](https://example.com/image.jpg)',
+	);
+
+	assert.match(html, /src="https:\/\/blogmedia\.kyunkyun\.moe\/cdn-cgi\/image\/width=640/);
+	assert.match(html, /srcset="[^"]+ 640w, [^"]+ 1280w, [^"]+ 1920w"/);
+	assert.match(html, /sizes="\(max-width: 800px\) 100vw, 70vw"/);
+	assert.match(html, /class="media-loadable"/);
+	assert.match(html, /data-loading=""/);
+	assert.match(html, /data-original-src="https:\/\/blogmedia\.kyunkyun\.moe\/post-images\/post-id\/image\.jpg"/);
+	assert.match(html, /loading="lazy"/);
+	assert.match(html, /<img src="https:\/\/example\.com\/image\.jpg" alt="External">/);
+});
+
 test('combines directly adjacent unordered lists', async () => {
 	const html = await renderMarkdown('<ul>\n<li>First</li>\n</ul>\n\n<ul>\n<li>Second</li>\n</ul>');
 
@@ -38,6 +54,20 @@ test('renders gallery directives as an image carousel', async () => {
 	assert.match(html, /<img src="https:\/\/x\/2.jpg" alt="Two" loading="lazy">/);
 	assert.match(html, /data-gallery-prev/);
 	assert.match(html, /data-gallery-next/);
+});
+
+test('adds responsive sources to blog media gallery images without changing videos', async () => {
+	const html = await renderMarkdown(
+		':::gallery\n' +
+		'::pic{src="https://blogmedia.kyunkyun.moe/post-images/post-id/image.png"}\n' +
+		'::pic{src="https://blogmedia.kyunkyun.moe/post-images/post-id/clip.mp4"}\n' +
+		':::',
+	);
+
+	assert.match(html, /<img class="media-loadable" data-loading="" src="https:\/\/blogmedia\.kyunkyun\.moe\/cdn-cgi\/image\/width=640/);
+	assert.match(html, /data-original-src="https:\/\/blogmedia\.kyunkyun\.moe\/post-images\/post-id\/image\.png"/);
+	assert.match(html, /<video src="https:\/\/blogmedia\.kyunkyun\.moe\/post-images\/post-id\/clip\.mp4"/);
+	assert.doesNotMatch(html, /cdn-cgi\/media/);
 });
 
 test('renders video directives as video players', async () => {

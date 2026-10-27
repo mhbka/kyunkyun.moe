@@ -4,6 +4,8 @@
  * ProseMirror dependencies to remain easily unit-testable.
  */
 
+import { getBlogImageSources } from './blog-media.ts';
+
 /** A single image within a gallery. */
 export interface GalleryImage {
 	src: string;
@@ -60,7 +62,10 @@ export function renderMediaHtml(src: string, options: { alt?: string; lazy?: boo
 	const url = escapeHtml(src);
 	if (isVideoSrc(src)) return `<video src="${url}" controls playsinline preload="metadata"></video>`;
 	const alt = options.alt ? ` alt="${escapeHtml(options.alt)}"` : '';
-	return `<img src="${url}"${alt}${options.lazy ? ' loading="lazy"' : ''}>`;
+	const sources = getBlogImageSources(src);
+	if (!sources) return `<img src="${url}"${alt}${options.lazy ? ' loading="lazy"' : ''}>`;
+	const loading = options.lazy ? ' loading="lazy"' : '';
+	return `<img class="media-loadable" data-loading src="${escapeHtml(sources.src)}" srcset="${escapeHtml(sources.srcSet)}" sizes="${escapeHtml(sources.sizes)}" data-original-src="${url}" decoding="async"${alt}${loading}>`;
 }
 
 /** A standalone video: a `::video{src caption}` leaf directive. */

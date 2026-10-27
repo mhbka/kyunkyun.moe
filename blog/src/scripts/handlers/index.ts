@@ -1,6 +1,7 @@
 import { handleActiveLink } from './active-link';
 import { handleClickFeedback } from './click-feedback';
 import { handleDirtyEditorClick, registerNavigationGuards } from './navigation-guard';
+import { initMediaLoading } from '../media-loading';
 
 let registered = false;
 
@@ -18,5 +19,6 @@ export function initHandlers() {
 		handleActiveLink(event);
 		handleClickFeedback(event);
 	}, true);
+	initMediaLoading();
 	registerNavigationGuards();
 }

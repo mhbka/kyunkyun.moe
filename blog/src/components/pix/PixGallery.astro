@@ -50,7 +50,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 				const thumbnail = getPixThumbnailSources(image.publicUrl);
 				return (
 					<Button class="media-thumbnail moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
-						<img src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} alt="" width="320" height="320" loading={imageLoading.loading} fetchpriority={imageLoading.fetchPriority} decoding="async" />
+						<img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} alt="" width="320" height="320" loading={imageLoading.loading} fetchpriority={imageLoading.fetchPriority} decoding="async" />
 						<span class="moe-thumbnail__tick" aria-hidden="true">✓</span>
 					</Button>
 				);
@@ -65,7 +65,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 				<span data-moe-portal-tags></span>
 			</div>
 		</div>
-		<img data-moe-portal-image alt="" />
+		<img class="media-loadable" data-moe-portal-image alt="" />
 	</dialog>
 </section>
 
@@ -88,8 +88,6 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 	:global(.moe-thumbnail__tick) { position: absolute; top: 0.45rem; right: 0.45rem; display: none; width: 1.5rem; height: 1.5rem; place-content: center; border-radius: 50%; background: var(--color-success); color: var(--color-surface); font-weight: bold; }
 	:global(.moe-thumbnail.is-selected .moe-thumbnail__tick) { display: grid; }
 	.moe-portal img { display: block; object-fit: contain; }
-	/* Reserves a neutral portal surface while the newly selected image loads. */
-	.moe-portal img[data-loading] { width: min(20rem, calc(100vw - 2rem)); height: min(20rem, calc(100dvh - 2rem)); background: var(--color-surface); }
 	/* Keeps image metadata readable without competing with the picture. */
 	.moe-portal__details { position: absolute; z-index: 1; top: 0.5rem; right: 0.5rem; display: grid; justify-items: end; max-width: calc(100% - 1rem); padding: 0.5rem; border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-overlay-surface) 75%, transparent); color: var(--color-heading); }
 	.moe-portal__info { display: grid; justify-items: end; gap: 0.15rem; font-size: 0.7rem; text-align: right; }

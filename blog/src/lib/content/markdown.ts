@@ -4,6 +4,7 @@ import { visit } from 'unist-util-visit';
 import type { Node } from 'unist';
 
 import { remarkRestoreTextDirectives } from './restore-text-directives.ts';
+import { remarkBlogImages } from './remark-blog-images.ts';
 import { parseGallery, parseVideo, renderGalleryHtml, renderVideoHtml, type DirectiveNode } from './gallery.ts';
 
 let processor: ReturnType<typeof createMarkdownProcessor> | undefined;
@@ -46,7 +47,7 @@ function remarkVideo() {
 /** Renders Markdown to HTML with the shared Astro processor. */
 export async function renderMarkdown(markdown: string): Promise<string> {
 	processor ??= createMarkdownProcessor({
-		remarkPlugins: [remarkDirective, remarkRestoreTextDirectives, remarkGallery, remarkVideo],
+		remarkPlugins: [remarkDirective, remarkRestoreTextDirectives, remarkBlogImages, remarkGallery, remarkVideo],
 	});
 	const renderer = await processor;
 	return mergeAdjacentUnorderedLists((await renderer.render(markdown)).code);

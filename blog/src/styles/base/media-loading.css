@@ -1,0 +1,29 @@
+/* Gives transformed images a visible placeholder while their response is pending. */
+img.media-loadable[data-loading] {
+	background-color: var(--color-subtle);
+	background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--color-text) 12%, transparent) 50%, transparent 70%);
+	background-size: 220% 100%;
+	animation: media-loading-shimmer 1.5s linear infinite;
+}
+
+/* Shows a compact placeholder when Markdown does not provide image dimensions. */
+.markdown-content img.media-loadable[data-loading] {
+	width: min(16rem, 100%);
+	height: min(10rem, 30dvh);
+	margin-inline: auto;
+}
+
+/* Gives image viewers a compact placeholder without filling the viewport. */
+.media-viewer img.media-loadable[data-loading] {
+	width: min(20rem, calc(100vw - 2rem));
+	height: min(20rem, calc(100dvh - 2rem));
+}
+
+@keyframes media-loading-shimmer {
+	from { background-position: 200% 0; }
+	to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	img.media-loadable[data-loading] { animation: none; }
+}

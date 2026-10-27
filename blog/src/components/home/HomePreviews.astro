@@ -34,7 +34,7 @@ const tweetPreview = tweet
 			<div class="home-preview__images">
 				{images.map((image) => {
 					const thumbnail = getPixThumbnailSources(image.publicUrl);
-					return <img src={thumbnail.src} srcset={thumbnail.srcSet} sizes="(max-width: 800px) 25vw, 10rem" alt="" width="320" height="320" loading="lazy" decoding="async" />;
+					return <img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes="(max-width: 800px) 25vw, 10rem" alt="" width="320" height="320" loading="lazy" decoding="async" />;
 				})}
 			</div>
 		)}
