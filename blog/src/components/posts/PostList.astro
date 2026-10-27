@@ -30,7 +30,10 @@ const Item = cards ? EdgeCard : 'li';
 				<p class="post-card__date">
 					{variant === 'drafts'
 						? <>Updated <FormattedDate date={new Date((post as DraftPostSummary).updatedAt)} /></>
-						: <FormattedDate date={new Date((post as PostSummary).publishedAt)} />}
+						: <>
+							<span>Published: <FormattedDate date={new Date((post as PostSummary).publishedAt)} /></span>
+							<span>Last updated: <FormattedDate date={new Date((post as PostSummary).updatedAt)} /></span>
+						</>}
 				</p>
 				{post.tags.length > 0 && <p class="post-card__tags">{post.tags.map((tag) => `#${tag}`).join(' ')}</p>}
 			</Link>
@@ -57,8 +60,9 @@ const Item = cards ? EdgeCard : 'li';
 	:global(.post-card) { display: block; text-decoration: none; }
 	:global(.post-card img) { display: block; width: 100%; margin-bottom: 0.5rem; border-radius: var(--radius-panel); transition: box-shadow 0.2s ease; }
 	:global(.post-card__title) { margin: 0; color: var(--color-heading); line-height: 1; transition: color 0.2s ease; }
-	:global(.post-card__date) { margin: 0.5rem 0; color: var(--color-muted); transition: color 0.2s ease; }
-	:global(.post-card__tags) { margin: -0.25rem 0 0; color: var(--color-muted); transition: color 0.2s ease; }
+	:global(.post-card__date) { display: grid; gap: 0.25rem; margin: 0.5rem 0; color: var(--color-muted); transition: color 0.2s ease; }
+	:global(.post-card__date span) { font-style: italic; }
+	:global(.post-card__tags) { margin: -0.25rem 0 0; color: var(--color-muted); font-size: 0.85rem; transition: color 0.2s ease; }
 	:global(.post-card:hover .post-card__title), :global(.post-card:hover .post-card__date), :global(.post-card:hover .post-card__tags) { color: var(--color-accent); }
 	:global(.post-card:hover img) { box-shadow: var(--shadow-page); }
 	:global(.post-list__actions) { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }

@@ -14,6 +14,7 @@ fn summaries(count: usize) -> Vec<PostSummary> {
             thumbnail_url: None,
             tags: vec![],
             published_at: Utc::now(),
+            updated_at: Utc::now(),
         })
         .collect()
 }
@@ -64,11 +65,14 @@ fn serializes_post_fields_as_camel_case() {
         thumbnail_url: Some("https://example.test/image.png".to_string()),
         tags: vec!["rust".to_string()],
         published_at: Utc::now(),
+        updated_at: Utc::now(),
     };
 
     let json = serde_json::to_value(post).unwrap();
     assert_eq!(json["thumbnailUrl"], "https://example.test/image.png");
     assert_eq!(json["tags"], serde_json::json!(["rust"]));
+    assert!(json.get("publishedAt").is_some());
+    assert!(json.get("updatedAt").is_some());
     assert!(json.get("thumbnail_url").is_none());
 }
 

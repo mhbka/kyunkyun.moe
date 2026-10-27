@@ -40,6 +40,7 @@ pub struct PostSummary {
     pub thumbnail_url: Option<String>,
     pub tags: Vec<String>,
     pub published_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 /// A published-post page with availability of the next page.

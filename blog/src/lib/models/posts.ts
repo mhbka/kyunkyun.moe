@@ -9,6 +9,7 @@ export interface PostSummary {
 	thumbnailUrl: string | null;
 	tags: string[];
 	publishedAt: string;
+	updatedAt: string;
 }
 
 /** Represents a page of published posts and whether another page is available. */

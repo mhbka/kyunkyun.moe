@@ -21,9 +21,9 @@ const content = post ? await renderMarkdown(post.contentMd) : undefined;
 
 <BlogPost
 	title={post?.title ?? 'Preview unavailable'}
-	createdAt={post ? new Date(post.createdAt) : undefined}
 	publishedAt={post?.publishedAt ? new Date(post.publishedAt) : undefined}
 	updatedAt={post ? new Date(post.updatedAt) : undefined}
+	tags={post?.tags}
 	thumbnailUrl={post?.thumbnailUrl}
 	content={content}
 	errorMessage={post ? undefined : 'This post could not be found or you do not have access to preview it.'}

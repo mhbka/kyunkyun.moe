@@ -11,9 +11,9 @@ import PostContents from '../components/posts/PostContents.astro';
 
 interface Props {
 	title: string;
-	createdAt?: Date;
 	publishedAt?: Date;
 	updatedAt?: Date;
+	tags?: string[];
 	thumbnailUrl?: string | null;
 	content?: string;
 	errorMessage?: string;
@@ -23,7 +23,7 @@ interface Props {
 	previewOf?: string;
 }
 
-const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMessage, postId, isLoggedIn = false, isAuthor = false, previewOf } = Astro.props;
+const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMessage, postId, isLoggedIn = false, isAuthor = false, previewOf } = Astro.props;
 ---
 
 <html lang="en">
@@ -51,6 +51,11 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 				flex-wrap: wrap;
 				gap: 0.75rem;
 			}
+			.post-tags {
+				margin-top: 0.5rem;
+				color: var(--color-muted);
+				font-size: 0.85rem;
+			}
 		</style>
 	</head>
 
@@ -68,9 +73,9 @@ const { title, createdAt, publishedAt, updatedAt, thumbnailUrl, content, errorMe
 					<div class="post-header">
 						<PageTitle title={title} className="post-title title-wave" />
 						<div class="post-meta">
-							{createdAt && <div class="post-metadata">Created on <FormattedDate date={createdAt} includeTime /></div>}
 							{publishedAt && <div class="post-metadata">Published on <FormattedDate date={publishedAt} includeTime /></div>}
 							{updatedAt && <div class="post-metadata">Last updated on <FormattedDate date={updatedAt} includeTime /></div>}
+							{tags.length > 0 && <div class="post-tags">{tags.map((tag) => `#${tag}`).join(' ')}</div>}
 							{previewOf ? (
 								<div class="post-actions">
 									<Link class="ui-button" href={`/posts/edit/${previewOf}/`}>back to editor</Link>

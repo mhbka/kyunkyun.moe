@@ -81,7 +81,7 @@ async fn list_posts(
     let (size, offset) = query.pagination()?;
     let posts = sqlx::query_as::<_, PostSummary>(
         r#"
-        select id, title, slug, thumbnail_url, tags, published_at
+        select id, title, slug, thumbnail_url, tags, published_at, updated_at
         from posts
         where status = 'published' and published_at <= now() and deleted_at is null
           and tags @> $1::text[]
