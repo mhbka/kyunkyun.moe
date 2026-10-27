@@ -3,7 +3,7 @@ import { restoreScrollPosition, type ScrollPosition } from './scroll.ts';
 import { savePixTagEdits, type PixTagOperation } from './tag-edit.ts';
 import { uploadPixFiles } from './upload.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
-import { getPixThumbnailSources } from './image-url.ts';
+import { getPixPortalUrl, getPixThumbnailSources } from './image-url.ts';
 import { finishPixPortalImageLoad, startPixPortalImageLoad } from './portal-image.ts';
 import { startMediaLoading } from '../../scripts/media-loading.ts';
 
@@ -46,6 +46,7 @@ export function initPixGallery(gallery: HTMLElement) {
 		button.dataset.imageUrl = pix.publicUrl;
 		button.dataset.imageTags = JSON.stringify(pix.tags);
 		button.dataset.imageCreatedAt = pix.createdAt;
+		button.dataset.prefetchImage = getPixPortalUrl(pix.publicUrl);
 		const thumbnailImage = document.createElement('img');
 		const thumbnail = getPixThumbnailSources(pix.publicUrl);
 		thumbnailImage.className = 'media-loadable';

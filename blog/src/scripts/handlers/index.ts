@@ -2,6 +2,7 @@ import { handleActiveLink } from './active-link';
 import { handleClickFeedback } from './click-feedback';
 import { handleDirtyEditorClick, registerNavigationGuards } from './navigation-guard';
 import { initMediaLoading } from '../media-loading';
+import { initImagePrefetch } from '../image-prefetch';
 
 let registered = false;
 
@@ -20,5 +21,6 @@ export function initHandlers() {
 		handleClickFeedback(event);
 	}, true);
 	initMediaLoading();
+	initImagePrefetch();
 	registerNavigationGuards();
 }

@@ -1,7 +1,7 @@
 import { visit } from 'unist-util-visit';
 import type { Node } from 'unist';
 
-import { getBlogImageSources } from './blog-media.ts';
+import { getBlogImagePortalUrl, getBlogImageSources } from './blog-media.ts';
 
 interface MarkdownImageNode extends Node {
 	type: 'image';
@@ -29,6 +29,7 @@ export function remarkBlogImages() {
 				decoding: 'async',
 				'data-original-src': sources.originalSrc,
 				'data-loading': '',
+				'data-prefetch-image': getBlogImagePortalUrl(sources.originalSrc),
 			};
 		});
 	};

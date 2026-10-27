@@ -6,7 +6,7 @@ import TagInput from '../tags/TagInput.astro';
 import FileDropzone from '../ui/FileDropzone.astro';
 import EdgeCard from '../ui/EdgeCard.astro';
 import { getPixImageLoading } from './image-loading.ts';
-import { getPixThumbnailSources } from './image-url.ts';
+import { getPixPortalUrl, getPixThumbnailSources } from './image-url.ts';
 
 interface Props {
 	images: Pix[];
@@ -49,7 +49,7 @@ const { images, nextBefore, hasMore, tags, isPix, accessToken } = Astro.props;
 				const imageLoading = getPixImageLoading(index);
 				const thumbnail = getPixThumbnailSources(image.publicUrl);
 				return (
-					<Button class="media-thumbnail moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} aria-label="view full image">
+					<Button class="media-thumbnail moe-thumbnail" type="button" data-image-id={image.id} data-image-url={image.publicUrl} data-image-tags={JSON.stringify(image.tags)} data-image-created-at={image.createdAt} data-prefetch-image={getPixPortalUrl(image.publicUrl)} aria-label="view full image">
 						<img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} alt="" width="320" height="320" loading={imageLoading.loading} fetchpriority={imageLoading.fetchPriority} decoding="async" />
 						<span class="moe-thumbnail__tick" aria-hidden="true">✓</span>
 					</Button>

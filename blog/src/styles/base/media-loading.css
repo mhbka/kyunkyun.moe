@@ -3,6 +3,8 @@ img.media-loadable[data-loading] {
 	background-color: var(--color-subtle);
 	background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--color-text) 12%, transparent) 50%, transparent 70%);
 	background-size: 220% 100%;
+	color: transparent;
+	text-shadow: none;
 	animation: media-loading-shimmer 1.5s linear infinite;
 }
 

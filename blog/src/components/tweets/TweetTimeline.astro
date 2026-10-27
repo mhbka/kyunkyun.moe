@@ -7,7 +7,7 @@ import FileDropzone from '../ui/FileDropzone.astro';
 import EdgeCard from '../ui/EdgeCard.astro';
 import { Textarea } from '../ui/react/Textarea.tsx';
 import type { Tweet } from '../../lib/models/tweets.ts';
-import { getTweetThumbnailSources } from './image-url.ts';
+import { getTweetPortalUrl, getTweetThumbnailSources } from './image-url.ts';
 
 interface Props {
 	tweets: Tweet[];
@@ -66,7 +66,7 @@ const pageUrl = (cursor?: string) => {
 						{tweet.media.map((media) => {
 							if (media.mediaKind === 'video') return <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>;
 							const thumbnail = getTweetThumbnailSources(media.publicUrl);
-							return <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} width="320" height="320" alt="" loading="lazy" decoding="async" /></Button>;
+							return <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} data-prefetch-image={getTweetPortalUrl(media.publicUrl)} aria-label="view full image"><img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} width="320" height="320" alt="" loading="lazy" decoding="async" /></Button>;
 						})}
 					</div>}
 				</article>
