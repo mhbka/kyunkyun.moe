@@ -7,6 +7,7 @@ import FileDropzone from '../ui/FileDropzone.astro';
 import EdgeCard from '../ui/EdgeCard.astro';
 import { Textarea } from '../ui/react/Textarea.tsx';
 import type { Tweet } from '../../lib/models/tweets.ts';
+import { getTweetThumbnailSources } from './image-url.ts';
 
 interface Props {
 	tweets: Tweet[];
@@ -62,10 +63,11 @@ const pageUrl = (cursor?: string) => {
 					</div>
 					{tweet.body && <p class="tweet__body">{tweet.body}</p>}
 					{tweet.media.length > 0 && <div class="tweet__media">
-						{tweet.media.map((media) => media.mediaKind === 'video'
-							? <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>
-							: <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img src={media.publicUrl} alt="" loading="lazy" /></Button>
-						)}
+						{tweet.media.map((media) => {
+							if (media.mediaKind === 'video') return <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="video" data-media-url={media.publicUrl} aria-label="play video"><video src={media.publicUrl} muted preload="metadata"></video></Button>;
+							const thumbnail = getTweetThumbnailSources(media.publicUrl);
+							return <Button class="media-thumbnail tweet__thumbnail" type="button" data-media-kind="image" data-media-url={media.publicUrl} aria-label="view full image"><img class="media-loadable" data-loading src={thumbnail.src} srcset={thumbnail.srcSet} sizes={thumbnail.sizes} width="320" height="320" alt="" loading="lazy" decoding="async" /></Button>;
+						})}
 					</div>}
 				</article>
 			))}
@@ -75,7 +77,7 @@ const pageUrl = (cursor?: string) => {
 			{hasMore && <Link class="ui-button" href={pageUrl(nextBefore ?? undefined)}>older tweets</Link>}
 		</nav>
 	</EdgeCard>
-	<dialog class="media-viewer tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><img data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
+	<dialog class="media-viewer tweet-viewer" data-tweet-viewer aria-label="tweet attachment"><img class="media-loadable" data-tweet-viewer-image alt="" /><video data-tweet-viewer-video controls></video></dialog>
 </section>
 
 <script>

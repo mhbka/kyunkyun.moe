@@ -1,6 +1,8 @@
 import { blogApi } from '../../lib/api/index.ts';
 import { initFileDropzone } from '../ui/file-dropzone.ts';
 import { createTweetPreviews } from './previews.ts';
+import { getTweetPortalUrl } from './image-url.ts';
+import { finishMediaLoading, startMediaLoading } from '../../scripts/media-loading.ts';
 
 /** Defines the maximum number of attachments accepted by one tweet. */
 export const MAX_MEDIA_COUNT = 5;
@@ -45,8 +47,17 @@ export function initTweetTimeline(timeline: HTMLElement) {
 		const isVideo = thumbnail.dataset.mediaKind === 'video';
 		viewer.classList.toggle('is-video', isVideo);
 		viewer.classList.toggle('is-image', !isVideo);
-		if (isVideo) { viewerVideo.src = thumbnail.dataset.mediaUrl ?? ''; viewerImage.removeAttribute('src'); }
-		else { viewerImage.src = thumbnail.dataset.mediaUrl ?? ''; viewerVideo.removeAttribute('src'); }
+		if (isVideo) {
+			viewerVideo.src = thumbnail.dataset.mediaUrl ?? '';
+			viewerImage.removeAttribute('src');
+			finishMediaLoading(viewerImage);
+		} else {
+			// Removes stale pixels before requesting the transformed viewer image.
+			viewerImage.removeAttribute('src');
+			startMediaLoading(viewerImage);
+			viewerImage.src = getTweetPortalUrl(thumbnail.dataset.mediaUrl ?? '');
+			viewerVideo.removeAttribute('src');
+		}
 		viewer.showModal();
 	});
 	viewer?.addEventListener('click', (event) => { if (event.target === viewer) viewer.close(); });
