@@ -41,6 +41,11 @@ export function getBlogImageSources(src: string): BlogImageSources | null {
 	};
 }
 
+/** Builds the compact image variant used by gallery thumbnails in the post editor. */
+export function getBlogImageEditorThumbnailUrl(src: string): string {
+	return getBlogImageUrl(src, 320, 75);
+}
+
 /** Builds a large portal image URL without cropping or upscaling. */
 export function getBlogImagePortalUrl(src: string): string {
 	return getBlogImageUrl(src, 1920, 85);

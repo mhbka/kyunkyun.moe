@@ -152,6 +152,18 @@ test('moveImage reorders and clamps the target position', () => {
 	assert.deepEqual(moveImage(images, 1, 1), images);
 });
 
+test('moveImage preserves captions while reordering', () => {
+	const images = [
+		{ src: 'a', caption: 'first caption' },
+		{ src: 'b', caption: 'second caption' },
+	];
+
+	assert.deepEqual(moveImage(images, 0, 1), [
+		{ src: 'b', caption: 'second caption' },
+		{ src: 'a', caption: 'first caption' },
+	]);
+});
+
 test('galleryToDirectiveNode round-trips through parseGallery', () => {
 	const gallery: Gallery = {
 		caption: 'A "quoted" trip',

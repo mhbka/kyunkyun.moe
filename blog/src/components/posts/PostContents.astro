@@ -21,6 +21,7 @@ const { target, editable = false } = Astro.props;
 	</post-contents>
 <script>
 	import { onDocumentClick } from '../../scripts/handlers/document-events';
+	import { getPostHeadingSelector } from './post-contents.ts';
 
 	class PostContents extends HTMLElement {
 		observer?: MutationObserver;
@@ -77,7 +78,7 @@ const { target, editable = false } = Astro.props;
 			window.addEventListener('resize', scheduleCurrent, { signal });
 			const editable = this.dataset.editable === 'true';
 			const render = () => {
-				headings = Array.from(root.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')).filter((heading) => heading.textContent?.trim());
+				headings = Array.from(root.querySelectorAll<HTMLElement>(getPostHeadingSelector(editable))).filter((heading) => heading.textContent?.trim());
 				const depth = Math.min(...headings.map((heading) => Number(heading.tagName[1])));
 				list.replaceChildren(...headings.map((heading, index) => {
 					const item = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;

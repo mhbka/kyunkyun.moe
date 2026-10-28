@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getBlogImagePortalUrl, getBlogImageSources, isBlogImageUrl } from '../../../../src/lib/content/blog-media.ts';
+import {
+	getBlogImageEditorThumbnailUrl,
+	getBlogImagePortalUrl,
+	getBlogImageSources,
+	isBlogImageUrl,
+} from '../../../../src/lib/content/blog-media.ts';
 
 const original = 'https://blogmedia.kyunkyun.moe/post-images/post-id/image.jpg';
 
@@ -19,6 +24,11 @@ test('builds responsive blog image variants', () => {
 	assert.match(sources.src, /\/cdn-cgi\/image\/width=640,fit=scale-down,format=auto,quality=80\/post-images\//);
 	assert.match(sources.srcSet, / 640w, .*width=1280.* 1280w, .*width=1920.* 1920w$/);
 	assert.equal(sources.sizes, '(max-width: 800px) 100vw, 70vw');
+});
+
+test('builds a compact editor thumbnail and leaves external images alone', () => {
+	assert.match(getBlogImageEditorThumbnailUrl(original), /width=320,fit=scale-down,format=auto,quality=75/);
+	assert.equal(getBlogImageEditorThumbnailUrl('https://example.com/image.jpg'), 'https://example.com/image.jpg');
 });
 
 test('builds a larger portal variant and leaves external images alone', () => {

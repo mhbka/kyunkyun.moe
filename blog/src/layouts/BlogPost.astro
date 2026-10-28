@@ -51,10 +51,21 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 				flex-wrap: wrap;
 				gap: 0.75rem;
 			}
+			.post-header .post-meta {
+				margin-block: 0.5rem;
+			}
 			.post-tags {
 				margin-top: 0.5rem;
 				color: var(--color-muted);
 				font-size: 0.85rem;
+			}
+			.post-dates {
+				display: grid;
+				gap: 0.25rem;
+				line-height: 1.25;
+			}
+			.post-dates .post-metadata {
+				margin: 0;
 			}
 		</style>
 	</head>
@@ -73,8 +84,12 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 					<div class="post-header">
 						<PageTitle title={title} className="post-title title-wave" />
 						<div class="post-meta">
-							{publishedAt && <div class="post-metadata">Published on <FormattedDate date={publishedAt} includeTime /></div>}
-							{updatedAt && <div class="post-metadata">Last updated on <FormattedDate date={updatedAt} includeTime /></div>}
+							{(publishedAt || updatedAt) && (
+								<div class="post-dates">
+									{publishedAt && <div class="post-metadata">Published on <FormattedDate date={publishedAt} includeTime /></div>}
+									{updatedAt && <div class="post-metadata">Last updated on <FormattedDate date={updatedAt} includeTime /></div>}
+								</div>
+							)}
 							{tags.length > 0 && <div class="post-tags">{tags.map((tag) => `#${tag}`).join(' ')}</div>}
 							{previewOf ? (
 								<div class="post-actions">

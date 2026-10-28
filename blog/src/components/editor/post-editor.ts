@@ -7,6 +7,7 @@ import { uploadImage } from '../../lib/utils/image-upload.ts';
 import { initTagInput } from '../tags/tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
+import { initGalleryImageViewer } from './gallery/viewer.ts';
 import { insertVideoCommand, videoFeature, videoIcon } from './video/index.ts';
 
 /** Mounts the Milkdown editor on a post form; the returned cleanup runs once the page leaves it. */
@@ -30,6 +31,7 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 
 	const titleInput = title;
 	const statusText = status;
+	initGalleryImageViewer(form, signal);
 
 	/** Resizes the title field to fit its wrapped text. */
 	function resizeTitle() {

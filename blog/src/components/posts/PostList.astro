@@ -23,7 +23,7 @@ const Item = cards ? EdgeCard : 'li';
 	id={variant === 'drafts' ? 'draft-list' : 'published-list'}
 >
 	{posts.map((post) => (
-		<Item as={cards ? 'li' : undefined} data-draft-id={variant === 'drafts' ? post.id : undefined}>
+		<Item class="post-list__item" as={cards ? 'li' : undefined} data-draft-id={variant === 'drafts' ? post.id : undefined}>
 			<Link class="post-card" href={variant === 'drafts' ? `/posts/edit/${post.id}/` : `/blog/${post.slug}/`}>
 				{post.thumbnailUrl && <img width="720" height="360" src={post.thumbnailUrl} alt="" />}
 				<h4 class="post-card__title">{post.title}</h4>
@@ -57,10 +57,11 @@ const Item = cards ? EdgeCard : 'li';
 	:global(.post-list) { display: grid; gap: 2rem; margin: 0; padding: 0; list-style: none; }
 	:global(.post-list > li) { width: 100%; text-align: left; }
 	:global(.post-list.post-list--cards) { gap: 0.5rem; }
+	:global(.post-list.post-list--cards > .post-list__item) { padding-block: 1.25rem; }
 	:global(.post-card) { display: block; text-decoration: none; }
 	:global(.post-card img) { display: block; width: 100%; margin-bottom: 0.5rem; border-radius: var(--radius-panel); transition: box-shadow 0.2s ease; }
 	:global(.post-card__title) { margin: 0; color: var(--color-heading); line-height: 1; transition: color 0.2s ease; }
-	:global(.post-card__date) { display: grid; gap: 0.25rem; margin: 0.5rem 0; color: var(--color-muted); transition: color 0.2s ease; }
+	:global(.post-card__date) { display: grid; gap: 0.25rem; margin: 0.5rem 0; color: var(--color-muted); line-height: 1.25; transition: color 0.2s ease; }
 	:global(.post-card__date span) { font-style: italic; }
 	:global(.post-card__tags) { margin: -0.25rem 0 0; color: var(--color-muted); font-size: 0.85rem; transition: color 0.2s ease; }
 	:global(.post-card:hover .post-card__title), :global(.post-card:hover .post-card__date), :global(.post-card:hover .post-card__tags) { color: var(--color-accent); }

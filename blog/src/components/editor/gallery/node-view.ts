@@ -2,9 +2,12 @@ import { $view } from '@milkdown/kit/utils';
 import type { NodeViewConstructor } from '@milkdown/kit/prose/view';
 import type { Node } from '@milkdown/kit/prose/model';
 
+import { getBlogImageEditorThumbnailUrl } from '../../../lib/content/blog-media.ts';
 import { addImage, isVideoSrc, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
 import { galleryConfig } from './config.ts';
 import { gallerySchema } from './schema.ts';
+
+const galleryDragType = 'application/x-gallery-editor-item';
 
 /** Builds the interactive editor UI for a gallery node. */
 export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstructor => {
@@ -56,6 +59,15 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 		status.setAttribute('role', 'status');
 
 		dom.append(header, track, status);
+		let draggedIndex: number | null = null;
+
+		/** Clears drag styling and releases the current item index. */
+		function clearDragState() {
+			draggedIndex = null;
+			track.querySelectorAll('.is-dragging, .is-drop-target').forEach((item) => {
+				item.classList.remove('is-dragging', 'is-drop-target');
+			});
+		}
 
 		/** Dispatches a single attribute change for the gallery node. */
 		function setAttr(attr: string, value: unknown) {
@@ -76,6 +88,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 
 		/** Rebuilds the thumbnail track for the given images. */
 		function renderTrack(images: GalleryImage[]) {
+			clearDragState();
 			track.replaceChildren();
 
 			if (!images.length) {
@@ -102,11 +115,57 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 				preview.muted = true;
 				preview.preload = 'metadata';
 				preview.controls = true;
+				preview.src = image.src;
 			} else {
 				preview = document.createElement('img');
 				preview.alt = image.alt ?? '';
+				preview.dataset.originalSrc = image.src;
+				preview.src = getBlogImageEditorThumbnailUrl(image.src);
 			}
-			preview.src = image.src;
+			preview.draggable = true;
+			preview.title = 'Drag to reorder; click images to view';
+			preview.addEventListener('dragstart', (event) => {
+				const dragEvent = event as DragEvent;
+				if (!view.editable) {
+					dragEvent.preventDefault();
+					return;
+				}
+				draggedIndex = index;
+				item.classList.add('is-dragging');
+				if (!dragEvent.dataTransfer) return;
+				dragEvent.dataTransfer.clearData();
+				dragEvent.dataTransfer.effectAllowed = 'move';
+				dragEvent.dataTransfer.setData(galleryDragType, 'gallery-item');
+				dragEvent.dataTransfer.setData('text/plain', String(index));
+			});
+			preview.addEventListener('dragend', clearDragState);
+
+			item.addEventListener('dragover', (event) => {
+				if (draggedIndex == null) {
+					if (event.dataTransfer?.types.includes(galleryDragType)) {
+						event.preventDefault();
+						event.dataTransfer.dropEffect = 'none';
+					}
+					return;
+				}
+				track.querySelectorAll('.is-drop-target').forEach((target) => target.classList.remove('is-drop-target'));
+				if (draggedIndex === index) return;
+				event.preventDefault();
+				item.classList.add('is-drop-target');
+				if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+			});
+			item.addEventListener('drop', (event) => {
+				if (draggedIndex == null) {
+					if (event.dataTransfer?.types.includes(galleryDragType)) event.preventDefault();
+					return;
+				}
+				if (draggedIndex === index) return;
+				event.preventDefault();
+				const from = draggedIndex;
+				clearDragState();
+				// Move the latest item data so caption edits remain attached during a drag.
+				setAttr('images', moveImage(imagesOf(getCurrentNode()), from, index));
+			});
 
 			const caption = document.createElement('input');
 			caption.className = 'ui-input gallery-editor__item-caption';
@@ -124,13 +183,16 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			controls.className = 'gallery-editor__item-actions';
 			controls.append(
 				actionButton('‹', 'move left', index === 0, () => {
-					setAttr('images', moveImage(images, index, index - 1));
+					// Reorder the latest state so caption edits are not overwritten by a stale render.
+					setAttr('images', moveImage(imagesOf(getCurrentNode()), index, index - 1));
 				}),
 				actionButton('›', 'move right', index === images.length - 1, () => {
-					setAttr('images', moveImage(images, index, index + 1));
+					// Reorder the latest state so caption edits are not overwritten by a stale render.
+					setAttr('images', moveImage(imagesOf(getCurrentNode()), index, index + 1));
 				}),
 				actionButton('×', 'remove image', false, () => {
-					setAttr('images', removeImage(images, index));
+					// Remove from the latest state so other image edits are preserved.
+					setAttr('images', removeImage(imagesOf(getCurrentNode()), index));
 				}),
 			);
 
@@ -218,8 +280,10 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 				}
 				return true;
 			},
-			stopEvent: (event) =>
-				event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement,
+			stopEvent: (event) => {
+				if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return true;
+				return event.target instanceof Element && event.target.closest('.gallery-editor__item') !== null;
+			},
 			destroy: () => dom.remove(),
 		};
 	};

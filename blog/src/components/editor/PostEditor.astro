@@ -42,6 +42,9 @@ const labels = getPostEditorLabels(post?.status);
 	<div class="editor-surface" data-editor-surface>
 		<div id="post-content" class="markdown-content" aria-label="Post content" data-initial-content={post?.contentMd ?? ''}></div>
 	</div>
+	<dialog class="media-viewer gallery-editor__viewer" data-gallery-image-viewer aria-label="full-size gallery image">
+		<img class="media-loadable" alt="" />
+	</dialog>
 
 	<div class="editor-actions">
 		<Button type="submit">{labels.submit}</Button>
