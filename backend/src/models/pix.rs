@@ -3,7 +3,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 /// Represents a completed Pix image returned by the API.
-#[derive(Debug, Serialize, sqlx::FromRow)]
+#[derive(Clone, Debug, Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct Pix {
     pub id: Uuid,

@@ -12,14 +12,10 @@ import '../styles/base/home-content.css';
 
 const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);
 const content = await renderMarkdown(homeMarkdown);
-const [pixResult, postsResult, tweetsResult] = await Promise.allSettled([
-	blogApi.listPix(4),
-	blogApi.listPosts(1, 1),
-	blogApi.listTweets(1),
-]);
-const images = pixResult.status === 'fulfilled' ? pixResult.value.images : [];
-const post = postsResult.status === 'fulfilled' ? postsResult.value.posts[0] : undefined;
-const tweet = tweetsResult.status === 'fulfilled' ? tweetsResult.value.tweets[0] : undefined;
+const latest = await blogApi.getLatest().catch(() => undefined);
+const images = latest?.pix ?? [];
+const post = latest?.post ?? undefined;
+const tweet = latest?.tweet ?? undefined;
 ---
 
 <!doctype html>

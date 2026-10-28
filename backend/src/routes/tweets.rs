@@ -172,8 +172,10 @@ async fn create_tweet(
             .await?;
     }
     transaction.commit().await?;
-    tracing::info!(tweet_id = %row.id, user_id = %user.id, "tweet published");
-    Ok(Json(tweet_with_media(&app_state, row).await?))
+    let tweet = tweet_with_media(&app_state, row).await?;
+    app_state.invalidate_latest().await;
+    tracing::info!(tweet_id = %tweet.id, user_id = %user.id, "tweet published");
+    Ok(Json(tweet))
 }
 
 /// Deletes one of the current user's tweets from the public feed.
@@ -188,6 +190,7 @@ async fn delete_tweet(
     if result.rows_affected() == 0 {
         return Err(RouteError::not_found("tweet not found"));
     }
+    app_state.invalidate_latest().await;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -276,11 +279,12 @@ async fn complete_upload(
         update tweet_media 
         set uploaded_at = now(), byte_size = $1 
         where id = $2 
-        returning id, public_url, content_type, media_kind, coalesce(position, 0) as position"
+        returning id, public_url, content_type, media_kind, coalesce(position, 0) as position",
     )
-        .bind(size)
-        .bind(pending.id)
-        .fetch_one(&app_state.pool).await?;
+    .bind(size)
+    .bind(pending.id)
+    .fetch_one(&app_state.pool)
+    .await?;
     Ok(Json(media))
 }
 

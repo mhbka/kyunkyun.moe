@@ -27,6 +27,16 @@ function createFetchSequence(responses: Response[]) {
 	};
 }
 
+test('loads the home page snapshot with one backend request', async () => {
+	const latest = { pix: [], post: null, tweet: null, generatedAt: '2026-10-28T00:00:00Z' };
+	const mock = createFetch(Response.json(latest));
+	const api = createBlogApi({ baseUrl: 'https://api.example.test', fetch: mock.fetch });
+
+	assert.deepEqual(await api.getLatest(), latest);
+	assert.equal(mock.calls[0][0], 'https://api.example.test/latest');
+	assert.equal(mock.calls.length, 1);
+});
+
 test('sends authenticated write requests to the matching backend route', async () => {
 	const mock = createFetch(
 		Response.json({ id: 'post-1', title: 'Hello', slug: 'hello', thumbnailUrl: null }),

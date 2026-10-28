@@ -1,5 +1,6 @@
 pub mod comments;
 pub mod error;
+pub mod latest;
 pub mod media;
 pub mod pix;
 pub mod posts;

@@ -31,7 +31,7 @@ pub struct Post {
 }
 
 /// Summary of a post (mainly for listing posts).
-#[derive(Debug, Serialize, sqlx::FromRow)]
+#[derive(Clone, Debug, Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct PostSummary {
     pub id: Uuid,

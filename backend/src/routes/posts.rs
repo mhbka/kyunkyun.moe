@@ -248,6 +248,8 @@ async fn update_post(
     .fetch_one(&app_state.pool)
     .await?;
 
+    app_state.invalidate_latest().await;
+
     // Snapshot a revision on every save. Prune/collapse old ones later if the
     // table grows large — not a concern early on.
     sqlx::query(
@@ -316,6 +318,7 @@ async fn publish_post(
     .await?
     .ok_or(RouteError::not_found("post not found"))?;
 
+    app_state.invalidate_latest().await;
     tracing::info!(post_id = %post.id, user_id = %user.id, "post published");
     Ok(Json(post))
 }
@@ -342,6 +345,7 @@ async fn move_post_to_draft(
     .await?
     .ok_or(RouteError::not_found("post not found"))?;
 
+    app_state.invalidate_latest().await;
     tracing::info!(post_id = %post.id, user_id = %user.id, "post moved to draft");
     Ok(Json(post))
 }
@@ -360,6 +364,7 @@ async fn delete_post(
         .execute(&app_state.pool)
         .await?;
 
+    app_state.invalidate_latest().await;
     tracing::info!(post_id = %id, user_id = %user.id, "post soft deleted");
     Ok(StatusCode::NO_CONTENT)
 }

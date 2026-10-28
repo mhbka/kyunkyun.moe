@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// A media attachment displayed with a tweet.
-#[derive(Debug, Serialize, sqlx::FromRow)]
+#[derive(Clone, Debug, Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct TweetMedia {
     pub id: Uuid,
@@ -14,7 +14,7 @@ pub struct TweetMedia {
 }
 
 /// A public short-form post and its completed attachments.
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Tweet {
     pub id: Uuid,

@@ -195,6 +195,7 @@ async fn complete_upload(
     .bind(image.id)
     .fetch_one(&app_state.pool)
     .await?;
+    app_state.invalidate_latest().await;
     tracing::info!(image_id = %image.id, user_id = %user.id, "Pix upload completed");
     Ok(Json(image))
 }
@@ -240,6 +241,7 @@ async fn update_tags(
     .bind(&tags)
     .fetch_all(&app_state.pool)
     .await?;
+    app_state.invalidate_latest().await;
     tracing::info!(image_count = images.len(), user_id = %user.id, operation, "Pix tags updated");
     Ok(Json(images))
 }

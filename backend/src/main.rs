@@ -1,5 +1,6 @@
 mod auth;
 mod db;
+mod latest_cache;
 mod models;
 mod routes;
 mod s3;
@@ -69,6 +70,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/tags", routes::tags::router())
         .nest("/users", routes::users::router())
         .nest("/comments", routes::comments::router())
+        .nest("/latest", routes::latest::router())
         .nest("/media", routes::media::router())
         .nest("/pix", routes::pix::router())
         .nest("/tweets", routes::tweets::router())
