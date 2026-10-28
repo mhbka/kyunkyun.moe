@@ -5,9 +5,8 @@ import type { Node } from '@milkdown/kit/prose/model';
 import { getBlogImageEditorThumbnailUrl } from '../../../lib/content/blog-media.ts';
 import { addImage, isVideoSrc, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
 import { galleryConfig } from './config.ts';
+import { galleryItemDragType, isGalleryItemDrag } from './drag.ts';
 import { gallerySchema } from './schema.ts';
-
-const galleryDragType = 'application/x-gallery-editor-item';
 
 /** Builds the interactive editor UI for a gallery node. */
 export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstructor => {
@@ -135,14 +134,14 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 				if (!dragEvent.dataTransfer) return;
 				dragEvent.dataTransfer.clearData();
 				dragEvent.dataTransfer.effectAllowed = 'move';
-				dragEvent.dataTransfer.setData(galleryDragType, 'gallery-item');
+				dragEvent.dataTransfer.setData(galleryItemDragType, 'gallery-item');
 				dragEvent.dataTransfer.setData('text/plain', String(index));
 			});
 			preview.addEventListener('dragend', clearDragState);
 
 			item.addEventListener('dragover', (event) => {
 				if (draggedIndex == null) {
-					if (event.dataTransfer?.types.includes(galleryDragType)) {
+					if (event.dataTransfer?.types.includes(galleryItemDragType)) {
 						event.preventDefault();
 						event.dataTransfer.dropEffect = 'none';
 					}
@@ -156,7 +155,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			});
 			item.addEventListener('drop', (event) => {
 				if (draggedIndex == null) {
-					if (event.dataTransfer?.types.includes(galleryDragType)) event.preventDefault();
+					if (event.dataTransfer?.types.includes(galleryItemDragType)) event.preventDefault();
 					return;
 				}
 				if (draggedIndex === index) return;
@@ -281,8 +280,16 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 				return true;
 			},
 			stopEvent: (event) => {
-				if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return true;
-				return event.target instanceof Element && event.target.closest('.gallery-editor__item') !== null;
+				const isItemEvent = event.target instanceof Element
+					&& event.target.closest('.gallery-editor__item') !== null;
+				if (event.type.startsWith('drag') || event.type === 'drop') {
+					if (!isItemEvent) return false;
+					const dragEvent = event as DragEvent;
+					return isGalleryItemDrag(draggedIndex, dragEvent.dataTransfer?.types);
+				}
+				return isItemEvent
+					|| event.target instanceof HTMLInputElement
+					|| event.target instanceof HTMLButtonElement;
 			},
 			destroy: () => dom.remove(),
 		};

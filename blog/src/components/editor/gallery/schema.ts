@@ -1,6 +1,7 @@
 import { $nodeSchema } from '@milkdown/kit/utils';
 
 import { galleryToDirectiveNode, parseGallery, type GalleryImage } from '../../../lib/content/gallery.ts';
+import { parseGalleryNodeAttrs, serializeGalleryNodeAttrs } from './clipboard.ts';
 
 /** ProseMirror + markdown schema for the in-post gallery block node. */
 export const gallerySchema = $nodeSchema('gallery', () => ({
@@ -15,6 +16,18 @@ export const gallerySchema = $nodeSchema('gallery', () => ({
 		caption: { default: '' },
 		images: { default: [] as GalleryImage[] },
 	},
+	parseDOM: [{
+		tag: 'div[data-gallery-node]',
+		getAttrs: (dom) => dom instanceof HTMLElement
+			? parseGalleryNodeAttrs(dom.getAttribute('data-gallery-node'))
+			: false,
+	}],
+	toDOM: (node) => ['div', {
+		'data-gallery-node': serializeGalleryNodeAttrs({
+			caption: node.attrs.caption as string,
+			images: node.attrs.images as GalleryImage[],
+		}),
+	}],
 	parseMarkdown: {
 		match: (node) => node.type === 'containerDirective' && node.name === 'gallery',
 		runner: (state, node, type) => {
