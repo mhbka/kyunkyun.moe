@@ -6,6 +6,22 @@ export interface ImageUploadRequestResponse {
 	publicUrl: string;
 }
 
+export interface MediaDimensions {
+	width: number;
+	height: number;
+}
+
+/** Reads intrinsic image dimensions before uploading the local file. */
+export async function readImageDimensions(file: File): Promise<MediaDimensions | undefined> {
+	if (!file.type.startsWith('image/')) return undefined;
+	const bitmap = await createImageBitmap(file);
+	try {
+		return { width: bitmap.width, height: bitmap.height };
+	} finally {
+		bitmap.close();
+	}
+}
+
 /** Uploads a post image or video through a backend-issued presigned URL. */
 export async function uploadImage(
 	file: File,
@@ -13,14 +29,17 @@ export async function uploadImage(
 	postId: string,
 	token: string,
 	fetcher: typeof fetch = fetch,
+	dimensionReader: (file: File) => Promise<MediaDimensions | undefined> = readImageDimensions,
 ): Promise<PostMedia> {
+	// Dimension detection improves layout but should not prevent a valid upload.
+	const dimensions = await dimensionReader(file).catch(() => undefined);
 	const requestResponse = await fetcher(mediaApiUrl, {
 		method: 'POST',
 		headers: {
 		Authorization: `Bearer ${token}`,
 		'Content-Type': 'application/json',
 		},
-		body: JSON.stringify({ postId, contentType: file.type }),
+		body: JSON.stringify({ postId, contentType: file.type, ...dimensions }),
 	});
 
 	if (!requestResponse.ok) {

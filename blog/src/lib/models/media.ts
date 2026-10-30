@@ -1,8 +1,8 @@
 /** Identifies how a blog media item is rendered. */
 export type PostMediaKind = 'image' | 'video';
 
-/** Describes the upload or processing state of blog media. */
-export type PostMediaStatus = 'pending' | 'processing' | 'ready' | 'failed';
+/** Describes whether a blog media upload can be displayed. */
+export type PostMediaStatus = 'pending' | 'ready';
 
 /** Represents one post-owned media item returned by the backend. */
 export interface PostMedia {

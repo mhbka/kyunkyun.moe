@@ -16,7 +16,7 @@ if (isAuthor && accessToken) {
 	}
 }
 
-const content = post ? await renderMarkdown(post.contentMd) : undefined;
+const content = post ? await renderMarkdown(post.contentMd, post.media) : undefined;
 ---
 
 <BlogPost

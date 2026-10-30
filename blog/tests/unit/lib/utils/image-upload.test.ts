@@ -36,13 +36,14 @@ test('requests a presigned URL, uploads and completes the file, then returns its
 		'post-id',
 		'access-token',
 		fetcher,
+		async () => ({ width: 1600, height: 900 }),
 	);
 
 	assert.equal(media.id, 'media-id');
 	assert.equal(media.publicUrl, 'https://images.example.test/post.png');
 	assert.equal(requests[0].init?.method, 'POST');
 	assert.equal(new Headers(requests[0].init?.headers).get('Authorization'), 'Bearer access-token');
-	assert.equal(requests[0].init?.body, JSON.stringify({ postId: 'post-id', contentType: 'image/png' }));
+	assert.equal(requests[0].init?.body, JSON.stringify({ postId: 'post-id', contentType: 'image/png', width: 1600, height: 900 }));
 	assert.equal(requests[1].input, 'https://storage.example.test/presigned-upload');
 	assert.equal(requests[1].init?.method, 'PUT');
 	assert.equal(new Headers(requests[1].init?.headers).get('Content-Type'), 'image/png');

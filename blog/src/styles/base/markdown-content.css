@@ -15,7 +15,7 @@
 .markdown-content :where(li, li p, li ul, li ol):not(:where(.milkdown *)) { margin: 0; }
 .editor-surface .milkdown .ProseMirror :where(li + li) { margin-top: 0.125rem; }
 .markdown-content :where(a), .editor-surface .milkdown .ProseMirror :where(a) { color: var(--color-accent); }
-.markdown-content :where(img), .editor-surface .milkdown .ProseMirror :where(img) { display: block; margin-bottom: var(--markdown-block-gap); }
+.markdown-content :where(img), .editor-surface .milkdown .ProseMirror :where(img) { display: block; max-width: 100%; height: auto; margin-bottom: var(--markdown-block-gap); }
 /* Keeps wide images and videos from filling the whole column on desktop; the ratio is preserved and the media stays centred. */
 @media (min-width: 801px) {
 	.markdown-content :is(img, video), .editor-surface .milkdown .ProseMirror :is(img, video):not(.gallery-editor *) { max-height: var(--markdown-media-max-height); width: auto; max-width: 100%; margin-inline: auto; }

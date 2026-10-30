@@ -35,6 +35,8 @@ pub fn router() -> Router<AppState> {
 struct CreateUploadRequest {
     post_id: Uuid,
     content_type: String,
+    width: Option<i32>,
+    height: Option<i32>,
 }
 
 /// Returns the stable media ID and direct-upload details.
@@ -71,6 +73,7 @@ async fn create_upload(
     require_author(&app_state, user.id).await?;
     let media_kind = media_kind_for_content_type(&request.content_type)
         .ok_or(RouteError::bad_request("unsupported media type"))?;
+    let (width, height) = upload_dimensions(media_kind, request.width, request.height)?;
     require_owned_post(&app_state, request.post_id, user.id).await?;
 
     let media_id = Uuid::new_v4();
@@ -91,14 +94,16 @@ async fn create_upload(
         .map_err(|error| RouteError::S3(error.to_string()))?;
     sqlx::query(
         "insert into post_media
-         (id, post_id, media_kind, bucket_path, content_type)
-         values ($1, $2, $3, $4, $5)",
+         (id, post_id, media_kind, bucket_path, content_type, width, height)
+         values ($1, $2, $3, $4, $5, $6, $7)",
     )
     .bind(media_id)
     .bind(request.post_id)
     .bind(media_kind)
     .bind(bucket_path)
     .bind(&request.content_type)
+    .bind(width)
+    .bind(height)
     .execute(&app_state.pool)
     .await?;
 
@@ -110,7 +115,7 @@ async fn create_upload(
     }))
 }
 
-/// Verifies an uploaded object and advances it to its next processing state.
+/// Verifies an uploaded object and marks it display-ready.
 async fn complete_upload(
     State(app_state): State<AppState>,
     user: AuthUser,
@@ -137,7 +142,6 @@ async fn complete_upload(
         ));
     }
 
-    let next_status = status_after_upload(media.media_kind);
     let mut transaction = app_state.pool.begin().await?;
     let media = sqlx::query_as::<_, StoredPostMedia>(
         "update post_media
@@ -147,7 +151,7 @@ async fn complete_upload(
              video_poster_id, null::text as poster_bucket_path,
              width, height, created_at",
     )
-    .bind(next_status)
+    .bind(PostMediaStatus::Ready)
     .bind(media.id)
     .fetch_one(&mut *transaction)
     .await?;
@@ -165,11 +169,11 @@ async fn complete_upload(
     }
     transaction.commit().await?;
 
-    tracing::info!(media_id = %media.id, ?next_status, "post-media upload completed");
+    tracing::info!(media_id = %media.id, "post-media upload completed");
     Ok(Json(media.into_response(&app_state)))
 }
 
-/// Returns one media item's current processing state to its post author.
+/// Returns one media item's current upload state to its post author.
 async fn get_media(
     State(app_state): State<AppState>,
     user: AuthUser,
@@ -270,23 +274,32 @@ fn media_kind_for_content_type(content_type: &str) -> Option<PostMediaKind> {
     }
 }
 
-/// Selects whether an upload is display-ready or needs video processing.
-fn status_after_upload(media_kind: PostMediaKind) -> PostMediaStatus {
-    match media_kind {
-        PostMediaKind::Image => PostMediaStatus::Ready,
-        PostMediaKind::Video => PostMediaStatus::Processing,
+/** Validates optional client-read image dimensions before storing them. */
+fn upload_dimensions(
+    media_kind: PostMediaKind,
+    width: Option<i32>,
+    height: Option<i32>,
+) -> RouteResult<(Option<i32>, Option<i32>)> {
+    match (width, height) {
+        (None, None) => Ok((None, None)),
+        (Some(width), Some(height))
+            if media_kind == PostMediaKind::Image
+                && width > 0
+                && height > 0
+                && width <= 100_000
+                && height <= 100_000 =>
+        {
+            Ok((Some(width), Some(height)))
+        }
+        _ => Err(RouteError::bad_request("invalid media dimensions")),
     }
 }
 
 impl StoredPostMedia {
     /// Converts stored object keys into client-facing public URLs.
     fn into_response(self, app_state: &AppState) -> PostMedia {
-        let public_url = match self.status {
-            PostMediaStatus::Processing | PostMediaStatus::Ready => {
-                Some(app_state.s3.blogpost_public_url(&self.bucket_path))
-            }
-            PostMediaStatus::Pending | PostMediaStatus::Failed => None,
-        };
+        let public_url = (self.status == PostMediaStatus::Ready)
+            .then(|| app_state.s3.blogpost_public_url(&self.bucket_path));
         PostMedia {
             id: self.id,
             post_id: self.post_id,

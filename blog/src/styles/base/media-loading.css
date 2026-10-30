@@ -8,8 +8,8 @@ img.media-loadable[data-loading] {
 	animation: media-loading-shimmer 1.5s linear infinite;
 }
 
-/* Shows a compact placeholder when Markdown does not provide image dimensions. */
-.markdown-content img.media-loadable[data-loading] {
+/* Shows a compact fallback only when Markdown media has no stored dimensions. */
+.markdown-content img.media-loadable[data-loading]:not([width][height]) {
 	width: min(16rem, 100%);
 	height: min(10rem, 30dvh);
 	margin-inline: auto;

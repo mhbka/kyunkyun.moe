@@ -23,6 +23,21 @@
 	display: none;
 }
 
+/* Keep broken managed references visible without triggering invalid requests. */
+.media-unavailable {
+	display: grid;
+	place-items: center;
+	min-height: 8rem;
+	padding: 1rem;
+	border: var(--border-width) dashed var(--color-muted);
+	border-radius: var(--radius-media);
+	color: var(--color-muted);
+}
+
+.media-unavailable[hidden] {
+	display: none;
+}
+
 .gallery__item img,
 .gallery__item video,
 .video video {

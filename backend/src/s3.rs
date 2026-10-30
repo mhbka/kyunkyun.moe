@@ -157,9 +157,8 @@ impl S3 {
         media_id: Uuid,
         content_type: &str,
     ) -> Result<(String, UploadUrls), anyhow::Error> {
-        let extension =
-            tweet_media_extension(content_type).ok_or(anyhow!("unsupported content type"))?;
-        let key = blogpost_media_key(post_id, media_id, extension);
+        let key = blogpost_upload_key(post_id, media_id, content_type)
+            .ok_or(anyhow!("unsupported content type"))?;
         tracing::info!(%post_id, %content_type, "creating post-media upload URL");
         let presigning_config = PresigningConfig::expires_in(BLOGPOST_MEDIA_PRESIGNED_URL_EXPIRY)?;
         let url = self
@@ -275,6 +274,17 @@ pub fn tweet_media_extension(content_type: &str) -> Option<&'static str> {
 /// Builds a deterministic storage key for an uploaded blog media source.
 fn blogpost_media_key(post_id: Uuid, media_id: Uuid, extension: &str) -> String {
     format!("post-images/{post_id}/{media_id}.{extension}")
+}
+
+/// Builds an image key or an immutable original-video upload key.
+fn blogpost_upload_key(post_id: Uuid, media_id: Uuid, content_type: &str) -> Option<String> {
+    let extension = tweet_media_extension(content_type)?;
+    let media_key = blogpost_media_key(post_id, media_id, extension);
+    Some(if content_type.starts_with("video/") {
+        blogpost_original_key(&media_key)
+    } else {
+        media_key
+    })
 }
 
 /// Builds the archive key used to preserve an original video upload.

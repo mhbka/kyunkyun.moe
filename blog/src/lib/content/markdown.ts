@@ -6,8 +6,8 @@ import type { Node } from 'unist';
 import { remarkRestoreTextDirectives } from './restore-text-directives.ts';
 import { remarkBlogImages } from './remark-blog-images.ts';
 import { parseGallery, parseVideo, renderGalleryHtml, renderVideoHtml, type DirectiveNode } from './gallery.ts';
-
-let processor: ReturnType<typeof createMarkdownProcessor> | undefined;
+import { remarkPostMedia } from './remark-post-media.ts';
+import type { PostMediaMap } from '../models/media.ts';
 
 /** Combines directly adjacent unordered lists into one continuous list. */
 function mergeAdjacentUnorderedLists(html: string): string {
@@ -15,7 +15,7 @@ function mergeAdjacentUnorderedLists(html: string): string {
 }
 
 /** Transforms `:::gallery` directive containers into their rendered HTML. */
-function remarkGallery() {
+function remarkGallery(media: PostMediaMap) {
 	return (tree: Node) => {
 		visit(tree, 'containerDirective', (node, index, parent) => {
 			if (index == null || !parent) return;
@@ -23,14 +23,14 @@ function remarkGallery() {
 			if (!gallery) return;
 			(parent as unknown as { children: Node[] }).children[index] = {
 				type: 'html',
-				value: renderGalleryHtml(gallery),
+				value: renderGalleryHtml(gallery, media),
 			} as unknown as Node;
 		});
 	};
 }
 
 /** Transforms `::video` leaf directives into their rendered HTML. */
-function remarkVideo() {
+function remarkVideo(media: PostMediaMap) {
 	return (tree: Node) => {
 		visit(tree, 'leafDirective', (node, index, parent) => {
 			if (index == null || !parent) return;
@@ -38,16 +38,24 @@ function remarkVideo() {
 			if (!video) return;
 			(parent as unknown as { children: Node[] }).children[index] = {
 				type: 'html',
-				value: renderVideoHtml(video),
+				value: renderVideoHtml(video, media),
 			} as unknown as Node;
 		});
 	};
 }
 
 /** Renders Markdown to HTML with the shared Astro processor. */
-export async function renderMarkdown(markdown: string): Promise<string> {
-	processor ??= createMarkdownProcessor({
-		remarkPlugins: [remarkDirective, remarkRestoreTextDirectives, remarkBlogImages, remarkGallery, remarkVideo],
+export async function renderMarkdown(markdown: string, media: PostMediaMap = {}): Promise<string> {
+	// Build per render so a post's media map cannot leak into another request.
+	const processor = createMarkdownProcessor({
+		remarkPlugins: [
+			remarkDirective,
+			remarkRestoreTextDirectives,
+			() => remarkPostMedia(media),
+			remarkBlogImages,
+			() => remarkGallery(media),
+			() => remarkVideo(media),
+		],
 	});
 	const renderer = await processor;
 	return mergeAdjacentUnorderedLists((await renderer.render(markdown)).code);

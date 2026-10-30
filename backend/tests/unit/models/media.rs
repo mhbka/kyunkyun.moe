@@ -11,8 +11,8 @@ fn serializes_media_kinds_as_lowercase() {
 #[test]
 fn serializes_media_statuses_as_lowercase() {
     assert_eq!(
-        serde_json::to_string(&PostMediaStatus::Processing).unwrap(),
-        "\"processing\""
+        serde_json::to_string(&PostMediaStatus::Ready).unwrap(),
+        "\"ready\""
     );
 }
 

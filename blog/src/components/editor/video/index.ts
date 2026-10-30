@@ -3,6 +3,8 @@ import type { NodeViewConstructor } from '@milkdown/kit/prose/view';
 import { $command, $nodeSchema, $view } from '@milkdown/kit/utils';
 
 import { parseVideo, videoToDirectiveNode } from '../../../lib/content/gallery.ts';
+import { isMediaReference } from '../../../lib/content/media-reference.ts';
+import { videoConfig, type VideoFeatureConfig } from './config.ts';
 
 /** ProseMirror + markdown schema for a standalone video block, stored as `::video{src caption}`. */
 export const videoSchema = $nodeSchema('video', () => ({
@@ -40,7 +42,7 @@ export const videoSchema = $nodeSchema('video', () => ({
 	},
 }));
 
-/** Inserts a video block for an already uploaded video URL. */
+/** Inserts a video block for an uploaded reference or legacy URL. */
 export const insertVideoCommand = $command('InsertVideo', (ctx) => (src?: string) => (state, dispatch) => {
 	if (!src) return false;
 	const node = videoSchema.type(ctx).create({ src, caption: '' });
@@ -50,6 +52,7 @@ export const insertVideoCommand = $command('InsertVideo', (ctx) => (src?: string
 
 /** Builds the editor UI for a video node: a player, a caption field, and a remove button. */
 const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (initialNode, view, getPos) => {
+	const config = ctx.get(videoConfig.key);
 	const dom = document.createElement('div');
 	dom.className = 'video-editor';
 	dom.contentEditable = 'false';
@@ -58,7 +61,33 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 	player.controls = true;
 	player.preload = 'metadata';
 	player.playsInline = true;
-	player.src = initialNode.attrs.src as string;
+	const unavailable = document.createElement('span');
+	unavailable.className = 'media-unavailable';
+	unavailable.textContent = 'media unavailable';
+	unavailable.hidden = true;
+
+	/** Applies the resolved player URL and stored presentation metadata. */
+	function updatePlayer(source: string) {
+		const media = config.resolveMedia(source);
+		const displaySrc = media?.mediaKind === 'video'
+			? media.publicUrl ?? ''
+			: isMediaReference(source) ? '' : source;
+		player.hidden = !displaySrc;
+		unavailable.hidden = Boolean(displaySrc);
+		if (displaySrc) player.src = displaySrc;
+		else player.removeAttribute('src');
+		if (media?.posterUrl) player.poster = media.posterUrl;
+		else player.removeAttribute('poster');
+		if (media?.width && media.height) {
+			player.width = media.width;
+			player.height = media.height;
+		} else {
+			player.removeAttribute('width');
+			player.removeAttribute('height');
+		}
+	}
+
+	updatePlayer(initialNode.attrs.src as string);
 
 	const footer = document.createElement('div');
 	footer.className = 'video-editor__footer';
@@ -86,13 +115,13 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 	});
 
 	footer.append(caption, remove);
-	dom.append(player, footer);
+	dom.append(player, unavailable, footer);
 
 	return {
 		dom,
 		update: (node) => {
 			if (node.type !== videoSchema.type(ctx)) return false;
-			if (player.getAttribute('src') !== node.attrs.src) player.src = node.attrs.src as string;
+			updatePlayer(node.attrs.src as string);
 			if (document.activeElement !== caption) caption.value = (node.attrs.caption ?? '') as string;
 			return true;
 		},
@@ -105,11 +134,13 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 });
 
 /** Registers the video block, its editor view, and its insert command. Requires the gallery feature, which registers the directive remark plugins. */
-export function videoFeature(editor: Editor) {
+export function videoFeature(editor: Editor, config?: VideoFeatureConfig) {
 	editor
+		.config((ctx) => ctx.set(videoConfig.key, config ?? { resolveMedia: () => undefined }))
 		.use(videoSchema)
 		.use(videoNodeView)
-		.use(insertVideoCommand);
+		.use(insertVideoCommand)
+		.use(videoConfig);
 }
 
 export { videoIcon } from './icon.ts';

@@ -11,15 +11,13 @@ pub enum PostMediaKind {
     Video,
 }
 
-/// Tracks a blog media item from its upload through processing.
+/// Tracks whether a blog media upload can be displayed.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, sqlx::Type)]
 #[serde(rename_all = "lowercase")]
 #[sqlx(type_name = "text", rename_all = "lowercase")]
 pub enum PostMediaStatus {
     Pending,
-    Processing,
     Ready,
-    Failed,
 }
 
 /// Describes one post-owned media item returned by the API.

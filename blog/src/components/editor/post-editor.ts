@@ -4,6 +4,7 @@ import { commandsCtx } from '@milkdown/kit/core';
 import { blogApi } from '../../lib/api/index.ts';
 import { createSupabaseBrowserClient } from '../../lib/auth/supabase.ts';
 import { uploadImage } from '../../lib/utils/image-upload.ts';
+import { createMediaReference } from '../../lib/content/media-reference.ts';
 import { initTagInput } from '../tags/tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
@@ -80,7 +81,7 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 		const media = await uploadImage(file, mediaApiUrl, postId, session.access_token);
 		mediaRegistry.add(media);
 		if (!media.publicUrl) throw new Error('Uploaded media is not available yet.');
-		return media.publicUrl;
+		return createMediaReference(media.id);
 	}
 
 	const uploadImageFile = (file: File) => uploadMedia(file, false);
@@ -128,6 +129,7 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 		featureConfigs: {
 			[Crepe.Feature.ImageBlock]: {
 				onUpload: uploadImageFile,
+				proxyDomURL: (source) => mediaRegistry.displayUrl(source, 'image'),
 			},
 			[Crepe.Feature.Placeholder]: {
 				text: 'Content',
@@ -154,8 +156,11 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 		},
 	});
 
-	editor.addFeature(galleryFeature, { onUpload: uploadGalleryFile });
-	editor.addFeature(videoFeature);
+	editor.addFeature(galleryFeature, {
+		onUpload: uploadGalleryFile,
+		resolveMedia: (source) => mediaRegistry.resolve(source),
+	});
+	editor.addFeature(videoFeature, { resolveMedia: (source) => mediaRegistry.resolve(source) });
 
 	// Includes toolbar and programmatic edits, which need not fire DOM input events.
 	let ready = false;

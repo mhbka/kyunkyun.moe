@@ -15,7 +15,7 @@ export type { GalleryFeatureConfig } from './config.ts';
 export function galleryFeature(editor: Editor, config?: GalleryFeatureConfig) {
 	editor
 		.config((ctx) => {
-			ctx.set(galleryConfig.key, config ?? { onUpload: async () => '' });
+			ctx.set(galleryConfig.key, config ?? { onUpload: async () => '', resolveMedia: () => undefined });
 		})
 		.use(galleryRemarkPlugin)
 		.use(restoreTextDirectivesPlugin)

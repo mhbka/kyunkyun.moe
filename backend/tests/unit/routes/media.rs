@@ -6,9 +6,9 @@ use axum::{
 };
 use tower::ServiceExt;
 
-use crate::models::media::{PostMediaKind, PostMediaStatus};
+use crate::models::media::PostMediaKind;
 
-use super::{media_kind_for_content_type, status_after_upload, CreateUploadResponse};
+use super::{media_kind_for_content_type, upload_dimensions, CreateUploadResponse};
 
 #[test]
 fn serializes_upload_response_with_a_stable_media_id() {
@@ -42,15 +42,13 @@ fn identifies_supported_post_media_types() {
 }
 
 #[test]
-fn sends_only_videos_to_processing() {
+fn accepts_complete_image_dimensions_only() {
     assert_eq!(
-        status_after_upload(PostMediaKind::Image),
-        PostMediaStatus::Ready
+        upload_dimensions(PostMediaKind::Image, Some(1600), Some(900)).unwrap(),
+        (Some(1600), Some(900))
     );
-    assert_eq!(
-        status_after_upload(PostMediaKind::Video),
-        PostMediaStatus::Processing
-    );
+    assert!(upload_dimensions(PostMediaKind::Image, Some(1600), None).is_err());
+    assert!(upload_dimensions(PostMediaKind::Video, Some(1920), Some(1080)).is_err());
 }
 
 #[tokio::test]

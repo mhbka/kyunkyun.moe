@@ -4,6 +4,7 @@ import type { Node } from '@milkdown/kit/prose/model';
 
 import { getBlogImageEditorThumbnailUrl } from '../../../lib/content/blog-media.ts';
 import { addImage, isVideoSrc, moveImage, removeImage, type GalleryImage } from '../../../lib/content/gallery.ts';
+import { isMediaReference } from '../../../lib/content/media-reference.ts';
 import { galleryConfig } from './config.ts';
 import { galleryItemDragType, isGalleryItemDrag } from './drag.ts';
 import { gallerySchema } from './schema.ts';
@@ -108,18 +109,32 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			const item = document.createElement('div');
 			item.className = 'gallery-editor__item';
 
-			let preview: HTMLImageElement | HTMLVideoElement;
-			if (isVideoSrc(image.src)) {
-				preview = document.createElement('video');
-				preview.muted = true;
-				preview.preload = 'metadata';
-				preview.controls = true;
-				preview.src = image.src;
+			const media = config.resolveMedia(image.src);
+			const displaySrc = media?.publicUrl ?? (isMediaReference(image.src) ? '' : image.src);
+			const isVideo = media?.mediaKind === 'video' || (!media && isVideoSrc(image.src));
+			let preview: HTMLElement;
+			if (!displaySrc) {
+				preview = document.createElement('span');
+				preview.className = 'media-unavailable';
+				preview.textContent = 'media unavailable';
+			} else if (isVideo) {
+				const video = document.createElement('video');
+				video.muted = true;
+				video.preload = 'metadata';
+				video.controls = true;
+				video.src = displaySrc;
+				if (media?.posterUrl) video.poster = media.posterUrl;
+				preview = video;
 			} else {
-				preview = document.createElement('img');
-				preview.alt = image.alt ?? '';
-				preview.dataset.originalSrc = image.src;
-				preview.src = getBlogImageEditorThumbnailUrl(image.src);
+				const imagePreview = document.createElement('img');
+				imagePreview.alt = image.alt ?? '';
+				imagePreview.dataset.originalSrc = displaySrc;
+				imagePreview.src = getBlogImageEditorThumbnailUrl(displaySrc);
+				preview = imagePreview;
+			}
+			if (media?.width && media.height) {
+				preview.setAttribute('width', String(media.width));
+				preview.setAttribute('height', String(media.height));
 			}
 			preview.draggable = true;
 			preview.title = 'Drag to reorder; click images to view';

@@ -10,7 +10,7 @@ const result = await fetchResult(
 	'We could not load this blog post. Please try again shortly.',
 );
 const post = result.data;
-const content = post ? await renderMarkdown(post.contentMd) : undefined;
+const content = post ? await renderMarkdown(post.contentMd, post.media) : undefined;
 const publishedAt = post?.publishedAt ? new Date(post.publishedAt) : undefined;
 const { isLoggedIn, isAuthor } = await getPageAuth(Astro.request, Astro.cookies, { includeAuthor: true });
 ---

@@ -400,7 +400,7 @@ async fn publish_post(
     .await?;
     if unavailable_media > 0 {
         return Err(RouteError::bad_request(
-            "all referenced media must be ready before publishing",
+            "all referenced media uploads must be complete before publishing",
         ));
     }
 

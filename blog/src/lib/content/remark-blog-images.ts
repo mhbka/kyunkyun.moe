@@ -7,7 +7,7 @@ interface MarkdownImageNode extends Node {
 	type: 'image';
 	url: string;
 	data?: {
-		hProperties?: Record<string, string>;
+		hProperties?: Record<string, string | number>;
 	};
 }
 
