@@ -1,0 +1,45 @@
+---
+// Renders the Tenshin Ranman artwork as a faint layer across the navigation backdrop.
+---
+
+<div class="navigation-background-overlay navigation-background-overlay--tenshin-ranman" aria-hidden="true">
+	<img src="/images/nav_overlays/tenshin%20ranman%20larp.webp" alt="" />
+</div>
+
+<style>
+	/* Fades the artwork quickly so most of the navigation fade remains white. */
+	.navigation-background-overlay--tenshin-ranman {
+		position: fixed;
+		inset: 0 auto 0 0;
+		z-index: -2;
+		width: calc(var(--site-navigation-width) + var(--site-navigation-fade));
+		-webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent calc(100% - var(--site-navigation-fade) + 4rem));
+		mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent calc(100% - var(--site-navigation-fade) + 4rem));
+		pointer-events: none;
+	}
+
+	.navigation-background-overlay--tenshin-ranman img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		opacity: 0.14;
+	}
+
+	/* Preserves the transparent logo bubble cutout shared with the nav backdrop. */
+	:global(.site-layout[data-logo-cutout]) .navigation-background-overlay--tenshin-ranman {
+		-webkit-mask-image:
+			radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%),
+			linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent calc(100% - var(--site-navigation-fade) + 4rem));
+		-webkit-mask-composite: source-in;
+		mask-image:
+			radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%),
+			linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent calc(100% - var(--site-navigation-fade) + 4rem));
+		mask-composite: intersect;
+	}
+
+	@media (max-width: 800px) {
+		.navigation-background-overlay--tenshin-ranman { display: none; }
+	}
+</style>

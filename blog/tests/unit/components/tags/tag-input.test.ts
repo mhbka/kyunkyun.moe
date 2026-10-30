@@ -4,7 +4,7 @@ import { initTagInput } from '../../../../src/components/tags/tag-input.ts';
 
 /** Supplies the controls used by a shared tag input without a browser renderer. */
 function setup(initialTags: string[] = []) {
-	const input = Object.assign(new EventTarget(), { value: '', focus() {} });
+	const input = Object.assign(new EventTarget(), { value: '', placeholder: 'Tags', focus() {} });
 	const value = { value: JSON.stringify(initialTags) };
 	const form = new EventTarget();
 	const button = { dataset: { tag: '' } };
@@ -41,4 +41,18 @@ test('notifies the editor when tags are removed by click or backspace', () => {
 	assert.deepEqual(field.controls.getTags(), []);
 	assert.equal(field.value.value, '[]');
 	assert.equal(field.getChanges(), 2);
+});
+
+test('shows the placeholder only while the entire tag control is empty', () => {
+	const field = setup();
+	assert.equal(field.input.placeholder, 'Tags');
+
+	field.input.value = 'astro';
+	field.input.dispatchEvent(new Event('input'));
+	assert.equal(field.input.placeholder, '');
+
+	field.controls.commit();
+	assert.equal(field.input.placeholder, '');
+	field.input.dispatchEvent(Object.assign(new Event('keydown', { cancelable: true }), { key: 'Backspace' }));
+	assert.equal(field.input.placeholder, 'Tags');
 });

@@ -159,11 +159,16 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 				slide.hidden = i !== index;
 				if (slide.hidden) slide.querySelector('video')?.pause();
 			});
-				if (currentLabel) currentLabel.textContent = String(index + 1);
-			};
 
-			prev?.addEventListener('click', () => show(index - 1));
-			next?.addEventListener('click', () => show(index + 1));
+			// Keep the controls anchored to the bounds of the active image or video.
+			const activeMedia = slides[index]?.querySelector<HTMLElement>('.gallery__media');
+			if (prev) activeMedia?.append(prev);
+			if (next) activeMedia?.append(next);
+			if (currentLabel) currentLabel.textContent = String(index + 1);
+		};
+
+		prev?.addEventListener('click', () => show(index - 1));
+		next?.addEventListener('click', () => show(index + 1));
 	});
 	</script>
 	</body>

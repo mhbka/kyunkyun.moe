@@ -1,4 +1,5 @@
 ---
+import YumemiHakushoLarp from '../bg_overlays/YumemiHakushoLarp.astro';
 import AmbientButterflies from './AmbientButterflies.astro';
 import NanamiPendulum from './NanamiPendulum.astro';
 ---
@@ -8,6 +9,8 @@ import NanamiPendulum from './NanamiPendulum.astro';
 	aria-hidden="true"
 	transition:persist="background"
 >
+	<!-- Keeps independently styled artwork in the persisted background subtree. -->
+	<YumemiHakushoLarp />
 </div>
 
 <!-- Lets the butterflies emerge from beneath the navigation fade. -->

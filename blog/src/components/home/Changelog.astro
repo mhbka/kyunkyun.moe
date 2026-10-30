@@ -1,22 +1,6 @@
 ---
-import changelog from '../../../CHANGELOG.md?raw';
-import { renderMarkdown } from '../../lib/content/markdown.ts';
-
-const renderedContent = await renderMarkdown(changelog);
-const content = renderedContent
-	.replace(/<pre[^>]*>/g, '<pre class="mini-code-block">')
-	.replace(/<code[^>]*>/g, '<code>');
+import changelog from '../../content/changelog.md?raw';
+import ScrollingMarkdown from '../content/ScrollingMarkdown.astro';
 ---
 
-<section class="changelog" aria-label="changelog">
-	<div set:html={content} />
-</section>
-
-<style>
-	.changelog :global(h1) { margin: 0 0 0.75rem; color: var(--color-text); font: inherit; font-weight: 700; }
-	.changelog :global(h2) { margin: 1rem 0 0.5rem; color: var(--color-text); font: inherit; font-weight: 400; }
-	@media (max-width: 800px) {
-		.changelog :global(h1) { margin-bottom: 0.5rem; }
-		.changelog :global(h2) { margin: 0.75rem 0 0.35rem; }
-	}
-</style>
+<ScrollingMarkdown label="changelog" markdown={changelog} />

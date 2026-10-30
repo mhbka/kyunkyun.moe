@@ -5,6 +5,7 @@ import MobileNotice from './MobileNotice.astro';
 import PageTop from './PageTop.astro';
 import Walker from '../walker/Walker.astro';
 import EdgeCard from '../ui/EdgeCard.astro';
+import TenshinRanmanLarp from '../nav_overlays/TenshinRanmanLarp.astro';
 
 interface Props {
 	isLoggedIn?: boolean;
@@ -23,6 +24,7 @@ const Content = separateCards ? 'div' : EdgeCard;
 <Background />
 <MobileNotice />
 <div class="site-layout">
+	<TenshinRanmanLarp />
 	<Header isLoggedIn={isLoggedIn} />
 	<div class="site-content-region">
 		<!-- Anchors side cards to the main card's left edge whatever its width. -->

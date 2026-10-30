@@ -17,24 +17,18 @@ const isActive = active || (href !== undefined && (href === pathname || href ===
 const classes = ['header-link-target', 'main-nav-item', className, { active: isActive }];
 ---
 
-<!-- Shares the bilingual label and animated English fill between links and dropdown headings. -->
+<!-- Shares the bilingual label between links and dropdown headings. -->
 {as === 'summary' ? (
 	<summary class:list={classes} {...props}>
 		<span class="main-nav-item__content">
-			<span class="header-link-label">
-				<span>{label}</span>
-				<span class="header-link-effect" aria-hidden="true">{label}</span>
-			</span>
+			<span class="header-link-label">{label}</span>
 			<span class="main-nav-item__japanese" lang="ja">{japanese}</span>
 		</span>
 	</summary>
 ) : (
 	<Link href={href} class:list={classes} aria-current={isActive ? 'page' : undefined} {...props}>
 		<span class="main-nav-item__content">
-			<span class="header-link-label">
-				<span>{label}</span>
-				<span class="header-link-effect" aria-hidden="true">{label}</span>
-			</span>
+			<span class="header-link-label">{label}</span>
 			<span class="main-nav-item__japanese" lang="ja">{japanese}</span>
 		</span>
 	</Link>

@@ -74,7 +74,7 @@ test('renderGalleryHtml renders a single image without navigation', () => {
 
 	assert.match(html, /<figure class="gallery" data-gallery>/);
 	assert.match(html, /<div class="gallery__viewport">/);
-	assert.match(html, /<figure class="gallery__item"><img src="https:\/\/x\/1.jpg">/);
+	assert.match(html, /<figure class="gallery__item"><div class="gallery__media"><img src="https:\/\/x\/1.jpg"><\/div>/);
 	assert.equal(html.includes('gallery__nav'), false);
 	assert.equal(html.includes('gallery__counter'), false);
 });
@@ -122,8 +122,8 @@ test('renderGalleryHtml renders navigation and hides non-first images', () => {
 
 	const html = renderGalleryHtml(gallery);
 
-	assert.match(html, /<figure class="gallery__item"><img src="https:\/\/x\/1.jpg" alt="one">/);
-	assert.match(html, /<figure class="gallery__item" hidden><img src="https:\/\/x\/2.jpg" loading="lazy">/);
+	assert.match(html, /<figure class="gallery__item"><div class="gallery__media"><img src="https:\/\/x\/1.jpg" alt="one">/);
+	assert.match(html, /<figure class="gallery__item" hidden><div class="gallery__media"><img src="https:\/\/x\/2.jpg" loading="lazy"><\/div>/);
 	assert.match(html, /<button class="gallery__nav gallery__nav--prev"[^>]*data-gallery-prev/);
 	assert.match(html, /<button class="gallery__nav gallery__nav--next"[^>]*data-gallery-next/);
 	assert.match(html, /<span data-gallery-current>1<\/span> \/ <span data-gallery-total>2<\/span>/);

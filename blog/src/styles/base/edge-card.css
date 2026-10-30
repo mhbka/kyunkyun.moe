@@ -17,6 +17,11 @@
 /* Preserves the deeper desktop breathing room used by full post and editor surfaces. */
 .edge-card.page-content:has(> .post-page) { padding-block: 4rem; }
 
+@media (min-width: 801px) {
+	/* Reads the homepage-specific offset from the card without competing with slide transforms. */
+	.edge-card.home-update-card { top: var(--home-card-offset, 0); }
+}
+
 /* Paints the full left edge white with a thicker glowing strip and matching corners. */
 .edge-card::after {
 	content: '';

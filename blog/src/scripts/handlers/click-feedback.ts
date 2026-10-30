@@ -28,9 +28,9 @@ const MUTE_STORAGE_KEY = 'site-sfx-muted';
 
 const SMALL_TARGET_LENGTH = 120;
 const LARGE_TARGET_LENGTH = 480;
-const SMALL_TARGET_SQUASH = 0.92;
+const SMALL_TARGET_SQUASH = 0.86;
 const LARGE_TARGET_SQUASH = 0.98;
-const SMALL_TARGET_STRETCH = 1.04;
+const SMALL_TARGET_STRETCH = 1.08;
 const LARGE_TARGET_STRETCH = 1.01;
 
 /** Elements that receive feedback without needing an explicit data-sfx. */

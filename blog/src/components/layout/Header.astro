@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { isLoggedIn = false } = Astro.props;
-const isNonsenseActive = Astro.url.pathname.startsWith('/nonsense/');
+const isOthersActive = Astro.url.pathname.startsWith('/nonsense/') || Astro.url.pathname.startsWith('/others/');
 const isBlogActive = Astro.url.pathname.startsWith('/posts/');
 const logoParts = [
 	{ text: '(', position: 'opening' },
@@ -53,9 +53,10 @@ const logoParts = [
 			<MainNavItem href="/pix" label="pix" japanese="画像" />
 			<MainNavItem href="/tweets" label="tweets" japanese="つぶやき" />
 			<details class="nav-dropdown">
-				<MainNavItem as="summary" label="nonsense" japanese="ばかなこと" active={isNonsenseActive} />
+				<MainNavItem as="summary" label="others" japanese="しらない" active={isOthersActive} />
 				<div class="nav-dropdown__items">
 					<MainNavItem href="/nonsense/bash-org" label="bash.org quote picker" japanese="ばかなこと１" />
+					<MainNavItem href="/others/changelog-credits" label="changelog & credits" japanese="更新履歴・クレジット" />
 				</div>
 			</details>
 		</div>
@@ -127,6 +128,52 @@ const logoParts = [
 			cancelAnimationFrame(animationFrame);
 			cancelAnimationFrame(transitionFrame);
 			observer.disconnect();
+			controller.abort();
+		};
+	});
+
+	// Animates both directions before the native details element hides its contents.
+	bindPage<HTMLDetailsElement>('.nav-dropdown', (dropdown) => {
+		const summary = dropdown.querySelector<HTMLElement>(':scope > summary');
+		const items = dropdown.querySelector<HTMLElement>(':scope > .nav-dropdown__items');
+		if (!summary || !items) return;
+
+		const controller = new AbortController();
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let expanded = dropdown.open;
+		let activeAnimation: Animation | undefined;
+
+		const animateItems = (opening: boolean) => {
+			activeAnimation?.cancel();
+			if (opening) dropdown.open = true;
+			dropdown.classList.toggle('nav-dropdown--closing', !opening);
+			const frames = opening
+				? [{ opacity: 0, transform: 'translateY(-0.75rem)' }, { opacity: 1, transform: 'translateY(0)' }]
+				: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-0.75rem)' }];
+			const animation = items.animate(frames, { duration: 220, easing: 'ease-out', fill: 'both' });
+			activeAnimation = animation;
+			animation.addEventListener('finish', () => {
+				if (activeAnimation !== animation) return;
+				if (!expanded) dropdown.open = false;
+				dropdown.classList.remove('nav-dropdown--closing');
+				animation.cancel();
+				activeAnimation = undefined;
+			}, { once: true });
+		};
+
+		summary.addEventListener('click', (event) => {
+			if (reducedMotion.matches) {
+				expanded = !dropdown.open;
+				return;
+			}
+			event.preventDefault();
+			expanded = !expanded;
+			animateItems(expanded);
+		}, { signal: controller.signal });
+
+		return () => {
+			activeAnimation?.cancel();
+			dropdown.classList.remove('nav-dropdown--closing');
 			controller.abort();
 		};
 	});

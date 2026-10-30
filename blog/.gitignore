@@ -1,6 +1,8 @@
 # build output
 dist/
 public/images/bg.webp
+public/images/bg_overlays/*.webp
+public/images/nav_overlays/*.webp
 # generated types
 .astro/
 

@@ -5,6 +5,80 @@ textarea, input { font-size: 16px; }
 .ui-textarea { width: 100%; border-radius: var(--radius-control); }
 .ui-button, .ui-select { display: inline-block; padding: 0.6rem 0.75rem; border: 0; border-radius: var(--radius-control); background-color: var(--color-text); color: var(--color-surface); font: inherit; text-decoration: none; cursor: pointer; }
 .ui-button, .ui-select, button { text-shadow: none; }
+
+/* Gives full text actions the translucent chrome of a Y2K interface panel. */
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card) {
+	position: relative;
+	isolation: isolate;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.35rem;
+	padding: 0.55rem 1.15rem;
+	overflow: hidden;
+	border: var(--border-width) solid color-mix(in srgb, var(--color-accent) 72%, transparent);
+	clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0.55rem 100%, 0 calc(100% - 0.55rem));
+	background: rgb(255 255 255 / 5%);
+	color: var(--color-heading);
+	font-weight: var(--font-weight-heading);
+	letter-spacing: 0.045em;
+	box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%), inset 0 0 1rem rgb(255 255 255 / 5%);
+	filter: none;
+	-webkit-backdrop-filter: blur(9px);
+	backdrop-filter: blur(9px);
+	transition: border-color 180ms ease, color 180ms ease, filter 180ms ease;
+}
+
+/* Runs a narrow glimmer around the clipped perimeter like light on glass. */
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::before {
+	content: '';
+	position: absolute;
+	z-index: 1;
+	inset: 0;
+	box-sizing: border-box;
+	padding: 1px;
+	clip-path: inherit;
+	background: linear-gradient(110deg, transparent 20%, var(--color-heading) 42%, var(--color-accent) 49%, var(--color-logo-bubble-pink) 55%, transparent 72%) 0 0 / 250% 100%;
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	mask-composite: exclude;
+	opacity: 0;
+	transition: opacity 160ms ease;
+	pointer-events: none;
+}
+
+@keyframes button-edge-glimmer {
+	from { background-position: 160% 0; }
+	to { background-position: -60% 0; }
+}
+
+/* Sweeps a scanner-like highlight across the glass on hover or keyboard focus. */
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::after {
+	content: '';
+	position: absolute;
+	inset: -60% auto -60% -35%;
+	width: 18%;
+	background: linear-gradient(to right, transparent, rgb(215 238 255 / 48%), transparent);
+	transform: skewX(-18deg) translateX(-300%);
+	transition: transform 420ms ease-out;
+	pointer-events: none;
+}
+
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible) {
+	border-color: var(--color-heading);
+	color: var(--color-heading);
+	filter: brightness(1.14) drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 82%, transparent)) drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 52%, transparent));
+}
+
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible)::before {
+	opacity: 1;
+	animation: button-edge-glimmer 3.2s linear infinite;
+}
+
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible)::after {
+	transform: skewX(-18deg) translateX(720%);
+}
 .ui-select {
 	appearance: none;
 	padding-right: 2.25rem;
@@ -23,8 +97,16 @@ textarea, input { font-size: 16px; }
 	/* Keep compact navigation controls content-sized in the mobile action row. */
 	.ui-select--full-width { width: auto; }
 }
-.ui-button:hover, .ui-select:hover { color: var(--color-muted); }
+.ui-select:hover { color: var(--color-muted); }
 .ui-button:disabled { opacity: 0.6; cursor: wait; }
+
+@media (prefers-reduced-motion: reduce) {
+	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::before {
+		background: linear-gradient(90deg, var(--color-accent), var(--color-heading), var(--color-logo-bubble-pink));
+		animation: none;
+	}
+	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::after { display: none; }
+}
 .action-group { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0 0 1.5rem 0; }
 .card-heading { margin: 0 0 0.5rem; color: var(--color-text); font: inherit; }
 .media-thumbnail { display: block; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; background: var(--color-subtle); content-visibility: auto; contain-intrinsic-size: auto 320px; }

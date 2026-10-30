@@ -1,4 +1,10 @@
-# (functional) changelog
+# changelog
+
+## 2026-10-30
+```
+- optimize loading media everywhere to speed things up
+- add more moe elements here n there
+```
 
 ## 2026-10-26
 ```

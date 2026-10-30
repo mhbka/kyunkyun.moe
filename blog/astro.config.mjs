@@ -7,7 +7,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
-import { generateBackground } from './scripts/generate-background.mjs';
+import { generateBackground, generateOverlayWebps } from './scripts/generate-background.mjs';
 import { generateWalkerManifest } from './scripts/generate-walker-manifest.mjs';
 
 import node from '@astrojs/node';
@@ -18,6 +18,12 @@ const isBuild = process.argv.includes('build');
 await generateBackground({
 	sourceFile: fileURLToPath(new URL('./public/images/bg.png', import.meta.url)),
 	outputFile: fileURLToPath(new URL('./public/images/bg.webp', import.meta.url)),
+});
+await generateOverlayWebps({
+	directory: fileURLToPath(new URL('./public/images/bg_overlays', import.meta.url)),
+});
+await generateOverlayWebps({
+	directory: fileURLToPath(new URL('./public/images/nav_overlays', import.meta.url)),
 });
 
 generateWalkerManifest({

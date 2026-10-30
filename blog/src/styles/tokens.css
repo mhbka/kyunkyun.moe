@@ -11,9 +11,10 @@
 	--color-subtle: #255d91;
 	--color-page-background: #5797c9;
 	--color-surface: #2f70a9;
-	--color-content-surface: rgb(35 100 160 / 75%);
+	--color-content-surface: rgb(24 82 158 / 85%);
+	--color-gallery-control: rgb(10 49 105 / 96%);
 	--color-card-bookmark: #ffffff;
-	--shadow-card-glow: 0 0 2px rgb(50 195 255 / 65%), 0 0 6px rgb(50 195 255 / 25%);
+	--shadow-card-glow: 0 0 4px rgb(50 195 255 / 78%), 0 0 14px rgb(50 195 255 / 48%), 0 0 30px rgb(50 195 255 / 28%);
 	--shadow-card-bookmark: 0 0 3px rgb(255 255 255 / 85%), 0 0 7px rgb(255 255 255 / 35%);
 	--glow-logo-outline-inner: 0 0 0.035em rgb(255 255 255 / 90%);
 	--glow-logo-outline-outer: 0 0 0.09em rgb(255 255 255 / 48%);
@@ -29,14 +30,13 @@
 	--color-navigation-background: #ffffff;
 	--color-navigation-text: #255d91;
 	--color-navigation-highlight: #e9f5ff;
-	--color-navigation-bubble: #ffffff;
 	--color-ambient-butterfly: #ffffff;
 	--color-ambient-butterfly-fill: #ffffff;
 	--shadow-ambient-butterfly: 0 0 2px rgb(255 255 255 / 95%);
 	--shadow-ambient-butterfly-pulse: 0 0 3px rgb(255 255 255 / 100%), 0 0 9px rgb(255 255 255 / 80%);
-	/* Matches the nav gradient's pink (255 193 218 @ 42%) composited over white, so petals vanish against the gradient top. */
-	--color-ambient-sakura: rgb(255 229 239);
-	--shadow-ambient-sakura: 0 0 2px rgb(255 229 239 / 95%), 0 0 6px rgb(255 229 239 / 60%);
+	/* Matches the nav gradient's pink (255 193 218 @ 48%) composited over white, so petals vanish against the gradient top. */
+	--color-ambient-sakura: rgb(255 225 237);
+	--shadow-ambient-sakura: 0 0 2px rgb(255 225 237 / 95%), 0 0 6px rgb(255 225 237 / 60%);
 	--color-danger: #ffe0e3;
 	--color-success: #c7f4dc;
 	--color-overlay: rgb(8 47 83 / 65%);
@@ -45,6 +45,7 @@
 	--color-text-outline: rgb(0 0 0 / 58%);
 	--color-text-outline-outer: rgb(0 0 0 / 32%);
 	--text-outline: 1px 0 var(--color-text-outline), -1px 0 var(--color-text-outline), 0 1px var(--color-text-outline), 0 -1px var(--color-text-outline), 1px 1px var(--color-text-outline), -1px -1px var(--color-text-outline), 1px -1px var(--color-text-outline), -1px 1px var(--color-text-outline), 1.5px 0 var(--color-text-outline-outer), -1.5px 0 var(--color-text-outline-outer), 0 1.5px var(--color-text-outline-outer), 0 -1.5px var(--color-text-outline-outer), 1.5px 1.5px var(--color-text-outline-outer), -1.5px -1.5px var(--color-text-outline-outer), 1.5px -1.5px var(--color-text-outline-outer), -1.5px 1.5px var(--color-text-outline-outer);
+	--text-outline-clear: 1px 0 var(--color-transparent), -1px 0 var(--color-transparent), 0 1px var(--color-transparent), 0 -1px var(--color-transparent), 1px 1px var(--color-transparent), -1px -1px var(--color-transparent), 1px -1px var(--color-transparent), -1px 1px var(--color-transparent), 1.5px 0 var(--color-transparent), -1.5px 0 var(--color-transparent), 0 1.5px var(--color-transparent), 0 -1.5px var(--color-transparent), 1.5px 1.5px var(--color-transparent), -1.5px -1.5px var(--color-transparent), 1.5px -1.5px var(--color-transparent), -1.5px 1.5px var(--color-transparent);
 	--text-outline-code: 0.75px 0 var(--color-text-outline), -0.75px 0 var(--color-text-outline), 0 0.75px var(--color-text-outline), 0 -0.75px var(--color-text-outline), 0.75px 0.75px var(--color-text-outline), -0.75px -0.75px var(--color-text-outline), 0.75px -0.75px var(--color-text-outline), -0.75px 0.75px var(--color-text-outline);
 	--shadow-page: 0 2px 6px rgb(8 47 83 / 18%), 0 8px 24px rgb(8 47 83 / 20%), 0 16px 32px rgb(8 47 83 / 16%);
 	--shadow-header: 0 2px 8px rgb(8 47 83 / 16%);

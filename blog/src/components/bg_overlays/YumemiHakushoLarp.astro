@@ -1,0 +1,19 @@
+---
+// Renders Yumemi Hakusho artwork behind the main content cards.
+---
+
+<img class="background-overlay background-overlay--yumemi-hakusho" src="/images/bg_overlays/yumemi%20hakusho%20larp.webp" alt="" />
+
+<style>
+	/* Keeps the diagonal character composition large and anchored beyond the lower-right edge. */
+	.background-overlay--yumemi-hakusho {
+		position: absolute;
+		inset: auto -3vw -3dvh auto;
+		display: block;
+		width: 72vw;
+		height: 103dvh;
+		object-fit: contain;
+		object-position: right bottom;
+		opacity: 0.93;
+	}
+</style>

@@ -193,6 +193,11 @@ export function renderGalleryHtml(gallery: Gallery, media: PostMediaMap = {}): s
 	const captionHtml = gallery.caption
 		? `<figcaption class="gallery__caption">${escapeHtml(gallery.caption)}</figcaption>`
 		: '';
+	const hasMultiple = gallery.images.length > 1;
+	const nav = hasMultiple
+		? `<button class="gallery__nav gallery__nav--prev" type="button" data-gallery-prev aria-label="Previous image">${galleryPrevIcon}</button>` +
+			`<button class="gallery__nav gallery__nav--next" type="button" data-gallery-next aria-label="Next image">${galleryNextIcon}</button>`
+		: '';
 
 	const slides = gallery.images
 		.map((image, index) => {
@@ -200,20 +205,16 @@ export function renderGalleryHtml(gallery: Gallery, media: PostMediaMap = {}): s
 				? `<figcaption class="gallery__item-caption">${escapeHtml(image.caption)}</figcaption>`
 				: '';
 			const hidden = index === 0 ? '' : ' hidden';
-			return `<figure class="gallery__item"${hidden}>${renderMediaHtml(image.src, { alt: image.alt, lazy: index > 0, media })}${caption}</figure>`;
+			const initialNav = index === 0 ? nav : '';
+			return `<figure class="gallery__item"${hidden}><div class="gallery__media">${renderMediaHtml(image.src, { alt: image.alt, lazy: index > 0, media })}${initialNav}</div>${caption}</figure>`;
 		})
 		.join('');
 
-	const hasMultiple = gallery.images.length > 1;
-	const nav = hasMultiple
-		? `<button class="gallery__nav gallery__nav--prev" type="button" data-gallery-prev aria-label="Previous image">${galleryPrevIcon}</button>` +
-			`<button class="gallery__nav gallery__nav--next" type="button" data-gallery-next aria-label="Next image">${galleryNextIcon}</button>`
-		: '';
 	const counter = hasMultiple
 		? `<p class="gallery__counter" aria-live="polite"><span data-gallery-current>1</span> / <span data-gallery-total>${gallery.images.length}</span></p>`
 		: '';
 
-	return `<figure class="gallery" data-gallery>${captionHtml}<div class="gallery__viewport">${slides}${nav}</div>${counter}</figure>`;
+	return `<figure class="gallery" data-gallery>${captionHtml}<div class="gallery__viewport">${slides}</div>${counter}</figure>`;
 }
 
 /** Returns a copy of `images` with `image` appended. */

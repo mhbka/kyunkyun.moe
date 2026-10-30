@@ -12,6 +12,12 @@ export function initTagInput(root: HTMLElement) {
 	const template = root.querySelector<HTMLTemplateElement>('template');
 	if (!input || !list || !value || !template) return;
 	let tags: string[] = JSON.parse(value.value);
+	const emptyPlaceholder = input.placeholder;
+
+	// Shows the prompt only while the entire tag control is empty.
+	function syncPlaceholder() {
+		input!.placeholder = tags.length || input!.value ? '' : emptyPlaceholder;
+	}
 
 	// Clones shared UI markup so generated tags retain their scoped styling.
 	function render() {
@@ -23,6 +29,7 @@ export function initTagInput(root: HTMLElement) {
 			button.textContent = `${tag} ×`;
 			return item;
 		}));
+		syncPlaceholder();
 	}
 
 	// Publishes only real tag changes, leaving initial rendering clean.
@@ -38,10 +45,14 @@ export function initTagInput(root: HTMLElement) {
 	function commit() {
 		update(addTag(tags, input!.value));
 		input!.value = '';
+		syncPlaceholder();
 	}
 
 	render();
-	input.addEventListener('input', () => { input.value = normalizeTag(input.value); });
+	input.addEventListener('input', () => {
+		input.value = normalizeTag(input.value);
+		syncPlaceholder();
+	});
 	input.addEventListener('keydown', event => {
 		if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); commit(); }
 		if (event.key === 'Backspace' && !input.value && tags.length) {

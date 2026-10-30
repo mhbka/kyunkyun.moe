@@ -10,7 +10,7 @@ const channel = process.env.LAB_BROWSER ?? 'chrome';
 const engine = channel === 'firefox' ? firefox : channel === 'webkit' ? webkit : chromium;
 
 /** Routes exercised through the header's primary navigation. */
-const ROUTES = ['/me', '/blog', '/pix', '/tweets', '/nonsense/bash-org', '/'];
+const ROUTES = ['/me', '/blog', '/pix', '/tweets', '/nonsense/bash-org', '/others/changelog-credits', '/'];
 
 /** Remembers the entry page's decorative roots inside the page realm. */
 function captureDecorations(page) {
@@ -58,7 +58,7 @@ test('decorations persist through production navigation and history', async () =
 
 		// Follows every primary navigation link in turn, opening the dropdown first.
 		for (const route of ROUTES) {
-			if (route.includes('nonsense')) await page.click('.nav-dropdown > summary');
+			if (route.includes('nonsense') || route.includes('others')) await page.click('.nav-dropdown > summary');
 			const link = page.locator(`.primary-links a[href="${route}"]`).first();
 			await link.click();
 			await page.waitForFunction((path) => location.pathname === path, route);

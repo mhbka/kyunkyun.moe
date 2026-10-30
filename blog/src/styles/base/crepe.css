@@ -58,7 +58,8 @@
 }
 
 @media (max-width: 40rem) {
+	/* Keeps editable text clear of the card's tight mobile right edge. */
 	.editor-surface .milkdown .ProseMirror {
-		padding: 1.5rem 0;
+		padding: 1.5rem 0.75rem 1.5rem 0;
 	}
 }

@@ -9,8 +9,10 @@ import {
 } from '../../../src/scripts/handlers/click-feedback.ts';
 
 test('feedback strength eases by longest side and clamps at both ends', () => {
-	assert.deepEqual(calculateFeedbackScale(80, 120), { squash: 0.92, stretch: 1.04 });
-	assert.deepEqual(calculateFeedbackScale(300, 100), { squash: 0.95, stretch: 1.025 });
+	assert.deepEqual(calculateFeedbackScale(80, 120), { squash: 0.86, stretch: 1.08 });
+	const mediumScale = calculateFeedbackScale(300, 100);
+	assert.equal(mediumScale.squash.toFixed(3), '0.920');
+	assert.equal(mediumScale.stretch.toFixed(3), '1.045');
 	assert.deepEqual(calculateFeedbackScale(900, 200), { squash: 0.98, stretch: 1.01 });
 });
 

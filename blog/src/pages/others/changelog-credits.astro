@@ -1,0 +1,23 @@
+---
+import BaseHead from '../../components/layout/BaseHead.astro';
+import Credits from '../../components/content/Credits.astro';
+import Changelog from '../../components/home/Changelog.astro';
+import PageLayout from '../../components/layout/PageLayout.astro';
+import EdgeCard from '../../components/ui/EdgeCard.astro';
+import { getPageAuth } from '../../lib/auth/page-auth.ts';
+
+const { isLoggedIn } = await getPageAuth(Astro.request, Astro.cookies);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title="changelog & credits" />
+	</head>
+	<body>
+		<PageLayout isLoggedIn={isLoggedIn} title="changelog & credits" separateCards>
+			<EdgeCard aria-label="changelog"><Changelog /></EdgeCard>
+			<EdgeCard aria-label="credits"><Credits /></EdgeCard>
+		</PageLayout>
+	</body>
+</html>

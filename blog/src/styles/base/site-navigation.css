@@ -8,22 +8,23 @@
 	--site-navigation-gap: 0.4rem;
 }
 
-/* Separates the fixed backdrop from the scrollable, fully opaque controls. */
-.site-layout::before {
+/* Shares the navigation fade across the independently layered backdrop colours. */
+.site-layout::before,
+.site-layout::after {
 	content: '';
 	position: fixed;
 	inset: 0 auto 0 0;
 	width: calc(var(--site-navigation-width) + var(--site-navigation-fade));
-	background:
-		linear-gradient(to bottom, rgb(255 193 218 / 42%) 0%, rgb(255 193 218 / 42%) 20%, transparent 60%),
-		var(--color-navigation-background);
-	/* Fades the whole backdrop (pink wash and white) toward the content area. */
 	-webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
 	mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
 	pointer-events: none;
-	z-index: -1;
 }
-.site-layout[data-logo-cutout]::before {
+/* Places the white base beneath the navigation artwork. */
+.site-layout::before { background: var(--color-navigation-background); z-index: -3; }
+/* Covers the artwork with pale pink before fading downward into it. */
+.site-layout::after { background: linear-gradient(to bottom, rgb(255 225 237 / 94%) 0%, rgb(255 225 237 / 94%) 5%, rgb(255 225 237 / 0%) 60%); z-index: -1; }
+.site-layout[data-logo-cutout]::before,
+.site-layout[data-logo-cutout]::after {
 	-webkit-mask-image:
 		radial-gradient(circle var(--site-logo-cutout-radius) at var(--site-logo-cutout-x) var(--site-logo-cutout-y), transparent calc(100% - 1px), #000 100%),
 		linear-gradient(to right, #000 0, #000 calc(100% - var(--site-navigation-fade)), transparent 100%);
@@ -134,21 +135,19 @@
 .site-header nav { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 2.5rem; }
 .site-header .primary-links { display: flex; flex-direction: column; gap: var(--site-navigation-gap); width: 100%; max-width: 20rem; text-align: center; }
 /* Matches page-heading typography and smoothly hands off the selected treatment. */
-.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; user-select: none; -webkit-user-select: none; transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease; }
+.site-header .main-nav-item { display: block; padding: 0.5rem 1rem; color: var(--color-heading); line-height: var(--line-height-heading); font-weight: var(--font-weight-heading); text-shadow: var(--text-outline); text-decoration: none; cursor: pointer; user-select: none; -webkit-user-select: none; transition: transform 180ms ease, color 180ms ease, text-shadow 180ms ease, --nav-glow 180ms ease; filter: drop-shadow(0 0 calc(2px + 3px * var(--nav-pulse)) rgb(50 195 255 / calc(var(--nav-glow) * (0.55 + 0.4 * var(--nav-pulse))))) drop-shadow(0 0 calc(8px + 10px * var(--nav-pulse)) rgb(50 195 255 / calc(var(--nav-glow) * (0.3 + 0.38 * var(--nav-pulse))))); animation: navigation-glow-pulse 1.7s ease-in-out infinite; }
 .site-header .main-nav-item:hover { text-decoration: none; }
 .site-header .main-nav-item:is(.active, :hover),
-.site-header .nav-dropdown:hover > summary { transform: scale(1.08); color: var(--color-content-surface); text-shadow: var(--shadow-card-glow); }
+.site-header .nav-dropdown:hover > summary { transform: scale(1.08); color: var(--color-content-surface); text-shadow: var(--text-outline-clear); --nav-glow: 1; }
 
 /* Returns the page link to normal while another main item owns the hover. */
 .site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .main-nav-item.active:not(:hover),
 .site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active,
-.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) { transform: scale(1); color: var(--color-heading); text-shadow: var(--text-outline); }
+.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) { transform: scale(1); color: var(--color-heading); text-shadow: var(--text-outline); --nav-glow: 0; }
 
-/* Layers the bubbles over blue letters with the card's neon-blue glow. */
+/* Keeps the English and Japanese labels aligned as one highlighted unit. */
 .main-nav-item__content { display: inline-flex; flex-direction: column; align-items: center; }
-.header-link-label { display: inline-grid; font-size: var(--site-navigation-label-size); }
-.header-link-label > span { grid-area: 1 / 1; }
-.header-link-effect { display: none; opacity: 0; pointer-events: none; }
+.header-link-label { font-size: var(--site-navigation-label-size); }
 .main-nav-item__japanese { padding: 0.05rem 0.4rem; background: var(--color-navigation-text); color: var(--color-heading); font-size: 0.78em; font-weight: normal; line-height: 1.1; text-shadow: none; transition: background-color 180ms ease, color 180ms ease; }
 
 /* Inverts the Japanese subtitle while its nav item owns the highlight. */
@@ -158,49 +157,29 @@
 .site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active .main-nav-item__japanese,
 .site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) .main-nav-item__japanese { background-color: var(--color-navigation-text); color: var(--color-heading); }
 
-/* Staggers thin bubble rings across differently sized tiles inside the letters. */
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-	.site-header .header-link-effect {
-		display: block;
-		background-color: transparent;
-		background-image:
-			radial-gradient(circle at 17% 23%, transparent 3px, var(--color-navigation-bubble) 3.3px 3.9px, transparent 4.2px),
-			radial-gradient(circle at 71% 67%, transparent 5px, var(--color-navigation-bubble) 5.3px 5.9px, transparent 6.2px),
-			radial-gradient(circle at 43% 41%, transparent 2px, var(--color-navigation-bubble) 2.3px 2.9px, transparent 3.2px),
-			radial-gradient(circle at 89% 83%, transparent 4px, var(--color-navigation-bubble) 4.3px 4.9px, transparent 5.2px);
-		background-size: 43px 61px, 67px 83px, 53px 47px, 79px 71px;
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
-		text-shadow: none;
-		transition: opacity 180ms ease;
-		animation: navigation-letter-bubbles 7s linear infinite;
-	}
-	.site-header .main-nav-item:is(.active, :hover) .header-link-effect,
-	.site-header .nav-dropdown:hover > summary .header-link-effect { opacity: 1; }
-	.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .main-nav-item.active:not(:hover) .header-link-effect,
-	.site-header .primary-links:has(> .main-nav-item:hover, > .nav-dropdown:hover) > .nav-dropdown:not(:hover) .main-nav-item.active .header-link-effect,
-	.site-header .nav-dropdown__items:has(.main-nav-item:hover) .main-nav-item.active:not(:hover) .header-link-effect { opacity: 0; }
-}
-
-/* Floats each layer upward by one tile for a seamless loop at varied speeds. */
-@keyframes navigation-letter-bubbles {
-	from { background-position: 0 0, 0 0, 0 0, 0 0; }
-	to { background-position: 0 -61px, 0 -83px, 0 -47px, 0 -71px; }
+/* Slowly breathes the neon highlight; the glow only shows while --nav-glow is on, so it fades with the rest of the hand-off. */
+@property --nav-glow { syntax: '<number>'; inherits: false; initial-value: 0; }
+@property --nav-pulse { syntax: '<number>'; inherits: false; initial-value: 0; }
+@keyframes navigation-glow-pulse {
+	0%, 100% { --nav-pulse: 0; }
+	50% { --nav-pulse: 1; }
 }
 
 /* Preserves the selected treatment without motion when requested. */
 @media (prefers-reduced-motion: reduce) {
-	.site-header .header-link-effect { animation: none; transition: none; }
+	.site-header .main-nav-item:is(.active, :hover),
+	.site-header .nav-dropdown:hover > summary { --nav-pulse: 0.5; }
+	.site-header .main-nav-item { animation: none; --nav-pulse: 0.5; }
 	.site-logo__part, .site-logo__bubble { transition: none; }
+	.site-header .nav-dropdown summary::after { transition: none; }
 }
 .site-header :is(a, button, select, summary):focus-visible { outline: var(--focus-ring-width) solid var(--color-navigation-text); outline-offset: 3px; }
 
 /* Keeps secondary controls near the bottom and reachable on short screens. */
 .site-header .nav-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.75rem; margin-top: auto; font-size: 0.85rem; width: 100%; }
 .site-header .nav-actions .ui-select { width: auto; max-width: 100%; }
-.site-header :is(.ui-button, .ui-select) { background-color: var(--color-navigation-highlight); color: var(--color-navigation-text); }
-.site-header :is(.ui-button, .ui-select):hover { background-color: var(--color-accent); }
+.site-header .ui-select { background-color: var(--color-navigation-highlight); color: var(--color-navigation-text); }
+.site-header .ui-select:hover { background-color: var(--color-accent); }
 
 /* Fits the footer to the white sidebar and keeps its controls readable. */
 .site-header .site-footer { flex-shrink: 0; padding: 0; color: var(--color-navigation-text); font-size: 0.85rem; }
@@ -210,16 +189,17 @@
 /* Expands secondary links in place inside the scrollable menu. */
 .site-header .nav-dropdown summary { list-style: none; }
 .site-header .nav-dropdown summary::-webkit-details-marker { display: none; }
-.site-header .nav-dropdown summary::after { content: '\25B8'; display: inline-block; margin-left: 0.4em; font-size: 0.65em; }
+.site-header .nav-dropdown summary::after { content: '\25B8'; display: inline-block; margin-left: 0.4em; font-size: 0.65em; transition: transform 180ms ease; }
 .site-header .nav-dropdown[open] summary::after { transform: rotate(90deg); }
+.site-header .nav-dropdown.nav-dropdown--closing summary::after { transform: rotate(0); }
 .site-header .nav-dropdown__items { display: grid; gap: 0.5rem; padding: 0.5rem; }
 /* Scales secondary items while preserving the complete main-navigation treatment. */
 .site-header .nav-dropdown__items .main-nav-item { padding: 0.5rem; font-size: 60%; }
 
 @media (max-width: 800px) {
 	/* Stacks a compact menu above the page on narrow screens. */
-	.site-layout::before { display: none; }
-	.site-header { position: relative; inset: auto; width: 100%; height: auto; padding: 2.5rem 1rem 3rem; gap: 1.25rem; overflow: visible; background: linear-gradient(to bottom, rgb(255 193 218 / 42%) 0%, rgb(255 193 218 / 42%) 20%, transparent 60%), linear-gradient(to bottom, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - 2rem), transparent 100%); }
+	.site-layout::before, .site-layout::after { display: none; }
+	.site-header { position: relative; inset: auto; width: 100%; height: auto; padding: 2.5rem 1rem 3rem; gap: 1.25rem; overflow: visible; background: linear-gradient(to bottom, rgb(255 225 237 / 94%) 0%, rgb(255 225 237 / 94%) 5%, rgb(255 225 237 / 0%) 60%), linear-gradient(to bottom, var(--color-navigation-background) 0, var(--color-navigation-background) calc(100% - 2rem), transparent 100%); }
 	.site-header .site-logo { top: 0; width: 100%; margin-inline: 0; margin-bottom: 1rem; font-size: clamp(2rem, 15vw, 3.75rem); }
 	.site-header nav { gap: 1rem; }
 	.site-header .primary-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.25rem; max-width: none; }
