@@ -1,6 +1,10 @@
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use super::media::PostMedia;
 
 /// Status of a post.
 ///
@@ -28,6 +32,8 @@ pub struct Post {
     pub tags: Vec<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[sqlx(skip)]
+    pub media: HashMap<Uuid, PostMedia>,
 }
 
 /// Summary of a post (mainly for listing posts).
@@ -80,6 +86,8 @@ pub struct CreatePostRequest {
     pub content_md: String,
     pub slug: Option<String>,
     pub tags: Option<Vec<String>>,
+    #[serde(default)]
+    pub media_ids: Vec<Uuid>,
 }
 
 /// Accepts optional fields to update an existing post.
@@ -91,6 +99,7 @@ pub struct UpdatePostRequest {
     pub thumbnail_url: Option<String>,
     pub slug: Option<String>,
     pub tags: Option<Vec<String>>,
+    pub media_ids: Option<Vec<Uuid>>,
 }
 
 #[cfg(test)]

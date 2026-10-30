@@ -1,3 +1,5 @@
+import type { PostMediaMap } from './media.ts';
+
 /** Identifies whether a post is private or publicly available. */
 export type PostStatus = 'draft' | 'published';
 
@@ -37,6 +39,7 @@ export interface Post extends Omit<PostSummary, 'publishedAt'> {
 	tags: string[];
 	createdAt: string;
 	updatedAt: string;
+	media: PostMediaMap;
 }
 
 /** Supplies fields for creating a post. */
@@ -45,6 +48,7 @@ export interface CreatePostInput {
 	contentMd: string;
 	slug?: string;
 	tags?: string[];
+	mediaIds?: string[];
 }
 
 /** Supplies the mutable fields for a post update. */
@@ -54,4 +58,5 @@ export interface UpdatePostInput {
 	thumbnailUrl?: string | null;
 	slug?: string;
 	tags?: string[];
+	mediaIds?: string[];
 }

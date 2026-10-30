@@ -1,4 +1,5 @@
-use super::{normalize_tags, ListPostsQuery, DEFAULT_PAGE_SIZE};
+use super::{normalize_media_ids, normalize_tags, ListPostsQuery, DEFAULT_PAGE_SIZE};
+use uuid::Uuid;
 
 #[test]
 fn uses_default_pagination_values() {
@@ -60,5 +61,16 @@ fn normalizes_and_deduplicates_tags() {
             " ".to_string(),
         ]),
         vec!["astro", "javascript"],
+    );
+}
+
+#[test]
+fn deduplicates_media_ids_for_reference_storage() {
+    let first = Uuid::from_u128(1);
+    let second = Uuid::from_u128(2);
+
+    assert_eq!(
+        normalize_media_ids(vec![first, second, first]),
+        vec![first, second]
     );
 }

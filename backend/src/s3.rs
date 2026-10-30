@@ -150,15 +150,16 @@ impl S3 {
         }
     }
 
-    /// Creates upload and public URLs for a blog-post image.
+    /// Creates upload and public URLs for a blog-post media source.
     pub async fn generate_presigned_blogpost_media_upload_url(
         &self,
-        post_id: &str,
+        post_id: Uuid,
+        media_id: Uuid,
         content_type: &str,
-    ) -> Result<UploadUrls, anyhow::Error> {
+    ) -> Result<(String, UploadUrls), anyhow::Error> {
         let extension =
             tweet_media_extension(content_type).ok_or(anyhow!("unsupported content type"))?;
-        let key = format!("post-images/{}/{}.{}", post_id, Uuid::new_v4(), extension);
+        let key = blogpost_media_key(post_id, media_id, extension);
         tracing::info!(%post_id, %content_type, "creating post-media upload URL");
         let presigning_config = PresigningConfig::expires_in(BLOGPOST_MEDIA_PRESIGNED_URL_EXPIRY)?;
         let url = self
@@ -170,11 +171,51 @@ impl S3 {
             .presigned(presigning_config)
             .await
             .map(|r| r.uri().to_string())?;
-        Ok(UploadUrls {
-            upload_url: url,
-            public_url: format!("{}/{}", self.blogpost_bucket_url.trim_end_matches('/'), key),
-        })
+        Ok((
+            key.clone(),
+            UploadUrls {
+                upload_url: url,
+                public_url: self.blogpost_public_url(&key),
+            },
+        ))
     }
+
+    /// Returns metadata for a blog-post object when it exists.
+    pub async fn blogpost_object(&self, key: &str) -> Result<Option<StoredObject>, anyhow::Error> {
+        match self
+            .client
+            .head_object()
+            .bucket(&self.blogpost_bucket_name)
+            .key(key)
+            .send()
+            .await
+        {
+            Ok(object) => Ok(Some(StoredObject {
+                byte_size: object.content_length().unwrap_or_default(),
+                content_type: object.content_type().map(str::to_owned),
+            })),
+            Err(error)
+                if error
+                    .as_service_error()
+                    .is_some_and(|service| service.is_not_found()) =>
+            {
+                Ok(None)
+            }
+            Err(error) => Err(error.into()),
+        }
+    }
+
+    /// Builds the public URL for a stored blog-post object.
+    pub fn blogpost_public_url(&self, key: &str) -> String {
+        format!("{}/{}", self.blogpost_bucket_url.trim_end_matches('/'), key)
+    }
+}
+
+/// Contains metadata verified directly against object storage.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct StoredObject {
+    pub byte_size: i64,
+    pub content_type: Option<String>,
 }
 
 /// Contains the direct upload URL and the eventual public asset URL.
@@ -229,4 +270,14 @@ pub fn tweet_media_extension(content_type: &str) -> Option<&'static str> {
         "video/webm" => Some("webm"),
         _ => None,
     })
+}
+
+/// Builds a deterministic storage key for an uploaded blog media source.
+fn blogpost_media_key(post_id: Uuid, media_id: Uuid, extension: &str) -> String {
+    format!("post-images/{post_id}/{media_id}.{extension}")
+}
+
+/// Builds the archive key used to preserve an original video upload.
+pub fn blogpost_original_key(bucket_path: &str) -> String {
+    bucket_path.replacen("post-images/", "post-originals/", 1)
 }

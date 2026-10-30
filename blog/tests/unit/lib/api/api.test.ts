@@ -45,7 +45,7 @@ test('sends authenticated write requests to the matching backend route', async (
 
 	await api.updatePost(
 		'post/id',
-		{ contentMd: 'Updated content', thumbnailUrl: 'https://example.test/image.png' },
+		{ contentMd: 'Updated content', thumbnailUrl: 'https://example.test/image.png', mediaIds: ['media-1'] },
 		'access-token',
 	);
 
@@ -57,6 +57,7 @@ test('sends authenticated write requests to the matching backend route', async (
 	assert.deepEqual(JSON.parse(String(options?.body)), {
 		contentMd: 'Updated content',
 		thumbnailUrl: 'https://example.test/image.png',
+		mediaIds: ['media-1'],
 	});
 });
 

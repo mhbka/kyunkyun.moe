@@ -18,7 +18,7 @@ const updatedAt = post ? new Date(post.updatedAt) : undefined;
 const labels = getPostEditorLabels(post?.status);
 ---
 
-<form class="post-editor" data-post-editor data-post-id={post?.id}>
+<form class="post-editor" data-post-editor data-post-id={post?.id} data-initial-media={JSON.stringify(post?.media ?? {})}>
 	<header class="post-header">
 		<p class="post-meta">{labels.state}</p>
 		<textarea id="post-title" class="post-title" name="title" placeholder="Title" required maxlength="200" autocomplete="off" rows="1" aria-label="Post title">{post?.title ?? ''}</textarea>

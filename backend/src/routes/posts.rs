@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -141,7 +143,7 @@ async fn get_post_by_slug(
     .await?
     .ok_or(RouteError::not_found("post not found"))?;
 
-    Ok(Json(post))
+    Ok(Json(with_media(&app_state, post).await?))
 }
 
 /// GET /id/:id — author-only access to a post, including drafts.
@@ -161,7 +163,7 @@ async fn get_post_by_id(
     .await?
     .ok_or(RouteError::not_found("post not found"))?;
 
-    Ok(Json(post))
+    Ok(Json(with_media(&app_state, post).await?))
 }
 
 /// POST  — creates a draft. Requires auth.
@@ -171,9 +173,15 @@ async fn create_post(
     Json(req): Json<CreatePostRequest>,
 ) -> RouteResult<Json<Post>> {
     require_author(&app_state.pool, user.id).await?;
+    if !req.media_ids.is_empty() {
+        return Err(RouteError::bad_request(
+            "new drafts cannot reference media before they are created",
+        ));
+    }
 
     let slug = requested_slug(req.slug, &req.title)?;
     let tags = normalize_tags(req.tags.unwrap_or_default());
+    let mut transaction = app_state.pool.begin().await?;
     let post = sqlx::query_as::<_, Post>(
         r#"
         insert into posts (author_id, title, slug, content_md, tags)
@@ -186,7 +194,7 @@ async fn create_post(
     .bind(&slug)
     .bind(&req.content_md)
     .bind(&tags)
-    .fetch_one(&app_state.pool)
+    .fetch_one(&mut *transaction)
     .await?;
 
     // Snapshot the first revision immediately.
@@ -197,11 +205,12 @@ async fn create_post(
     .bind(&post.title)
     .bind(&post.content_md)
     .bind(user.id)
-    .execute(&app_state.pool)
+    .execute(&mut *transaction)
     .await?;
+    transaction.commit().await?;
 
     tracing::info!(post_id = %post.id, user_id = %user.id, slug = %post.slug, "post draft created");
-    Ok(Json(post))
+    Ok(Json(with_media(&app_state, post).await?))
 }
 
 /// PUT /id/:id — edit a post (title/content/etc). Author-only.
@@ -213,13 +222,19 @@ async fn update_post(
 ) -> RouteResult<Json<Post>> {
     require_author(&app_state.pool, user.id).await?;
 
+    let media_ids = req.media_ids.map(normalize_media_ids);
+    let mut transaction = app_state.pool.begin().await?;
     let existing =
         sqlx::query_as::<_, Post>("select * from posts where id = $1 and author_id = $2")
             .bind(id)
             .bind(user.id)
-            .fetch_optional(&app_state.pool)
+            .fetch_optional(&mut *transaction)
             .await?
             .ok_or(RouteError::not_found("post not found"))?;
+
+    if let Some(media_ids) = &media_ids {
+        require_owned_media(&mut transaction, id, media_ids).await?;
+    }
 
     let title = req.title.unwrap_or(existing.title);
     let content_md = req.content_md.unwrap_or(existing.content_md);
@@ -245,10 +260,12 @@ async fn update_post(
     .bind(&tags)
     .bind(id)
     .bind(user.id)
-    .fetch_one(&app_state.pool)
+    .fetch_one(&mut *transaction)
     .await?;
 
-    app_state.invalidate_latest().await;
+    if let Some(media_ids) = &media_ids {
+        replace_media_references(&mut transaction, id, media_ids).await?;
+    }
 
     // Snapshot a revision on every save. Prune/collapse old ones later if the
     // table grows large — not a concern early on.
@@ -259,11 +276,75 @@ async fn update_post(
     .bind(&post.title)
     .bind(&post.content_md)
     .bind(user.id)
-    .execute(&app_state.pool)
+    .execute(&mut *transaction)
+    .await?;
+    transaction.commit().await?;
+
+    app_state.invalidate_latest().await;
+    tracing::info!(post_id = %post.id, user_id = %user.id, slug = %post.slug, "post updated");
+    Ok(Json(with_media(&app_state, post).await?))
+}
+
+/// Removes duplicate media IDs while retaining their first occurrence.
+fn normalize_media_ids(media_ids: Vec<Uuid>) -> Vec<Uuid> {
+    let mut seen = HashSet::new();
+    media_ids
+        .into_iter()
+        .filter(|media_id| seen.insert(*media_id))
+        .collect()
+}
+
+/// Verifies that every submitted media item belongs to the post being saved.
+async fn require_owned_media(
+    transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    post_id: Uuid,
+    media_ids: &[Uuid],
+) -> RouteResult<()> {
+    let owned_count = sqlx::query_scalar::<_, i64>(
+        "select count(*) from post_media where post_id = $1 and id = any($2)",
+    )
+    .bind(post_id)
+    .bind(media_ids)
+    .fetch_one(&mut **transaction)
     .await?;
 
-    tracing::info!(post_id = %post.id, user_id = %user.id, slug = %post.slug, "post updated");
-    Ok(Json(post))
+    if owned_count == media_ids.len() as i64 {
+        Ok(())
+    } else {
+        Err(RouteError::bad_request(
+            "all media IDs must belong to the post",
+        ))
+    }
+}
+
+/// Replaces the post's saved media collection within its save transaction.
+async fn replace_media_references(
+    transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    post_id: Uuid,
+    media_ids: &[Uuid],
+) -> Result<(), sqlx::Error> {
+    sqlx::query("delete from post_media_references where post_id = $1")
+        .bind(post_id)
+        .execute(&mut **transaction)
+        .await?;
+
+    if !media_ids.is_empty() {
+        sqlx::query(
+            "insert into post_media_references (post_id, media_id)
+             select $1, unnest($2::uuid[])",
+        )
+        .bind(post_id)
+        .bind(media_ids)
+        .execute(&mut **transaction)
+        .await?;
+    }
+    Ok(())
+}
+
+/// Adds the saved media lookup map to a full post response.
+async fn with_media(app_state: &AppState, mut post: Post) -> RouteResult<Post> {
+    post.media = super::media::referenced_media(app_state, post.id).await?;
+    Ok(post)
 }
 
 /// Uses a requested valid slug or derives one from the title.
@@ -304,6 +385,25 @@ async fn publish_post(
 ) -> RouteResult<Json<Post>> {
     require_author(&app_state.pool, user.id).await?;
 
+    let mut transaction = app_state.pool.begin().await?;
+    let unavailable_media = sqlx::query_scalar::<_, i64>(
+        "select count(*)
+         from post_media_references reference
+         join post_media media on media.id = reference.media_id
+         join posts post on post.id = reference.post_id
+         where reference.post_id = $1 and post.author_id = $2
+           and media.status <> 'ready'",
+    )
+    .bind(id)
+    .bind(user.id)
+    .fetch_one(&mut *transaction)
+    .await?;
+    if unavailable_media > 0 {
+        return Err(RouteError::bad_request(
+            "all referenced media must be ready before publishing",
+        ));
+    }
+
     let post = sqlx::query_as::<_, Post>(
         r#"
         update posts set status = $1, published_at = now()
@@ -314,13 +414,14 @@ async fn publish_post(
     .bind(PostStatus::Published)
     .bind(id)
     .bind(user.id)
-    .fetch_optional(&app_state.pool)
+    .fetch_optional(&mut *transaction)
     .await?
     .ok_or(RouteError::not_found("post not found"))?;
+    transaction.commit().await?;
 
     app_state.invalidate_latest().await;
     tracing::info!(post_id = %post.id, user_id = %user.id, "post published");
-    Ok(Json(post))
+    Ok(Json(with_media(&app_state, post).await?))
 }
 
 /// POST /id/:id/draft — removes a published post from the public blog.
@@ -347,7 +448,7 @@ async fn move_post_to_draft(
 
     app_state.invalidate_latest().await;
     tracing::info!(post_id = %post.id, user_id = %user.id, "post moved to draft");
-    Ok(Json(post))
+    Ok(Json(with_media(&app_state, post).await?))
 }
 
 /// DELETE /id/:id — soft delete.

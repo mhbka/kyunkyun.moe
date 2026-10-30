@@ -1,7 +1,9 @@
 use super::{
-    CreatePostRequest, DraftPostSummary, PostPage, PostStatus, PostSummary, UpdatePostRequest,
+    CreatePostRequest, DraftPostSummary, Post, PostPage, PostStatus, PostSummary, UpdatePostRequest,
 };
+use crate::models::media::{PostMedia, PostMediaKind, PostMediaStatus};
 use chrono::Utc;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 /// Builds ordered summaries for pagination boundary tests.
@@ -98,7 +100,8 @@ fn deserializes_post_requests_from_camel_case() {
     let request: UpdatePostRequest = serde_json::from_value(serde_json::json!({
         "contentMd": "Updated content",
         "thumbnailUrl": "https://example.test/image.png",
-        "tags": ["rust"]
+        "tags": ["rust"],
+        "mediaIds": [Uuid::nil()]
     }))
     .unwrap();
 
@@ -109,6 +112,7 @@ fn deserializes_post_requests_from_camel_case() {
     );
     assert_eq!(request.slug, None);
     assert_eq!(request.tags, Some(vec!["rust".to_string()]));
+    assert_eq!(request.media_ids, Some(vec![Uuid::nil()]));
 }
 
 #[test]
@@ -123,4 +127,46 @@ fn deserializes_optional_slug_from_camel_case_requests() {
 
     assert_eq!(request.slug.as_deref(), Some("custom-draft"));
     assert_eq!(request.tags, Some(vec!["astro".to_string()]));
+    assert!(request.media_ids.is_empty());
+}
+
+#[test]
+fn serializes_full_posts_with_media_keyed_by_id() {
+    let post_id = Uuid::from_u128(1);
+    let media_id = Uuid::from_u128(2);
+    let now = Utc::now();
+    let media = PostMedia {
+        id: media_id,
+        post_id,
+        media_kind: PostMediaKind::Image,
+        status: PostMediaStatus::Ready,
+        public_url: Some("https://example.test/image.png".to_string()),
+        video_poster_id: None,
+        poster_url: None,
+        content_type: "image/png".to_string(),
+        width: Some(1200),
+        height: Some(800),
+        created_at: now,
+    };
+    let post = Post {
+        id: post_id,
+        author_id: Uuid::nil(),
+        title: "Post".to_string(),
+        slug: "post".to_string(),
+        content_md: "Content".to_string(),
+        status: PostStatus::Draft,
+        published_at: None,
+        thumbnail_url: None,
+        tags: vec![],
+        created_at: now,
+        updated_at: now,
+        media: HashMap::from([(media_id, media)]),
+    };
+
+    let json = serde_json::to_value(post).unwrap();
+    assert_eq!(
+        json["media"][media_id.to_string()]["id"],
+        media_id.to_string()
+    );
+    assert_eq!(json["media"][media_id.to_string()]["width"], 1200);
 }

@@ -8,6 +8,7 @@ import { initTagInput } from '../tags/tag-input.ts';
 import { trackEditorChanges } from './changes.ts';
 import { galleryFeature, galleryIcon, insertGalleryCommand } from './gallery/index.ts';
 import { initGalleryImageViewer } from './gallery/viewer.ts';
+import { createEditorMediaRegistry } from './media-registry.ts';
 import { insertVideoCommand, videoFeature, videoIcon } from './video/index.ts';
 
 /** Mounts the Milkdown editor on a post form; the returned cleanup runs once the page leaves it. */
@@ -49,6 +50,7 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 	const mediaApiUrl = `${import.meta.env.BACKEND_URL.replace(/\/$/, '')}/media/uploads`;
 	const supabaseClient = createSupabaseBrowserClient();
 	let postId = form.dataset.postId;
+	const mediaRegistry = createEditorMediaRegistry(JSON.parse(form.dataset.initialMedia ?? '{}'));
 
 	/** Returns a validation message for an invalid custom slug. */
 	function slugError(value: string) {
@@ -75,7 +77,10 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 
 		const { data: { session } } = await supabaseClient.auth.getSession();
 		if (!session) throw new Error('Please log in before uploading media.');
-		return uploadImage(file, mediaApiUrl, postId, session.access_token);
+		const media = await uploadImage(file, mediaApiUrl, postId, session.access_token);
+		mediaRegistry.add(media);
+		if (!media.publicUrl) throw new Error('Uploaded media is not available yet.');
+		return media.publicUrl;
 	}
 
 	const uploadImageFile = (file: File) => uploadMedia(file, false);
@@ -193,10 +198,10 @@ async function mountPostEditor(form: HTMLFormElement, signal: AbortSignal) {
 			const { data: { session } } = await supabaseClient.auth.getSession();
 			if (!session) throw new Error('Please log in before saving a post.');
 			if (postId) {
-				await blogApi.updatePost(postId, { title: postTitle, contentMd, slug: postSlug, tags }, session.access_token);
+				await blogApi.updatePost(postId, { title: postTitle, contentMd, slug: postSlug, tags, mediaIds: mediaRegistry.ids() }, session.access_token);
 				status.textContent = 'Changes saved.';
 			} else {
-				const post = await blogApi.createPost({ title: postTitle, contentMd, slug: postSlug, tags }, session.access_token);
+				const post = await blogApi.createPost({ title: postTitle, contentMd, slug: postSlug, tags, mediaIds: mediaRegistry.ids() }, session.access_token);
 				if (signal.aborted) return;
 				postId = post.id;
 				// Preserves existing router history metadata while promoting the draft URL.

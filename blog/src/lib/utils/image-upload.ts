@@ -1,4 +1,7 @@
+import type { PostMedia } from '../models/media.ts';
+
 export interface ImageUploadRequestResponse {
+	mediaId: string;
 	uploadUrl: string;
 	publicUrl: string;
 }
@@ -10,7 +13,7 @@ export async function uploadImage(
 	postId: string,
 	token: string,
 	fetcher: typeof fetch = fetch,
-): Promise<string> {
+): Promise<PostMedia> {
 	const requestResponse = await fetcher(mediaApiUrl, {
 		method: 'POST',
 		headers: {
@@ -39,15 +42,39 @@ export async function uploadImage(
 		throw new Error('Image upload failed. Please try again.');
 	}
 
-	return upload.publicUrl;
+	const completeResponse = await fetcher(`${mediaApiUrl}/${encodeURIComponent(upload.mediaId)}/complete`, {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${token}` },
+	});
+	if (!completeResponse.ok) {
+		throw new Error('Unable to finish image upload. Please try again.');
+	}
+
+	const media: unknown = await completeResponse.json();
+	if (!isPostMedia(media)) {
+		throw new Error('Image upload did not return completed media.');
+	}
+	return media;
 }
 
 /** Validates the upload details returned by the media endpoint. */
 function isImageUploadRequestResponse(data: unknown): data is ImageUploadRequestResponse {
 	return typeof data === 'object'
 		&& data !== null
+		&& 'mediaId' in data
+		&& typeof data.mediaId === 'string'
 		&& 'uploadUrl' in data
 		&& typeof data.uploadUrl === 'string'
 		&& 'publicUrl' in data
 		&& typeof data.publicUrl === 'string';
+}
+
+/** Validates the fields needed to register and display completed media. */
+function isPostMedia(data: unknown): data is PostMedia {
+	return typeof data === 'object'
+		&& data !== null
+		&& 'id' in data
+		&& typeof data.id === 'string'
+		&& 'publicUrl' in data
+		&& (typeof data.publicUrl === 'string' || data.publicUrl === null);
 }
