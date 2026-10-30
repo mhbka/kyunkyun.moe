@@ -15,7 +15,9 @@ Temporary implementation tracker for replacing inline blog-media URLs with stabl
 - Resolve references at the Markdown AST and Milkdown view boundaries; never persist resolved URLs.
 - Read intrinsic image dimensions before direct upload and validate them in the media API.
 - Treat completed raw videos as ready for preview and publishing; track optimization only in `video_processing`.
-- Upload raw videos under `post-originals`, then switch `post_media.bucket_path` to a new processed-object key.
+- Upload new raw videos under `post-videos-original`, while retaining existing stored original paths, then switch `post_media.bucket_path` to a new processed-object key.
+- Upload new generated video posters under `post-videos-posters`, while retaining existing stored poster paths.
+- Optimize videos as H.264/AAC MP4 with fast-start, never upscale, and cap output width at 2560 pixels.
 - Do not automatically delete unused media until post-revision retention is handled.
 
 ## Stable Markdown references
@@ -42,7 +44,15 @@ editor concern.
 - [x] Track uploaded media separately in the editor while retaining URL-based Markdown.
 - [x] Resolve media IDs, dimensions, and posters in published and preview rendering.
 - [x] Update Milkdown image, gallery, and video nodes to store media IDs.
-- [ ] Add the single-concurrency FFmpeg worker and poster generation.
+- [x] Add the single-concurrency FFmpeg worker and poster generation.
+  - [x] Claim pending jobs atomically and recover jobs abandoned during a restart.
+  - [x] Download originals to temporary files and inspect them with FFprobe.
+  - [x] Encode immutable H.264/AAC MP4 outputs capped at 2560px without upscaling.
+  - [x] Generate and upload JPEG posters as ready `post_media` image rows.
+  - [x] Update the logical video row and complete the job in one database transaction.
+  - [x] Keep raw videos usable on failure and retry processing a limited number of times.
+  - [x] Run one worker at a time and stop it cleanly with the HTTP server.
+  - [x] Install FFmpeg in the production backend image and cover the worker with focused tests.
 - [ ] Add compatibility-first tooling for migrating existing URL-based Markdown.
 - [ ] Decide how revision media references participate in deletion, then add cleanup.
 - [ ] Remove this tracker after the refactor is complete.
@@ -51,4 +61,5 @@ editor concern.
 
 - [x] Backend unit tests and all-target tests pass.
 - [x] Frontend unit tests and Astro checks pass.
-- [ ] Backend and frontend production images build with FFmpeg available at runtime.
+- [x] Backend and frontend production images build with FFmpeg available at runtime.
+- [ ] Smoke-test a real uploaded video through R2, including its processed URL and poster.

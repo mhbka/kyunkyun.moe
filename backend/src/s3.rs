@@ -1,9 +1,12 @@
-use std::time::Duration;
+use std::{path::Path, time::Duration};
 
 use anyhow::anyhow;
 use aws_config::Region;
-use aws_sdk_s3::{self as s3, config::Credentials, presigning::PresigningConfig};
+use aws_sdk_s3::{
+    self as s3, config::Credentials, presigning::PresigningConfig, primitives::ByteStream,
+};
 use serde::Serialize;
+use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 const BLOGPOST_MEDIA_PRESIGNED_URL_EXPIRY: Duration = Duration::from_secs(60);
@@ -204,6 +207,45 @@ impl S3 {
         }
     }
 
+    /// Downloads a private blog-post source object into a local processing file.
+    pub async fn download_blogpost_object(
+        &self,
+        key: &str,
+        destination: &Path,
+    ) -> Result<(), anyhow::Error> {
+        let object = self
+            .client
+            .get_object()
+            .bucket(&self.blogpost_bucket_name)
+            .key(key)
+            .send()
+            .await?;
+        let mut body = object.body.into_async_read();
+        let mut file = tokio::fs::File::create(destination).await?;
+        tokio::io::copy(&mut body, &mut file).await?;
+        file.flush().await?;
+        Ok(())
+    }
+
+    /// Uploads one generated blog-post object from a local processing file.
+    pub async fn upload_blogpost_object(
+        &self,
+        key: &str,
+        source: &Path,
+        content_type: &str,
+    ) -> Result<(), anyhow::Error> {
+        let body = ByteStream::from_path(source).await?;
+        self.client
+            .put_object()
+            .bucket(&self.blogpost_bucket_name)
+            .key(key)
+            .content_type(content_type)
+            .body(body)
+            .send()
+            .await?;
+        Ok(())
+    }
+
     /// Builds the public URL for a stored blog-post object.
     pub fn blogpost_public_url(&self, key: &str) -> String {
         format!("{}/{}", self.blogpost_bucket_url.trim_end_matches('/'), key)
@@ -289,5 +331,15 @@ fn blogpost_upload_key(post_id: Uuid, media_id: Uuid, content_type: &str) -> Opt
 
 /// Builds the archive key used to preserve an original video upload.
 pub fn blogpost_original_key(bucket_path: &str) -> String {
-    bucket_path.replacen("post-images/", "post-originals/", 1)
+    bucket_path.replacen("post-images/", "post-videos-original/", 1)
+}
+
+/// Builds an immutable key for one processed version of a post video.
+pub fn blogpost_processed_video_key(post_id: Uuid, media_id: Uuid, processing_id: Uuid) -> String {
+    format!("post-videos/{post_id}/{media_id}-{processing_id}.mp4")
+}
+
+/// Builds the generated poster key for a post video.
+pub fn blogpost_poster_key(post_id: Uuid, poster_id: Uuid) -> String {
+    format!("post-videos-posters/{post_id}/{poster_id}.jpg")
 }

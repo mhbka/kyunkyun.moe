@@ -5,8 +5,10 @@ mod models;
 mod routes;
 mod s3;
 mod state;
+mod video_processing;
 
 use axum::Router;
+use tokio::sync::watch;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::Level;
@@ -58,6 +60,8 @@ async fn main() -> anyhow::Result<()> {
         s3_tweet_bucket_url,
     )
     .await;
+    let (shutdown_sender, shutdown_receiver) = watch::channel(false);
+    let worker = tokio::spawn(video_processing::run(app_state.clone(), shutdown_receiver));
 
     // Loosen this to actual frontend origin before going to production
     let cors = CorsLayer::new()
@@ -90,7 +94,35 @@ async fn main() -> anyhow::Result<()> {
     let address = format!("0.0.0.0:{port}");
     let listener = tokio::net::TcpListener::bind(&address).await?;
     tracing::info!(%address, "backend started");
-    axum::serve(listener, app).await?;
+    let server = axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal(shutdown_sender.clone()))
+        .await;
+
+    // Stop claiming work after the HTTP server exits for any reason.
+    let _ = shutdown_sender.send(true);
+    worker.await?;
+    server?;
 
     Ok(())
+}
+
+/// Waits for the process termination signal and notifies background work.
+#[cfg(unix)]
+async fn shutdown_signal(shutdown_sender: watch::Sender<bool>) {
+    let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        .expect("SIGTERM handler can be installed");
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {}
+        _ = terminate.recv() => {}
+    }
+    tracing::info!("shutdown signal received");
+    let _ = shutdown_sender.send(true);
+}
+
+/// Waits for Ctrl+C on platforms without Unix signals.
+#[cfg(not(unix))]
+async fn shutdown_signal(shutdown_sender: watch::Sender<bool>) {
+    let _ = tokio::signal::ctrl_c().await;
+    tracing::info!("shutdown signal received");
+    let _ = shutdown_sender.send(true);
 }

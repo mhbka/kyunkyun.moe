@@ -25,7 +25,7 @@ RUN cargo build --release --locked
 FROM debian:bookworm-slim
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y ca-certificates \
+    && apt-get install --no-install-recommends -y ca-certificates ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --system --create-home app
