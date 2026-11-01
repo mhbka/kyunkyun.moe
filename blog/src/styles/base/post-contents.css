@@ -7,7 +7,7 @@ post-contents li { padding-inline-start: calc(var(--heading-depth) * 0.7rem); }
 	display: block; width: 100%; box-sizing: border-box; padding: 0.3rem 0.5rem;
 	border: 0; border-radius: 0; background: transparent; box-shadow: none;
 	color: var(--color-muted); font: inherit; font-size: 0.85rem; line-height: 1.5;
-	text-align: left; text-transform: lowercase; white-space: normal; overflow-wrap: anywhere;
+	text-align: left; white-space: normal; overflow-wrap: anywhere;
 	cursor: pointer; text-decoration: none;
 }
 .contents-panel :is(.ui-link, .ui-button):hover { color: var(--color-accent); }

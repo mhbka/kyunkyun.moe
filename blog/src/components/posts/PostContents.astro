@@ -17,7 +17,7 @@ const { target, editable = false } = Astro.props;
 			<ol></ol>
 		</nav>
 		</EdgeCard>
-		<template><li>{editable ? <Button type="button" /> : <Link />}</li></template>
+		<template><li>{editable ? <Button class="plain-button" type="button" /> : <Link />}</li></template>
 	</post-contents>
 <script>
 	import { onDocumentClick } from '../../scripts/handlers/document-events';

@@ -7,7 +7,7 @@ textarea, input { font-size: 16px; }
 .ui-button, .ui-select, button { text-shadow: none; }
 
 /* Gives full text actions the translucent chrome of a Y2K interface panel. */
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card) {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button) {
 	position: relative;
 	isolation: isolate;
 	display: inline-flex;
@@ -30,7 +30,7 @@ textarea, input { font-size: 16px; }
 }
 
 /* Runs a narrow glimmer around the clipped perimeter like light on glass. */
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::before {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button)::before {
 	content: '';
 	position: absolute;
 	z-index: 1;
@@ -54,7 +54,7 @@ textarea, input { font-size: 16px; }
 }
 
 /* Sweeps a scanner-like highlight across the glass on hover or keyboard focus. */
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::after {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button)::after {
 	content: '';
 	position: absolute;
 	inset: -60% auto -60% -35%;
@@ -65,18 +65,18 @@ textarea, input { font-size: 16px; }
 	pointer-events: none;
 }
 
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible) {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button):is(:hover, :focus-visible) {
 	border-color: var(--color-heading);
 	color: var(--color-heading);
 	filter: brightness(1.14) drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 82%, transparent)) drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 52%, transparent));
 }
 
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible)::before {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button):is(:hover, :focus-visible)::before {
 	opacity: 1;
 	animation: button-edge-glimmer 3.2s linear infinite;
 }
 
-.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):is(:hover, :focus-visible)::after {
+.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button):is(:hover, :focus-visible)::after {
 	transform: skewX(-18deg) translateX(720%);
 }
 .ui-select {
@@ -101,11 +101,11 @@ textarea, input { font-size: 16px; }
 .ui-button:disabled { opacity: 0.6; cursor: wait; }
 
 @media (prefers-reduced-motion: reduce) {
-	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::before {
+	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button)::before {
 		background: linear-gradient(90deg, var(--color-accent), var(--color-heading), var(--color-logo-bubble-pink));
 		animation: none;
 	}
-	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card)::after { display: none; }
+	.ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button)::after { display: none; }
 }
 .action-group { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0 0 1.5rem 0; }
 .card-heading { margin: 0 0 0.5rem; color: var(--color-text); font: inherit; }
