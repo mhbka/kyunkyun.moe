@@ -61,7 +61,18 @@ async fn main() -> anyhow::Result<()> {
     )
     .await;
     let (shutdown_sender, shutdown_receiver) = watch::channel(false);
-    let worker = tokio::spawn(video_processing::run(app_state.clone(), shutdown_receiver));
+    let video_processing_enabled = std::env::var("VIDEO_PROCESSING_ENABLED")
+        .map(|v| !matches!(v.trim().to_ascii_lowercase().as_str(), "false" | "0" | "no" | "off"))
+        .unwrap_or(true);
+    let worker = if video_processing_enabled {
+        Some(tokio::spawn(video_processing::run(
+            app_state.clone(),
+            shutdown_receiver,
+        )))
+    } else {
+        tracing::info!("video-processing worker disabled by VIDEO_PROCESSING_ENABLED");
+        None
+    };
 
     // Loosen this to actual frontend origin before going to production
     let cors = CorsLayer::new()
@@ -100,7 +111,9 @@ async fn main() -> anyhow::Result<()> {
 
     // Stop claiming work after the HTTP server exits for any reason.
     let _ = shutdown_sender.send(true);
-    worker.await?;
+    if let Some(worker) = worker {
+        worker.await?;
+    }
     server?;
 
     Ok(())
