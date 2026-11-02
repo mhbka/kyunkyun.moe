@@ -103,4 +103,11 @@
 		width: min(20rem, calc(100vw - 2rem));
 		height: min(20rem, calc(100dvh - 2rem));
 	}
+
+	/* With stored dimensions, the placeholder holds the image's own aspect ratio, fitted to the viewport. */
+	.media-viewer img.media-loadable[data-loading][data-placeholder-sized] {
+		width: min(calc(var(--media-w) * 1px), calc(100vw - 2rem), calc((100dvh - 2rem) * var(--media-w) / var(--media-h)));
+		height: auto;
+		aspect-ratio: var(--media-w) / var(--media-h);
+	}
 }

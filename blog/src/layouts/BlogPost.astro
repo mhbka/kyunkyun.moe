@@ -114,7 +114,7 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 	<script>
 	import { getBlogImagePortalUrl } from '../lib/content/blog-media.ts';
 	import { bindPage } from '../scripts/bind-page';
-	import { startMediaLoading } from '../scripts/media-loading.ts';
+	import { getMediaPlaceholderSize, startMediaLoading } from '../scripts/media-loading.ts';
 	import { definePostGallery } from '../scripts/post-gallery.ts';
 
 	// Opens post images, including gallery slides, in a full-size viewer.
@@ -129,7 +129,7 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 			// Browsers keep painting the previous image until a new src loads, so drop it first.
 			viewerImage.removeAttribute('src');
 			viewerImage.alt = target.alt;
-			startMediaLoading(viewerImage);
+			startMediaLoading(viewerImage, getMediaPlaceholderSize(target));
 			viewerImage.src = getBlogImagePortalUrl(target.dataset.originalSrc || target.currentSrc || target.src);
 			viewer.showModal();
 		});

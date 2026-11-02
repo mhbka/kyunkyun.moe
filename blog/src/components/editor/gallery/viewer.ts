@@ -1,5 +1,5 @@
 import { getBlogImagePortalUrl } from '../../../lib/content/blog-media.ts';
-import { startMediaLoading } from '../../../scripts/media-loading.ts';
+import { getMediaPlaceholderSize, startMediaLoading } from '../../../scripts/media-loading.ts';
 
 export interface GalleryThumbnailSource {
 	dataset: { originalSrc?: string };
@@ -25,7 +25,7 @@ export function initGalleryImageViewer(form: HTMLFormElement, signal: AbortSigna
 		// Clear the previous image before loading the newly selected gallery item.
 		viewerImage.removeAttribute('src');
 		viewerImage.alt = target.alt;
-		startMediaLoading(viewerImage);
+		startMediaLoading(viewerImage, getMediaPlaceholderSize(target));
 		viewerImage.src = getGalleryViewerImageUrl(target);
 		viewer.showModal();
 	}, { signal });

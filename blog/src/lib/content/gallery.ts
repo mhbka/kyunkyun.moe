@@ -258,9 +258,7 @@ export function renderGalleryHtml(gallery: Gallery, mediaMap: PostMediaMap = {})
 
 	const slides = gallery.images
 		.map((image, index) => {
-			const caption = image.caption
-				? `<figcaption class="gallery__item-caption">${escapeHtml(image.caption)}</figcaption>`
-				: '';
+			const caption = `<figcaption class="gallery__item-caption">${escapeHtml(image.caption || '...')}</figcaption>`;
 			const hidden = index === 0 ? '' : ' hidden';
 			const media = renderMediaHtml(image.src, {
 				alt: image.alt,
