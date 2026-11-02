@@ -1,9 +1,11 @@
+@layer media;
+
 /* Load shared visual values before the rules that consume them. */
 @import './tokens.css';
 @import './base/site-shell.css';
 @import './base/typography.css';
 @import './base/ui.css';
-@import './base/media-loading.css';
+@import './base/media.css';
 @import './base/click-feedback.css';
 @import './base/page-transitions.css';
 @import './base/markdown-content.css';

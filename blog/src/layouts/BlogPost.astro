@@ -115,6 +115,7 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 	import { getBlogImagePortalUrl } from '../lib/content/blog-media.ts';
 	import { bindPage } from '../scripts/bind-page';
 	import { startMediaLoading } from '../scripts/media-loading.ts';
+	import { definePostGallery } from '../scripts/post-gallery.ts';
 
 	// Opens post images, including gallery slides, in a full-size viewer.
 	bindPage('#post-content', (content) => {
@@ -143,33 +144,8 @@ const { title, publishedAt, updatedAt, tags = [], thumbnailUrl, content, errorMe
 		});
 	});
 
-	// Binds prev/next navigation for in-post galleries.
-	bindPage('[data-gallery]', (gallery) => {
-		const slides = Array.from(gallery.querySelectorAll<HTMLElement>('.gallery__item'));
-		if (slides.length < 2) return;
-
-		const prev = gallery.querySelector<HTMLButtonElement>('[data-gallery-prev]');
-		const next = gallery.querySelector<HTMLButtonElement>('[data-gallery-next]');
-		const currentLabel = gallery.querySelector<HTMLElement>('[data-gallery-current]');
-
-		let index = 0;
-		const show = (nextIndex: number) => {
-			index = (nextIndex + slides.length) % slides.length;
-			slides.forEach((slide, i) => {
-				slide.hidden = i !== index;
-				if (slide.hidden) slide.querySelector('video')?.pause();
-			});
-
-			// Keep the controls anchored to the bounds of the active image or video.
-			const activeMedia = slides[index]?.querySelector<HTMLElement>('.gallery__media');
-			if (prev) activeMedia?.append(prev);
-			if (next) activeMedia?.append(next);
-			if (currentLabel) currentLabel.textContent = String(index + 1);
-		};
-
-		prev?.addEventListener('click', () => show(index - 1));
-		next?.addEventListener('click', () => show(index + 1));
-	});
+	// Prev/next navigation and neighbour preloading for in-post galleries.
+	definePostGallery();
 	</script>
 	</body>
 </html>

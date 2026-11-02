@@ -1,0 +1,106 @@
+/* The single home for how images and videos are sized, framed, and shown while loading.
+
+   Everything lives in one cascade layer, so unlayered rules (component styles, Crepe's
+   vendor CSS, Markdown geometry) always win without specificity contests. Inside the
+   layer, rules stay at one-class specificity and are ordered base -> sizing -> loading
+   -> contexts.
+
+   Contract:
+   - `.media-sized`  an element whose final size is known. It carries `--media-w` and
+                     `--media-h` (the stored pixel dimensions) and becomes a box that is
+                     never wider than its container, its natural width, or the max height.
+   - `.media-frame`  a positioned wrapper (gallery slide, video block) for overlays such as
+                     the gallery arrows. With `.media-sized` it reserves the final box before
+                     the media loads; without it (legacy media with no stored dimensions) it
+                     shrinks to whatever its media renders at. */
+@layer media {
+	:root {
+		/* Mobile is effectively uncapped; desktop keeps tall media from filling the column. */
+		--media-max-height: 100rem;
+	}
+
+	@media (min-width: 801px) {
+		:root { --media-max-height: var(--markdown-media-max-height); }
+	}
+
+	/* Base */
+	img { max-width: 100%; height: auto; border-radius: var(--radius-media); }
+
+	/* Sizing */
+	.media-sized {
+		width: min(100%, calc(var(--media-w) * 1px), calc(var(--media-max-height) * var(--media-w) / var(--media-h)));
+		height: auto;
+		aspect-ratio: var(--media-w) / var(--media-h);
+		margin-inline: auto;
+	}
+
+	.media-frame {
+		position: relative;
+		display: block;
+		margin-inline: auto;
+	}
+
+	.media-frame[hidden],
+	.media-frame > [hidden] { display: none; }
+
+	.media-frame > :is(img, video) {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin: 0 auto;
+		border-radius: var(--radius-media);
+	}
+
+	/* Known size: the frame owns the box and its media fills it. */
+	.media-frame.media-sized > :is(img, video) {
+		width: 100%;
+		aspect-ratio: inherit;
+	}
+
+	/* Unknown size: shrink around the media, as unmanaged URLs always have. */
+	.media-frame:not(.media-sized) { width: fit-content; max-width: 100%; }
+	.media-frame:not(.media-sized) > :is(img, video) { width: auto; max-height: var(--media-max-height); }
+
+	/* Videos paint nothing until their first frame, so hold the box with a neutral fill. */
+	.media-frame:has(> video) {
+		background: var(--color-subtle);
+		border-radius: var(--radius-media);
+	}
+
+	/* Loading */
+	img.media-loadable[data-loading] {
+		background-color: var(--color-subtle);
+		background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--color-text) 12%, transparent) 50%, transparent 70%);
+		background-size: 220% 100%;
+		color: transparent;
+		text-shadow: none;
+		animation: media-loading-shimmer 1.5s linear infinite;
+	}
+
+	/* Only media without stored dimensions needs an invented placeholder size. */
+	.markdown-content img.media-loadable[data-loading]:not(.media-sized, .media-sized > *) {
+		width: min(16rem, 100%);
+		height: min(10rem, 30dvh);
+		margin-inline: auto;
+	}
+
+	@keyframes media-loading-shimmer {
+		from { background-position: 200% 0; }
+		to { background-position: -200% 0; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		img.media-loadable[data-loading] { animation: none; }
+	}
+
+	/* Contexts */
+	.media-thumbnail :is(img, video) { display: block; width: 100%; height: 100%; border-radius: 0; object-fit: cover; }
+
+	.media-viewer :is(img, video) { max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); }
+
+	/* Image viewers get a compact placeholder instead of filling the viewport. */
+	.media-viewer img.media-loadable[data-loading] {
+		width: min(20rem, calc(100vw - 2rem));
+		height: min(20rem, calc(100dvh - 2rem));
+	}
+}

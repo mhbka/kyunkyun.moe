@@ -1,6 +1,10 @@
 /* In-post gallery: published Markdown and the Milkdown editor share these
    visual tokens; the two selectors cover each surface. */
 
+post-gallery {
+	display: contents;
+}
+
 .gallery {
 	margin: 0 0 var(--markdown-block-gap);
 }
@@ -19,14 +23,8 @@
 	margin: 0;
 }
 
-/* Anchors navigation to the visible media instead of the wider content card. */
-.gallery__media {
-	position: relative;
-	width: fit-content;
-	max-width: 100%;
-	margin: 0 auto;
-}
-
+/* Each slide's `.gallery__media` is a `.media-frame` (see media.css), so the arrows
+   anchor to the visible media instead of the wider content card. */
 .gallery__item[hidden] {
 	display: none;
 }
@@ -44,16 +42,6 @@
 
 .media-unavailable[hidden] {
 	display: none;
-}
-
-.gallery__item img,
-.gallery__item video,
-.video video {
-	display: block;
-	max-width: 100%;
-	height: auto;
-	margin: 0 auto;
-	border-radius: var(--radius-media);
 }
 
 .gallery__item-caption {
@@ -132,13 +120,6 @@
 	border-radius: var(--radius-media);
 }
 
-.video-editor video {
-	display: block;
-	max-width: 100%;
-	margin: 0 auto;
-	border-radius: var(--radius-media);
-}
-
 .video-editor__footer {
 	display: flex;
 	gap: 0.5rem;
@@ -214,20 +195,17 @@
 	outline-offset: 2px;
 }
 
-.gallery-editor__item img,
-.gallery-editor__item video {
+.gallery-editor__thumb {
 	display: block;
 	height: 8rem;
 	width: 100%;
 	border-radius: var(--radius-media);
+	background: var(--color-subtle);
 	object-fit: cover;
-}
-
-.gallery-editor__item > :is(img, video) {
 	cursor: grab;
 }
 
-.gallery-editor__item.is-dragging > :is(img, video) {
+.gallery-editor__item.is-dragging .gallery-editor__thumb {
 	cursor: grabbing;
 }
 

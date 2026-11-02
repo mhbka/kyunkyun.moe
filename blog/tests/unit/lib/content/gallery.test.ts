@@ -74,7 +74,7 @@ test('renderGalleryHtml renders a single image without navigation', () => {
 
 	assert.match(html, /<figure class="gallery" data-gallery>/);
 	assert.match(html, /<div class="gallery__viewport">/);
-	assert.match(html, /<figure class="gallery__item"><div class="gallery__media"><img src="https:\/\/x\/1.jpg"><\/div>/);
+	assert.match(html, /<figure class="gallery__item"><div class="gallery__media media-frame"><img src="https:\/\/x\/1.jpg"><\/div>/);
 	assert.equal(html.includes('gallery__nav'), false);
 	assert.equal(html.includes('gallery__counter'), false);
 });
@@ -97,7 +97,7 @@ test('video directives parse, render, and round-trip', () => {
 
 	assert.deepEqual(parseVideo(node), { src: 'https://x/clip.webm', caption: 'Clip' });
 	assert.equal(parseVideo({ type: 'leafDirective', name: 'video', attributes: {} }), null);
-	assert.match(renderVideoHtml({ src: 'https://x/clip.webm', caption: 'Clip' }), /<figure class="video"><video src="https:\/\/x\/clip.webm"[^>]*><\/video><figcaption class="video__caption">Clip<\/figcaption>/);
+	assert.match(renderVideoHtml({ src: 'https://x/clip.webm', caption: 'Clip' }), /<figure class="video"><div class="media-frame"><video src="https:\/\/x\/clip.webm"[^>]*><\/video><\/div><figcaption class="video__caption">Clip<\/figcaption>/);
 });
 
 test('renderGalleryHtml escapes the gallery and image captions', () => {
@@ -122,11 +122,44 @@ test('renderGalleryHtml renders navigation and hides non-first images', () => {
 
 	const html = renderGalleryHtml(gallery);
 
-	assert.match(html, /<figure class="gallery__item"><div class="gallery__media"><img src="https:\/\/x\/1.jpg" alt="one">/);
-	assert.match(html, /<figure class="gallery__item" hidden><div class="gallery__media"><img src="https:\/\/x\/2.jpg" loading="lazy"><\/div>/);
+	assert.match(html, /<figure class="gallery__item"><div class="gallery__media media-frame"><img src="https:\/\/x\/1.jpg" alt="one">/);
+	assert.match(html, /<figure class="gallery__item" hidden><div class="gallery__media media-frame"><img src="https:\/\/x\/2.jpg" loading="lazy"><\/div>/);
 	assert.match(html, /<button class="gallery__nav gallery__nav--prev"[^>]*data-gallery-prev/);
 	assert.match(html, /<button class="gallery__nav gallery__nav--next"[^>]*data-gallery-next/);
 	assert.match(html, /<span data-gallery-current>1<\/span> \/ <span data-gallery-total>2<\/span>/);
+});
+
+test('renderGalleryHtml reserves the stored size on each slide frame', () => {
+	const media = {
+		'11111111-1111-4111-8111-111111111111': {
+			id: '11111111-1111-4111-8111-111111111111',
+			postId: 'post',
+			mediaKind: 'image' as const,
+			status: 'ready' as const,
+			publicUrl: 'https://x/1.jpg',
+			videoPosterId: null,
+			posterUrl: null,
+			contentType: 'image/jpeg',
+			width: 1600,
+			height: 900,
+			createdAt: '',
+		},
+	};
+
+	const html = renderGalleryHtml(
+		{ images: [{ src: 'media:11111111-1111-4111-8111-111111111111' }, { src: 'https://x/2.jpg' }] },
+		media,
+	);
+
+	assert.match(html, /<div class="gallery__media media-frame media-sized" style="--media-w:1600;--media-h:900"><img src="https:\/\/x\/1.jpg" width="1600" height="900">/);
+	assert.match(html, /<div class="gallery__media media-frame"><img src="https:\/\/x\/2.jpg"/);
+});
+
+test('renderGalleryHtml defers hidden video loading until a neighbour is shown', () => {
+	const html = renderGalleryHtml({ images: [{ src: 'https://x/1.mp4' }, { src: 'https://x/2.mp4' }] });
+
+	assert.match(html, /<video src="https:\/\/x\/1.mp4" controls playsinline preload="metadata">/);
+	assert.match(html, /<video src="https:\/\/x\/2.mp4" controls playsinline preload="none">/);
 });
 
 test('addImage appends without mutating the source', () => {

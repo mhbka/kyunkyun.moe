@@ -61,6 +61,10 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 	player.controls = true;
 	player.preload = 'metadata';
 	player.playsInline = true;
+	// The frame reserves the stored dimensions so the preview matches the published post.
+	const frame = document.createElement('div');
+	frame.className = 'media-frame';
+	frame.append(player);
 	const unavailable = document.createElement('span');
 	unavailable.className = 'media-unavailable';
 	unavailable.textContent = 'media unavailable';
@@ -78,12 +82,20 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 		else player.removeAttribute('src');
 		if (media?.posterUrl) player.poster = media.posterUrl;
 		else player.removeAttribute('poster');
+		player.preload = media?.posterUrl ? 'none' : 'metadata';
+		frame.hidden = !displaySrc;
 		if (media?.width && media.height) {
 			player.width = media.width;
 			player.height = media.height;
+			frame.classList.add('media-sized');
+			frame.style.setProperty('--media-w', String(media.width));
+			frame.style.setProperty('--media-h', String(media.height));
 		} else {
 			player.removeAttribute('width');
 			player.removeAttribute('height');
+			frame.classList.remove('media-sized');
+			frame.style.removeProperty('--media-w');
+			frame.style.removeProperty('--media-h');
 		}
 	}
 
@@ -115,7 +127,7 @@ const videoNodeView = $view(videoSchema.node, (ctx): NodeViewConstructor => (ini
 	});
 
 	footer.append(caption, remove);
-	dom.append(player, unavailable, footer);
+	dom.append(frame, unavailable, footer);
 
 	return {
 		dom,

@@ -59,10 +59,33 @@ export function isVideoSrc(src: string): boolean {
 	return /\.(mp4|webm)$/i.test(src.split(/[?#]/)[0]);
 }
 
-/** Builds intrinsic size attributes when both stored dimensions are usable. */
-function renderDimensions(media?: PostMedia): string {
-	if (!media?.width || !media.height || media.width <= 0 || media.height <= 0) return '';
-	return ` width="${media.width}" height="${media.height}"`;
+interface MediaSize {
+	width: number;
+	height: number;
+}
+
+/** Returns the stored dimensions when both are usable. */
+function getMediaSize(media?: PostMedia): MediaSize | null {
+	if (!media?.width || !media.height || media.width <= 0 || media.height <= 0) return null;
+	return { width: media.width, height: media.height };
+}
+
+/** Builds intrinsic size attributes for the browser's pre-load aspect ratio. */
+function renderDimensions(size: MediaSize | null): string {
+	return size ? ` width="${size.width}" height="${size.height}"` : '';
+}
+
+/** Builds the custom properties that `.media-sized` turns into the final-size box. */
+function renderSizeStyle(size: MediaSize | null): string {
+	return size ? ` style="--media-w:${size.width};--media-h:${size.height}"` : '';
+}
+
+/** Options for a media element wrapped in a sized `.media-frame`. */
+export interface MediaFrameOptions {
+	/** Extra classes for the frame, such as a JS hook. */
+	className?: string;
+	/** Markup placed inside the frame after the media, such as overlay controls. */
+	extra?: string;
 }
 
 /** Resolves managed media while preserving legacy URL-based content. */
@@ -77,26 +100,60 @@ function resolveRenderableMedia(
 	return { src: item.publicUrl, item };
 }
 
-/** Renders the `<img>` or `<video>` element for one media URL or stable reference. */
-export function renderMediaHtml(
-	src: string,
-	options: { alt?: string; lazy?: boolean; media?: PostMediaMap; expectedKind?: PostMedia['mediaKind'] } = {},
+/** Renders the media element itself; a framed element leaves sizing to its frame. */
+function renderMediaElement(
+	resolved: { src: string; item?: PostMedia },
+	options: { alt?: string; lazy?: boolean; preload?: 'none' | 'metadata' },
+	framed: boolean,
 ): string {
-	const resolved = resolveRenderableMedia(src, options.media ?? {}, options.expectedKind);
-	if (!resolved) return '<span class="media-unavailable">media unavailable</span>';
-
 	const url = escapeHtml(resolved.src);
-	const dimensions = renderDimensions(resolved.item);
+	const size = getMediaSize(resolved.item);
+	const dimensions = renderDimensions(size);
+	const sized = !framed && size;
+	const sizedStyle = sized ? renderSizeStyle(size) : '';
 	const isVideo = resolved.item?.mediaKind === 'video' || (!resolved.item && isVideoSrc(resolved.src));
 	if (isVideo) {
 		const poster = resolved.item?.posterUrl ? ` poster="${escapeHtml(resolved.item.posterUrl)}"` : '';
-		return `<video src="${url}"${poster}${dimensions} controls playsinline preload="metadata"></video>`;
+		const sizedClass = sized ? ' class="media-sized"' : '';
+		return `<video src="${url}"${poster}${dimensions}${sizedClass}${sizedStyle} controls playsinline preload="${options.preload ?? (resolved.item?.posterUrl ? 'none' : 'metadata')}"></video>`;
 	}
 	const alt = options.alt ? ` alt="${escapeHtml(options.alt)}"` : '';
-	const sources = getBlogImageSources(resolved.src);
-	if (!sources) return `<img src="${url}"${dimensions}${alt}${options.lazy ? ' loading="lazy"' : ''}>`;
 	const loading = options.lazy ? ' loading="lazy"' : '';
-	return `<img class="media-loadable" data-loading src="${escapeHtml(sources.src)}" srcset="${escapeHtml(sources.srcSet)}" sizes="${escapeHtml(sources.sizes)}" data-original-src="${url}" data-prefetch-image="${escapeHtml(getBlogImagePortalUrl(sources.originalSrc))}" decoding="async"${dimensions}${alt}${loading}>`;
+	const sources = getBlogImageSources(resolved.src);
+	if (!sources) {
+		const sizedClass = sized ? ' class="media-sized"' : '';
+		return `<img src="${url}"${dimensions}${sizedClass}${sizedStyle}${alt}${loading}>`;
+	}
+	const className = sized ? 'media-loadable media-sized' : 'media-loadable';
+	return `<img class="${className}" data-loading src="${escapeHtml(sources.src)}" srcset="${escapeHtml(sources.srcSet)}" sizes="${escapeHtml(sources.sizes)}" data-original-src="${url}" data-prefetch-image="${escapeHtml(getBlogImagePortalUrl(sources.originalSrc))}" decoding="async"${dimensions}${sizedStyle}${alt}${loading}>`;
+}
+
+/**
+ * Renders the `<img>` or `<video>` element for one media URL or stable reference.
+ * With `frame`, the element sits in a `.media-frame` that reserves its final size
+ * from the stored dimensions, so overlays and placeholders match the loaded media.
+ */
+export function renderMediaHtml(
+	src: string,
+	options: {
+		alt?: string;
+		lazy?: boolean;
+		preload?: 'none' | 'metadata';
+		media?: PostMediaMap;
+		expectedKind?: PostMedia['mediaKind'];
+		frame?: MediaFrameOptions;
+	} = {},
+): string {
+	const resolved = resolveRenderableMedia(src, options.media ?? {}, options.expectedKind);
+	const framed = options.frame !== undefined;
+	const content = resolved
+		? renderMediaElement(resolved, options, framed)
+		: '<span class="media-unavailable">media unavailable</span>';
+	if (!options.frame) return content;
+
+	const size = getMediaSize(resolved?.item);
+	const className = [options.frame.className, 'media-frame', size ? 'media-sized' : ''].filter(Boolean).join(' ');
+	return `<div class="${className}"${renderSizeStyle(size)}>${content}${options.frame.extra ?? ''}</div>`;
 }
 
 /** A standalone video: a `::video{src caption}` leaf directive. */
@@ -133,7 +190,7 @@ export function renderVideoHtml(video: Video, media: PostMediaMap = {}): string 
 	const caption = video.caption
 		? `<figcaption class="video__caption">${escapeHtml(video.caption)}</figcaption>`
 		: '';
-	return `<figure class="video">${renderMediaHtml(video.src, { media, expectedKind: 'video' })}${caption}</figure>`;
+	return `<figure class="video">${renderMediaHtml(video.src, { media, expectedKind: 'video', frame: {} })}${caption}</figure>`;
 }
 
 /** Reads the attributes that describe one `::pic{...}` leaf directive. */
@@ -189,7 +246,7 @@ const galleryPrevIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" heig
 const galleryNextIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>';
 
 /** Renders a gallery to its published HTML markup (one image at a time with arrows). */
-export function renderGalleryHtml(gallery: Gallery, media: PostMediaMap = {}): string {
+export function renderGalleryHtml(gallery: Gallery, mediaMap: PostMediaMap = {}): string {
 	const captionHtml = gallery.caption
 		? `<figcaption class="gallery__caption">${escapeHtml(gallery.caption)}</figcaption>`
 		: '';
@@ -205,8 +262,14 @@ export function renderGalleryHtml(gallery: Gallery, media: PostMediaMap = {}): s
 				? `<figcaption class="gallery__item-caption">${escapeHtml(image.caption)}</figcaption>`
 				: '';
 			const hidden = index === 0 ? '' : ' hidden';
-			const initialNav = index === 0 ? nav : '';
-			return `<figure class="gallery__item"${hidden}><div class="gallery__media">${renderMediaHtml(image.src, { alt: image.alt, lazy: index > 0, media })}${initialNav}</div>${caption}</figure>`;
+			const media = renderMediaHtml(image.src, {
+				alt: image.alt,
+				lazy: index > 0,
+				preload: index > 0 ? 'none' : 'metadata',
+				media: mediaMap,
+				frame: { className: 'gallery__media', extra: index === 0 ? nav : '' },
+			});
+			return `<figure class="gallery__item"${hidden}>${media}${caption}</figure>`;
 		})
 		.join('');
 
@@ -214,7 +277,7 @@ export function renderGalleryHtml(gallery: Gallery, media: PostMediaMap = {}): s
 		? `<p class="gallery__counter" aria-live="polite"><span data-gallery-current>1</span> / <span data-gallery-total>${gallery.images.length}</span></p>`
 		: '';
 
-	return `<figure class="gallery" data-gallery>${captionHtml}<div class="gallery__viewport">${slides}</div>${counter}</figure>`;
+	return `<post-gallery><figure class="gallery" data-gallery>${captionHtml}<div class="gallery__viewport">${slides}</div>${counter}</figure></post-gallery>`;
 }
 
 /** Returns a copy of `images` with `image` appended. */

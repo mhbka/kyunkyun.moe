@@ -68,6 +68,8 @@ test('resolves managed images with responsive sources and intrinsic dimensions',
 	assert.match(html, /src="https:\/\/blogmedia\.kyunkyun\.moe\/cdn-cgi\/image\/width=640/);
 	assert.match(html, /width="1600"/);
 	assert.match(html, /height="900"/);
+	assert.match(html, /class="media-sized media-loadable"/);
+	assert.match(html, /style="--media-w:1600;--media-h:900"/);
 	assert.match(html, /alt="Managed"/);
 });
 
@@ -118,7 +120,7 @@ test('adds responsive sources to blog media gallery images without changing vide
 test('renders video directives as video players', async () => {
 	const html = await renderMarkdown('::video{src="https://x/clip.mp4" caption="Clip"}');
 
-	assert.match(html, /<figure class="video"><video src="https:\/\/x\/clip.mp4"/);
+	assert.match(html, /<figure class="video"><div class="media-frame"><video src="https:\/\/x\/clip.mp4"/);
 	assert.match(html, /<figcaption class="video__caption">Clip<\/figcaption>/);
 });
 

@@ -40,6 +40,8 @@ export function remarkPostMedia(media: PostMediaMap) {
 				...(image.data.hProperties ?? {}),
 				width: item.width,
 				height: item.height,
+				className: 'media-sized',
+				style: `--media-w:${item.width};--media-h:${item.height}`,
 			};
 		});
 	};

@@ -11,6 +11,11 @@ interface MarkdownImageNode extends Node {
 	};
 }
 
+/** Keeps classes added by earlier plugins when appending a new one. */
+function appendClassName(existing: string | number | undefined, className: string): string {
+	return [existing, className].filter(Boolean).join(' ');
+}
+
 /** Adds responsive Cloudflare sources to Markdown images from blog media storage. */
 export function remarkBlogImages() {
 	return (tree: Node) => {
@@ -22,7 +27,7 @@ export function remarkBlogImages() {
 			image.data ??= {};
 			image.data.hProperties = {
 				...(image.data.hProperties ?? {}),
-				className: 'media-loadable',
+				className: appendClassName(image.data.hProperties?.className, 'media-loadable'),
 				srcset: sources.srcSet,
 				sizes: sources.sizes,
 				loading: 'lazy',

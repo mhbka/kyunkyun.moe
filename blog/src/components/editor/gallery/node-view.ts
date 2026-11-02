@@ -120,7 +120,7 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			} else if (isVideo) {
 				const video = document.createElement('video');
 				video.muted = true;
-				video.preload = 'metadata';
+				video.preload = media?.posterUrl ? 'none' : 'metadata';
 				video.controls = true;
 				video.src = displaySrc;
 				if (media?.posterUrl) video.poster = media.posterUrl;
@@ -128,6 +128,8 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			} else {
 				const imagePreview = document.createElement('img');
 				imagePreview.alt = image.alt ?? '';
+				imagePreview.loading = 'lazy';
+				imagePreview.decoding = 'async';
 				imagePreview.dataset.originalSrc = displaySrc;
 				imagePreview.src = getBlogImageEditorThumbnailUrl(displaySrc);
 				preview = imagePreview;
@@ -135,6 +137,9 @@ export const galleryNodeView = $view(gallerySchema.node, (ctx): NodeViewConstruc
 			if (media?.width && media.height) {
 				preview.setAttribute('width', String(media.width));
 				preview.setAttribute('height', String(media.height));
+			}
+			if (preview instanceof HTMLImageElement || preview instanceof HTMLVideoElement) {
+				preview.classList.add('gallery-editor__thumb');
 			}
 			preview.draggable = true;
 			preview.title = 'Drag to reorder; click images to view';

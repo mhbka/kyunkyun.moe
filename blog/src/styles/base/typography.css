@@ -10,7 +10,6 @@ strong, b { font-weight: 700; }
 a { color: var(--color-accent); }
 a:hover { color: var(--color-muted); }
 p { margin-bottom: 1em; }
-img { max-width: 100%; height: auto; border-radius: var(--radius-media); }
 hr { border: none; border-top: var(--border-width) solid var(--color-subtle); }
 
 .page-title { margin: 0 0 0.5rem; }
