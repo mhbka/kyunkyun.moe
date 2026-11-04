@@ -102,7 +102,7 @@ async function slideCards(direction: 'out' | 'in') {
 		));
 	});
 	if (!out) {
-		// Parks the cards at their off-screen start, then lets the browser lay out and paint the new page before the clock starts.
+		// Holds the cards off-screen until the new page has painted.
 		const parked = animations;
 		parked.forEach((animation) => animation.pause());
 		await nextPaint();

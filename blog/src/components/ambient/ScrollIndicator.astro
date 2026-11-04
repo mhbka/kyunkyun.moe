@@ -14,7 +14,7 @@
 		removeTimer: number;
 	}
 
-	// Draws non-interactive overlay thumbs for any scroll container, since native scrollbars are hidden to avoid layout shifts.
+	// Draws overlay thumbs for any scroll container, as native scrollbars are hidden.
 	const layer = document.querySelector<HTMLElement>('.scroll-indicator');
 	const active = new Map<Element | Document, Thumbs>();
 

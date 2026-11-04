@@ -18,7 +18,8 @@ textarea, input { font-size: 16px; }
 	overflow: hidden;
 	border: var(--border-width) solid color-mix(in srgb, var(--color-accent) 72%, transparent);
 	clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0.55rem 100%, 0 calc(100% - 0.55rem));
-	background: rgb(255 255 255 / 5%);
+	/* Tinted by default; add .ui-button--clear to leave the glass uncoloured. */
+	background: var(--color-button-tint);
 	color: var(--color-heading);
 	font-weight: var(--font-weight-heading);
 	letter-spacing: 0.045em;
@@ -28,6 +29,8 @@ textarea, input { font-size: 16px; }
 	backdrop-filter: blur(9px);
 	transition: border-color 180ms ease, color 180ms ease, filter 180ms ease;
 }
+
+.ui-button.ui-button--clear:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button) { background: var(--color-button-clear); }
 
 /* Runs a narrow glimmer around the clipped perimeter like light on glass. */
 .ui-button:not([aria-label]):not(.media-thumbnail):not(.tag):not(.edge-card):not(.plain-button)::before {

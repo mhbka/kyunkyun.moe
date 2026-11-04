@@ -208,4 +208,9 @@
 	.site-header .main-nav-item__japanese { display: none; }
 	.site-header .nav-dropdown__items { max-width: 12rem; }
 	.site-header .nav-actions .ui-select { display: none; }
+	/* Puts the login button and github link on one row. */
+	.site-header { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 0.75rem; }
+	.site-header nav { display: contents; }
+	.site-header .site-logo, .site-header .primary-links { flex: 0 0 100%; }
+	.site-header .nav-actions { width: auto; margin-top: 0; }
 }

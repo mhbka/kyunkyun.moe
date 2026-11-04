@@ -26,7 +26,8 @@
 	--color-logo-bubble-shine: rgb(255 255 255 / 88%);
 	--color-logo-shadow: #6f7780;
 	--shadow-logo-bubble: 0 0 0.04em rgb(255 255 255 / 82%), 0 0 0.18em rgb(111 187 255 / 48%), 0 0 0.36em rgb(76 82 92 / 68%);
-	--logo-outline-width: clamp(4px, 0.14em, 7px);
+	/* Thins with the viewport, reaching full width at 1920px. */
+	--logo-outline-width: clamp(3px, calc(0.45vw - 1.65px), 7px);
 	--color-navigation-background: #ffffff;
 	--color-navigation-text: #255d91;
 	--color-navigation-highlight: #e9f5ff;
@@ -37,6 +38,9 @@
 	/* Matches the nav gradient's pink (255 193 218 @ 48%) composited over white, so petals vanish against the gradient top. */
 	--color-ambient-sakura: rgb(255 225 237);
 	--shadow-ambient-sakura: 0 0 2px rgb(255 225 237 / 95%), 0 0 6px rgb(255 225 237 / 60%);
+	/* Blue glass behind button text so white labels stay readable over light backgrounds. */
+	--color-button-tint: rgb(37 93 145 / 55%);
+	--color-button-clear: rgb(255 255 255 / 5%);
 	--color-danger: #ffe0e3;
 	--color-success: #c7f4dc;
 	--color-overlay: rgb(8 47 83 / 65%);
