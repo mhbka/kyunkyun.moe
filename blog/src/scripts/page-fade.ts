@@ -5,9 +5,10 @@
  * styles/base/page-transitions.css), so moving cards stay in the normal DOM
  * stacking order below the persistent foreground decorations.
  *
- * The outgoing slide starts only after the destination's real response arrived,
- * so preparation time is never padded with artificial delay. Aborted departures
- * restore the cards, and reduced motion skips the animation entirely.
+ * The outgoing slide starts immediately, in parallel with loading the destination.
+ * If loading outlasts the slide, a loading indicator plays until the swap, when
+ * the new cards slide in. Aborted departures restore the cards, and reduced
+ * motion skips the animation entirely.
  */
 
 import { createAfterimage } from './afterimage';
@@ -21,6 +22,9 @@ const MAX_STAGGER = 240;
 // Clears the card's glow so no shadow lingers at the viewport edge.
 const GLOW_MARGIN = 64;
 const TRANSITIONING_CLASS = 'page-transitioning';
+// How long the cards wait off-screen before the loading indicator appears.
+const LOADING_DELAY = 250;
+let loadingTimer: number | undefined;
 
 // Trailing copies of each departing card: start delay (ms) behind the card and peak opacity.
 const AFTERIMAGES = [
@@ -46,6 +50,13 @@ function clearSlide() {
 function getCards() {
 	return [...document.querySelectorAll<HTMLElement>('.site-content-region .edge-card')]
 		.filter((card) => !card.parentElement?.closest('.edge-card') && card.getClientRects().length > 0);
+}
+
+/** Resolves after the browser has painted once, so heavy first-frame work doesn't eat into an animation. */
+function nextPaint() {
+	return new Promise<void>((resolve) => {
+		requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+	});
 }
 
 /** Slides the cards out to the right, or back in from it, and resolves when done. */
@@ -90,11 +101,37 @@ async function slideCards(direction: 'out' | 'in') {
 			},
 		));
 	});
+	if (!out) {
+		// Parks the cards at their off-screen start, then lets the browser lay out and paint the new page before the clock starts.
+		const parked = animations;
+		parked.forEach((animation) => animation.pause());
+		await nextPaint();
+		if (animations !== parked) return;
+		parked.forEach((animation) => animation.play());
+	}
 	await Promise.all(animations.map((animation) => animation.finished.catch(() => {})));
 	if (!out) clearSlide();
 }
 
-/** Starts the slide-out after the real response; restores cards if the departure aborts. */
+/** Shows the loading indicator while cards are parked off-screen waiting for the destination. */
+function showLoading() {
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	hideLoading();
+	loadingTimer = window.setTimeout(() => {
+		const indicator = document.createElement('div');
+		indicator.className = 'page-loading';
+		indicator.setAttribute('aria-hidden', 'true');
+		for (let i = 0; i < 3; i++) indicator.append(document.createElement('span'));
+		document.body.append(indicator);
+	}, LOADING_DELAY);
+}
+
+function hideLoading() {
+	window.clearTimeout(loadingTimer);
+	document.querySelectorAll('.page-loading').forEach((element) => element.remove());
+}
+
+/** Slides out immediately on navigation, shows a loader while waiting; restores cards if the departure aborts. */
 export function initPageFade() {
 	document.addEventListener('astro:before-preparation', (event) => {
 		clearSlide();
@@ -104,12 +141,18 @@ export function initPageFade() {
 		event.signal.addEventListener('abort', restore, { once: true });
 		event.loader = async () => {
 			try {
-				await loader();
-				if (!event.signal.aborted && !event.defaultPrevented) await slideCards('out');
+				// Slides out immediately while the destination loads in parallel.
+				let loaded = false;
+				const loading = loader().finally(() => { loaded = true; });
+				loading.catch(() => {});
+				await slideCards('out');
+				if (!loaded && !event.signal.aborted) showLoading();
+				await loading;
 			} catch (error) {
 				restore();
 				throw error;
 			} finally {
+				hideLoading();
 				event.signal.removeEventListener('abort', restore);
 			}
 		};

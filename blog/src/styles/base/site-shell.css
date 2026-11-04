@@ -1,6 +1,14 @@
 /* Token-driven site structure. */
 html { background: var(--color-page-background); }
 
+/* Hides every classic scrollbar so none changes the layout; ScrollIndicator draws overlay thumbs instead. */
+* { scrollbar-width: none; }
+
+.scroll-indicator { position: fixed; z-index: 20; inset: 0; pointer-events: none; }
+.scroll-indicator__thumb { position: absolute; top: 0; left: 0; border-radius: 999px; background: var(--color-heading); box-shadow: 0 0 0 1px rgb(255 255 255 / 60%); opacity: 0; transition: opacity 250ms ease; will-change: transform; }
+.scroll-indicator__thumb[data-active] { opacity: 0.7; }
+.scroll-indicator__thumb[hidden] { display: none; }
+
 body {
 	margin: 0;
 	padding: 0;
@@ -63,13 +71,17 @@ pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text
 	.page-primary > .page-content { position: relative; z-index: 1; }
 	.site-sidebar-stick {
 		position: sticky;
-		top: 40dvh;
-		max-height: calc(60dvh - 2rem);
-		overflow-y: auto;
+		top: 0;
+		align-self: start;
+		/* Fills the viewport and centres its cards, so short and long cards sit at the same middle line. */
+		height: 100dvh;
+		max-height: 100%;
 		display: grid;
+		align-content: center;
 		gap: 1rem;
-		pointer-events: auto;
+		pointer-events: none;
 	}
+	.site-sidebar-stick > * { pointer-events: auto; }
 }
 
 @media (max-width: 800px) {

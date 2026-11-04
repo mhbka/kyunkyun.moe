@@ -4,8 +4,11 @@ import {
 	calculateFeedbackScale,
 	createClickFeedback,
 	createClickFeedbackController,
+	DEFAULT_SOUND,
 	findFeedbackTarget,
+	NAVIGATION_SOUND,
 	resolveSoundName,
+	SOUNDS,
 } from '../../../src/scripts/handlers/click-feedback.ts';
 
 test('feedback strength eases by longest side and clamps at both ends', () => {
@@ -110,7 +113,7 @@ test('clicking inside a button feeds back on the button', () => {
 	const label = button.append(new FakeElement('span'));
 	click(label);
 	assert.equal(findFeedbackTarget(asElement(label)), asElement(button));
-	assert.deepEqual(played, ['/sfx/confirm_soft.wav']);
+	assert.deepEqual(played, [SOUNDS.confirm.src]);
 	assert.deepEqual(effects, [asElement(button)]);
 });
 
@@ -137,10 +140,20 @@ test('data-sfx opts a subtree out or picks a sound', () => {
 	const custom = new FakeElement('div', { 'data-sfx': 'confirm' });
 	click(custom);
 	assert.equal(resolveSoundName(asElement(custom)), 'confirm');
-	assert.deepEqual(played, ['/sfx/confirm_soft.wav']);
+	assert.deepEqual(played, [SOUNDS.confirm.src]);
 
 	const unknown = new FakeElement('div', { 'data-sfx': 'explosion' });
 	assert.equal(resolveSoundName(asElement(unknown)), 'confirm');
+});
+
+test('navigating elements get the navigation sound while toggles and buttons keep the default', () => {
+	const link = new FakeElement('a', { href: '/blog', class: 'ui-link' });
+	assert.equal(resolveSoundName(asElement(link)), NAVIGATION_SOUND);
+	assert.notEqual(NAVIGATION_SOUND, DEFAULT_SOUND);
+	assert.equal(resolveSoundName(asElement(new FakeElement('summary', { class: 'main-nav-item' }))), DEFAULT_SOUND);
+	assert.equal(resolveSoundName(asElement(new FakeElement('button'))), DEFAULT_SOUND);
+	const explicit = new FakeElement('a', { href: '/blog', 'data-sfx': 'confirm' });
+	assert.equal(resolveSoundName(asElement(explicit)), 'confirm');
 });
 
 test('guard conditions skip feedback entirely', () => {
@@ -189,7 +202,7 @@ test('pointer press holds down, then click plays the release effect and sound', 
 	assert.deepEqual(pressed, [asElement(button)]);
 	assert.deepEqual(released, [asElement(button)]);
 	assert.deepEqual(effects, [asElement(button)]);
-	assert.deepEqual(played, ['/sfx/confirm_soft.wav']);
+	assert.deepEqual(played, [SOUNDS.confirm.src]);
 });
 
 test('cancelled pointer clears the held state without activating', () => {

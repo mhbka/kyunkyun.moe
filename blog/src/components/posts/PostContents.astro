@@ -7,7 +7,7 @@ interface Props { target: string; editable?: boolean; }
 const { target, editable = false } = Astro.props;
 ---
 	<post-contents data-target={target} data-editable={String(editable)} hidden>
-		<Button class="contents-toggle edge-card" type="button" aria-expanded="false" aria-controls={`${target}-contents`}>
+		<Button class="contents-toggle edge-card" type="button" data-sfx="ping" aria-expanded="false" aria-controls={`${target}-contents`}>
 			<span>on this page <span class="contents-chevron" aria-hidden="true">▾</span></span>
 			<span class="contents-current" data-current-section></span>
 		</Button>
@@ -17,7 +17,7 @@ const { target, editable = false } = Astro.props;
 			<ol></ol>
 		</nav>
 		</EdgeCard>
-		<template><li>{editable ? <Button class="plain-button" type="button" /> : <Link />}</li></template>
+		<template><li>{editable ? <Button class="plain-button" type="button" /> : <Link data-sfx="confirm" />}</li></template>
 	</post-contents>
 <script>
 	import { onDocumentClick } from '../../scripts/handlers/document-events';

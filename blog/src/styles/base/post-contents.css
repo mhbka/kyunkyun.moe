@@ -2,6 +2,10 @@ post-contents { display: block; min-width: 0; }
 post-contents[hidden] { display: none; }
 .contents-title { margin: 0 0 0.75rem; color: var(--color-heading); font-weight: var(--font-weight-heading); }
 post-contents ol { list-style: none; padding: 0; margin: 0; }
+/* Bounds the card itself and scrolls only the list inside it, so the card's rounded edge and glow stay intact. */
+.contents-panel { display: flex; flex-direction: column; max-height: calc(100dvh - 4rem); }
+.contents-panel nav { display: flex; flex-direction: column; min-height: 0; }
+.contents-panel ol { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 post-contents li { padding-inline-start: calc(var(--heading-depth) * 0.7rem); }
 .contents-panel :is(.ui-link, .ui-button) {
 	display: block; width: 100%; box-sizing: border-box; padding: 0.3rem 0.5rem;
@@ -33,9 +37,9 @@ post-contents .contents-toggle { display: none; }
 	.contents-toggle[aria-expanded="true"] .contents-chevron { transform: rotate(180deg); }
 	post-contents .contents-panel {
 		display: none; position: absolute; inset: 100% 0 auto;
-		max-height: min(60dvh, 28rem); overflow-y: auto; overscroll-behavior: contain;
+		max-height: min(60dvh, 28rem);
 	}
-	.contents-toggle[aria-expanded="true"] + .contents-panel { display: block; }
+	.contents-toggle[aria-expanded="true"] + .contents-panel { display: flex; }
 	.contents-panel .contents-title { display: none; }
 	.contents-panel :is(.ui-link, .ui-button) { min-height: 2.75rem; padding-block: 0.65rem; }
 	.post-page :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 4rem; }

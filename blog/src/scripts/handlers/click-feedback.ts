@@ -6,6 +6,8 @@
  * - Button-like elements (button, summary, .ui-button) and every internal link
  *   rendered through the Link component (`.ui-link`, including nav items, post
  *   cards, and the home previews) get feedback automatically.
+ * - Anything that navigates (an element with an href) plays the harder confirm sound;
+ *   other clicks, such as buttons and dropdown headings, play the soft one.
  * - Any other element opts in with `data-sfx` (optionally `data-sfx="confirm"` to
  *   pick a specific sound); `data-sfx="none"` opts a subtree out.
  */
@@ -19,10 +21,13 @@ interface SoundDefinition {
 
 /** Registry of named sounds. Adding a new sound is a one-line entry here. */
 export const SOUNDS: Record<string, SoundDefinition> = {
-	confirm: { src: '/sfx/confirm_soft.wav', volume: 0.5 },
+	ping: { src: '/sfx/stella_ping.ogg', volume: 0.5 },
+	confirm: { src: '/sfx/stella_confirm_soft.ogg', volume: 0.5 },
+	confirm_hard: { src: '/sfx/stella_confirm_hard.ogg', volume: 0.5 },
 };
 
 export const DEFAULT_SOUND = 'confirm';
+export const NAVIGATION_SOUND = 'confirm_hard';
 
 const MUTE_STORAGE_KEY = 'site-sfx-muted';
 
@@ -47,10 +52,11 @@ export function findFeedbackTarget(target: Element): Element | null {
 	return candidate;
 }
 
-/** Resolves the sound name for an element, falling back to the default. */
+/** Resolves the sound name for an element: an explicit data-sfx, then confirm_hard for anything that navigates, then the default. */
 export function resolveSoundName(element: Element): string {
 	const requested = element.getAttribute('data-sfx');
 	if (requested && requested in SOUNDS) return requested;
+	if (element.matches('[href]')) return NAVIGATION_SOUND;
 	return DEFAULT_SOUND;
 }
 

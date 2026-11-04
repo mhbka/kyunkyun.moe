@@ -252,13 +252,13 @@ export function renderGalleryHtml(gallery: Gallery, mediaMap: PostMediaMap = {})
 		: '';
 	const hasMultiple = gallery.images.length > 1;
 	const nav = hasMultiple
-		? `<button class="gallery__nav gallery__nav--prev" type="button" data-gallery-prev aria-label="Previous image">${galleryPrevIcon}</button>` +
-			`<button class="gallery__nav gallery__nav--next" type="button" data-gallery-next aria-label="Next image">${galleryNextIcon}</button>`
+		? `<button class="gallery__nav gallery__nav--prev" type="button" data-sfx="ping" data-gallery-prev aria-label="Previous image">${galleryPrevIcon}</button>` +
+			`<button class="gallery__nav gallery__nav--next" type="button" data-sfx="ping" data-gallery-next aria-label="Next image">${galleryNextIcon}</button>`
 		: '';
 
 	const slides = gallery.images
 		.map((image, index) => {
-			const caption = `<figcaption class="gallery__item-caption">${escapeHtml(image.caption || '...')}</figcaption>`;
+			const caption = `<figcaption class="gallery__item-caption">${escapeHtml(image.caption || '-')}</figcaption>`;
 			const hidden = index === 0 ? '' : ' hidden';
 			const media = renderMediaHtml(image.src, {
 				alt: image.alt,

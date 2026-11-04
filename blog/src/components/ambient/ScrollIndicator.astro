@@ -1,0 +1,94 @@
+<div class="scroll-indicator" aria-hidden="true" transition:persist="scroll-indicator"></div>
+
+<script>
+	const HIDE_DELAY = 900;
+	const FADE_DURATION = 250;
+	const MIN_THUMB = 32;
+	const THUMB_SIZE = 5;
+	const EDGE_INSET = 2;
+
+	interface Thumbs {
+		vertical: HTMLElement;
+		horizontal: HTMLElement;
+		hideTimer: number;
+		removeTimer: number;
+	}
+
+	// Draws non-interactive overlay thumbs for any scroll container, since native scrollbars are hidden to avoid layout shifts.
+	const layer = document.querySelector<HTMLElement>('.scroll-indicator');
+	const active = new Map<Element | Document, Thumbs>();
+
+	function createThumb() {
+		const thumb = document.createElement('div');
+		thumb.className = 'scroll-indicator__thumb';
+		layer?.append(thumb);
+		return thumb;
+	}
+
+	function place(thumb: HTMLElement, x: number, y: number, width: number, height: number) {
+		thumb.style.width = `${width}px`;
+		thumb.style.height = `${height}px`;
+		thumb.style.transform = `translate(${x}px, ${y}px)`;
+		thumb.hidden = width <= 0 || height <= 0;
+	}
+
+	function show(target: Element | Document) {
+		if (!layer) return;
+		const isPage = target instanceof Document;
+		const element = isPage ? document.documentElement : target;
+		if (!(element instanceof HTMLElement)) return;
+		if (layer.contains(element)) return;
+
+		const scrollTop = isPage ? window.scrollY : element.scrollTop;
+		const scrollLeft = isPage ? window.scrollX : element.scrollLeft;
+		const bounds = isPage
+			? { left: 0, top: 0, right: element.clientWidth, bottom: element.clientHeight, width: element.clientWidth, height: element.clientHeight }
+			: element.getBoundingClientRect();
+		const scrollableY = element.scrollHeight - element.clientHeight;
+		const scrollableX = element.scrollWidth - element.clientWidth;
+		if (scrollableY <= 1 && scrollableX <= 1) return;
+
+		let state = active.get(target);
+		if (!state) {
+			state = { vertical: createThumb(), horizontal: createThumb(), hideTimer: 0, removeTimer: 0 };
+			active.set(target, state);
+		}
+		window.clearTimeout(state.hideTimer);
+		window.clearTimeout(state.removeTimer);
+
+		if (scrollableY > 1) {
+			const length = Math.max(MIN_THUMB, (element.clientHeight / element.scrollHeight) * bounds.height);
+			const offset = (scrollTop / scrollableY) * (bounds.height - length);
+			place(state.vertical, bounds.right - THUMB_SIZE - EDGE_INSET, bounds.top + Math.max(0, offset), THUMB_SIZE, length);
+		} else {
+			place(state.vertical, 0, 0, 0, 0);
+		}
+		if (scrollableX > 1) {
+			const length = Math.max(MIN_THUMB, (element.clientWidth / element.scrollWidth) * bounds.width);
+			const offset = (scrollLeft / scrollableX) * (bounds.width - length);
+			place(state.horizontal, bounds.left + Math.max(0, offset), bounds.bottom - THUMB_SIZE - EDGE_INSET, length, THUMB_SIZE);
+		} else {
+			place(state.horizontal, 0, 0, 0, 0);
+		}
+
+		state.vertical.dataset.active = '';
+		state.horizontal.dataset.active = '';
+		const current = state;
+		state.hideTimer = window.setTimeout(() => {
+			delete current.vertical.dataset.active;
+			delete current.horizontal.dataset.active;
+			current.removeTimer = window.setTimeout(() => {
+				current.vertical.remove();
+				current.horizontal.remove();
+				active.delete(target);
+			}, FADE_DURATION);
+		}, HIDE_DELAY);
+	}
+
+	if (layer) {
+		// Scroll events don't bubble, so capture them to cover every scroll container on the page.
+		document.addEventListener('scroll', (event) => {
+			if (event.target instanceof Element || event.target instanceof Document) show(event.target);
+		}, { capture: true, passive: true });
+	}
+</script>

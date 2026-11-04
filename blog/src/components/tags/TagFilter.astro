@@ -14,9 +14,9 @@ const { tags, selectedTags, basePath = '/blog/' } = Astro.props;
 
 {tags.length > 0 && (
 	<nav class="tag-filter" aria-label="Filter posts by tag">
-		<Link class:list={['tag-filter__tag', !selectedTags.length && 'tag-filter__tag--selected']} href={basePath} data-tag="">all</Link>
+		<Link class:list={['tag-filter__tag', !selectedTags.length && 'tag-filter__tag--selected']} href={basePath} data-tag="" data-sfx="confirm">all</Link>
 		{tags.map(({ tag, count }) => (
-			<Link class:list={['tag-filter__tag', selectedTags.includes(tag) && 'tag-filter__tag--selected']} href={toggleTagUrl(basePath, selectedTags, tag)} data-tag={tag} aria-current={selectedTags.includes(tag) ? "true" : undefined}>
+			<Link class:list={['tag-filter__tag', selectedTags.includes(tag) && 'tag-filter__tag--selected']} href={toggleTagUrl(basePath, selectedTags, tag)} data-tag={tag} data-sfx="confirm" aria-current={selectedTags.includes(tag) ? "true" : undefined}>
 				#{tag} <span aria-label={`${count} posts`}>({count})</span>
 			</Link>
 		))}
