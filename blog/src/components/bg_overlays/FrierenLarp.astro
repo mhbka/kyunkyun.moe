@@ -1,0 +1,19 @@
+---
+// Renders Frieren artwork behind the main content cards.
+---
+
+<img class="background-overlay background-overlay--frieren" src="/images/bg_overlays/frierenlarp.webp" alt="" />
+
+<style>
+	/* Anchors the character artwork to the lower-left, beginning where the side navigation ends. */
+	.background-overlay--frieren {
+		position: absolute;
+		inset: auto auto 0 var(--site-navigation-width);
+		display: block;
+		width: 73vw;
+		height: 98dvh;
+		object-fit: contain;
+		object-position: left bottom;
+		opacity: 0.92;
+	}
+</style>

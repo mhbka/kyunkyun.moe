@@ -24,6 +24,9 @@
 	--color-logo-bubble-purple: rgb(187 137 255 / 38%);
 	--color-logo-bubble-pink: rgb(255 182 213 / 60%);
 	--color-logo-bubble-shine: rgb(255 255 255 / 88%);
+	--color-logo-cloud: rgb(255 255 255 / 55%);
+	--color-logo-cloud-mid: rgb(96 110 170 / 22%);
+	--color-logo-tint: rgb(60 72 130 / 18%);
 	--color-logo-shadow: #6f7780;
 	--shadow-logo-bubble: 0 0 0.04em rgb(255 255 255 / 82%), 0 0 0.18em rgb(111 187 255 / 48%), 0 0 0.36em rgb(76 82 92 / 68%);
 	/* Thins with the viewport, reaching full width at 1920px. */

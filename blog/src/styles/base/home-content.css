@@ -1,3 +1,7 @@
+/* Separates the intro text from the latest section without a divider. */
+.home-intro { margin-bottom: 1.5rem; }
+.home-intro > :last-child { margin-bottom: 0; }
+
 @media (min-width: 801px) {
 	/* Tightens desktop cards while keeping their content clear of the glowing edge. */
 	.page-content--cards .home-update-card { padding-inline: 2rem; }

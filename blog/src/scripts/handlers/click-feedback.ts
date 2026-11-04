@@ -159,7 +159,57 @@ export function createClickFeedbackController(options: ClickFeedbackOptions = {}
 	// A small pool lets overlapping clicks each play instead of cutting off.
 	const pool = new Map<string, { players: HTMLAudioElement[]; next: number }>();
 	const activePointers = new Map<number, Element>();
+	// Sounds are fetched as soon as possible and decoded once an AudioContext exists,
+	// so a click never has to wait on the network behind other page loads.
+	const encoded = new Map<string, Promise<ArrayBuffer | null>>();
+	const decoded = new Map<string, AudioBuffer>();
+	let context: AudioContext | null = null;
+
+	function prefetchSounds() {
+		if (options.playSound || typeof fetch === 'undefined') return;
+		for (const { src } of Object.values(SOUNDS)) {
+			if (encoded.has(src)) continue;
+			encoded.set(
+				src,
+				fetch(src, { priority: 'high' } as RequestInit)
+					.then((response) => (response.ok ? response.arrayBuffer() : null))
+					.catch(() => null),
+			);
+		}
+	}
+
+	function prepareContext() {
+		if (options.playSound || typeof AudioContext === 'undefined') return;
+		if (!context) {
+			context = new AudioContext();
+			const ready = context;
+			prefetchSounds();
+			for (const [src, data] of encoded) {
+				void data.then((bytes) => {
+					if (!bytes) return;
+					return ready.decodeAudioData(bytes).then((buffer) => void decoded.set(src, buffer));
+				}).catch(() => {});
+			}
+		}
+		if (context.state === 'suspended') void context.resume().catch(() => {});
+	}
+
+	prefetchSounds();
+
+	function playBuffered(sound: SoundDefinition): boolean {
+		const buffer = decoded.get(sound.src);
+		if (!buffer || !context || context.state !== 'running') return false;
+		const source = context.createBufferSource();
+		const gain = context.createGain();
+		source.buffer = buffer;
+		gain.gain.value = sound.volume;
+		source.connect(gain).connect(context.destination);
+		source.start();
+		return true;
+	}
+
 	const playSound = options.playSound ?? ((sound: SoundDefinition) => {
+		if (playBuffered(sound)) return;
 		let entry = pool.get(sound.src);
 		if (!entry) {
 			entry = {
@@ -197,6 +247,7 @@ export function createClickFeedbackController(options: ClickFeedbackOptions = {}
 		if (event.isPrimary === false) return;
 		const target = findEventTarget(event);
 		if (!target) return;
+		prepareContext();
 		activePointers.set(event.pointerId, target);
 		startPress(target);
 	}

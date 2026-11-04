@@ -120,17 +120,28 @@
 @supports (background-clip: text) or (-webkit-background-clip: text) {
 	.site-header .site-logo__fill {
 		background-image:
+			radial-gradient(ellipse 22% 34% at 26% 42%, var(--color-logo-cloud), var(--color-logo-cloud-mid) 50%, transparent),
+			radial-gradient(ellipse 18% 28% at 52% 64%, var(--color-logo-cloud), var(--color-logo-cloud-mid) 50%, transparent),
+			radial-gradient(ellipse 22% 34% at 74% 38%, var(--color-logo-cloud), var(--color-logo-cloud-mid) 50%, transparent),
+			radial-gradient(ellipse 14% 24% at 84% 68%, var(--color-logo-cloud), var(--color-logo-cloud-mid) 50%, transparent),
+			linear-gradient(var(--color-logo-tint), var(--color-logo-tint)),
 			linear-gradient(180deg, var(--color-logo-bubble-pink) 0%, transparent 60%),
 			radial-gradient(ellipse at 88% 4%, var(--color-logo-glint) 0 14%, var(--color-logo-glint-soft) 38%, transparent 72%),
 			var(--image-page-background);
-		background-position: center, center, left center;
-		background-size: 100% 100%, 100% 100%, max(100vw, 133.333vh) max(100vh, 75vw);
-		background-repeat: no-repeat;
+		background-position: 0 0, 0 0, 0 0, 0 0, center, center, center, left center;
+		background-size: 14em 100%, 14em 100%, 14em 100%, 14em 100%, 100% 100%, 100% 100%, 100% 100%, max(100vw, 133.333vh) max(100vh, 75vw);
+		background-repeat: repeat-x, repeat-x, repeat-x, repeat-x, no-repeat, no-repeat, no-repeat, no-repeat;
 		background-clip: text;
 		-webkit-background-clip: text;
 		color: transparent;
 		-webkit-text-fill-color: transparent;
+		animation: site-logo-clouds 60s linear infinite;
 	}
+}
+/* Sweeps a seamless cloud tile rightwards; the other layers stay put. */
+@keyframes site-logo-clouds {
+	from { background-position: 0 0, 0 0, 0 0, 0 0, center, center, center, left center; }
+	to { background-position: 14em 0, 14em 0, 14em 0, 14em 0, center, center, center, left center; }
 }
 .site-header nav { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 2.5rem; }
 .site-header .primary-links { display: flex; flex-direction: column; gap: var(--site-navigation-gap); width: 100%; max-width: 20rem; text-align: center; }
@@ -171,6 +182,7 @@
 	.site-header .nav-dropdown:hover > summary { --nav-pulse: 0.5; }
 	.site-header .main-nav-item { animation: none; --nav-pulse: 0.5; }
 	.site-logo__part, .site-logo__bubble { transition: none; }
+	.site-header .site-logo__fill { animation: none; }
 	.site-header .nav-dropdown summary::after { transition: none; }
 }
 .site-header :is(a, button, select, summary):focus-visible { outline: var(--focus-ring-width) solid var(--color-navigation-text); outline-offset: 3px; }
