@@ -3,7 +3,7 @@ import { basename, dirname, extname, join } from 'node:path';
 import sharp from 'sharp';
 
 export const BACKGROUND_WEBP_QUALITY = 80;
-export const OVERLAY_WEBP_QUALITY = 92;
+export const OVERLAY_WEBP_QUALITY = 100;
 
 const SOURCE_IMAGE_EXTENSIONS = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.tif', '.tiff']);
 
