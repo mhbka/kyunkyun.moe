@@ -2,7 +2,8 @@
 // Renders the Tenshin Ranman artwork as a faint layer across the navigation backdrop.
 ---
 
-<div class="navigation-background-overlay navigation-background-overlay--tenshin-ranman" aria-hidden="true">
+<!-- Persists so the already-decoded artwork isn't recreated and re-decoded (visible as a flash) on every navigation. -->
+<div class="navigation-background-overlay navigation-background-overlay--tenshin-ranman" aria-hidden="true" transition:persist="nav-overlay-tenshin-ranman">
 	<img src="/images/nav_overlays/tenshin%20ranman%20larp.webp" alt="" />
 </div>
 

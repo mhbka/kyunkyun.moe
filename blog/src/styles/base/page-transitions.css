@@ -17,6 +17,9 @@ html { view-transition-name: none !important; }
 	40% { opacity: 1; transform: scale(1); }
 }
 
+/* Secondary cards stay hidden until page-fade.ts fades them in after the main cards land. */
+html.page-entering .site-sidebar .edge-card { opacity: 0; }
+
 /* Stops cards parked beyond the right edge from creating a horizontal scrollbar. */
 html.page-transitioning { overflow-x: clip; }
 

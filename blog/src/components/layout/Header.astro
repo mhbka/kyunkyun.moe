@@ -72,6 +72,42 @@ const logoParts = [
 <script>
 	import { bindPage } from '../../scripts/bind-page';
 
+	// Locks looping header animations to the document timeline so a swapped-in header continues the old one's phase instead of restarting it.
+	// Periods must match the CSS durations in site-navigation.css.
+	const LOOPING_ANIMATIONS = [
+		{ selector: '.site-header .main-nav-item', period: 1700 },
+		{ selector: '.site-header .site-logo__fill', period: 60000 },
+	];
+	const syncAnimationPhase = () => {
+		const now = Number(document.timeline.currentTime ?? 0);
+		for (const { selector, period } of LOOPING_ANIMATIONS) {
+			document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+				element.style.animationDelay = `${-(now % period)}ms`;
+			});
+		}
+	};
+	syncAnimationPhase();
+	document.addEventListener('astro:after-swap', syncAnimationPhase);
+
+	// Positions the transparent navigation cutout over the logo bubble.
+	const applyLogoCutout = (bubble: HTMLElement, layout: HTMLElement) => {
+		const bounds = bubble.getBoundingClientRect();
+		const borderWidth = Number.parseFloat(getComputedStyle(bubble).borderLeftWidth);
+		const renderedScale = bounds.width / bubble.offsetWidth;
+		const cutoutInset = (borderWidth + 4) * renderedScale;
+		const cutoutRadius = Math.max(0, bounds.width / 2 - cutoutInset);
+		layout.style.setProperty('--site-logo-cutout-x', `${bounds.left + bounds.width / 2}px`);
+		layout.style.setProperty('--site-logo-cutout-y', `${bounds.top + bounds.height / 2}px`);
+		layout.style.setProperty('--site-logo-cutout-radius', `${cutoutRadius}px`);
+		layout.dataset.logoCutout = '';
+	};
+	// The swapped-in layout starts without a cutout; positioning it before first paint stops the backdrop briefly covering the bubble.
+	document.addEventListener('astro:after-swap', () => {
+		const bubble = document.querySelector<HTMLElement>('.site-logo__bubble');
+		const layout = bubble?.closest<HTMLElement>('.site-layout');
+		if (bubble && layout) applyLogoCutout(bubble, layout);
+	});
+
 	// Keeps the transparent navigation cutout aligned with the scrolling logo bubble.
 	bindPage('.site-logo__bubble', (bubble) => {
 		const layout = bubble.closest<HTMLElement>('.site-layout');
@@ -82,17 +118,7 @@ const logoParts = [
 		let animationFrame = 0;
 		let transitionFrame = 0;
 		let isTransitioning = false;
-		const syncCutout = () => {
-			const bounds = bubble.getBoundingClientRect();
-			const borderWidth = Number.parseFloat(getComputedStyle(bubble).borderLeftWidth);
-			const renderedScale = bounds.width / bubble.offsetWidth;
-			const cutoutInset = (borderWidth + 4) * renderedScale;
-			const cutoutRadius = Math.max(0, bounds.width / 2 - cutoutInset);
-			layout.style.setProperty('--site-logo-cutout-x', `${bounds.left + bounds.width / 2}px`);
-			layout.style.setProperty('--site-logo-cutout-y', `${bounds.top + bounds.height / 2}px`);
-			layout.style.setProperty('--site-logo-cutout-radius', `${cutoutRadius}px`);
-			layout.dataset.logoCutout = '';
-		};
+		const syncCutout = () => applyLogoCutout(bubble, layout);
 		const scheduleSync = () => {
 			cancelAnimationFrame(animationFrame);
 			animationFrame = requestAnimationFrame(syncCutout);

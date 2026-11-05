@@ -22,6 +22,9 @@ const MAX_STAGGER = 240;
 // Clears the card's glow so no shadow lingers at the viewport edge.
 const GLOW_MARGIN = 64;
 const TRANSITIONING_CLASS = 'page-transitioning';
+// Keeps secondary cards invisible until their fade begins, even if they unhide mid-slide.
+const ENTERING_CLASS = 'page-entering';
+const FADE_IN_DURATION = 700;
 // How long the cards wait off-screen before the loading indicator appears.
 const LOADING_DELAY = 250;
 let loadingTimer: number | undefined;
@@ -43,7 +46,12 @@ function clearSlide() {
 	animations = [];
 	for (const ghost of ghosts) ghost.remove();
 	ghosts = [];
-	document.documentElement.classList.remove(TRANSITIONING_CLASS);
+	document.documentElement.classList.remove(TRANSITIONING_CLASS, ENTERING_CLASS);
+}
+
+/** Secondary cards (currently the sidebar) support the main cards and arrive after them. */
+function isSecondary(card: HTMLElement) {
+	return card.closest('.site-sidebar') !== null;
 }
 
 /** Finds visible top-level cards of the main content and the sidebar, excluding nested ones. */
@@ -68,10 +76,13 @@ async function slideCards(direction: 'out' | 'in') {
 
 	const out = direction === 'out';
 	document.documentElement.classList.add(TRANSITIONING_CLASS);
+	if (!out) document.documentElement.classList.add(ENTERING_CLASS);
 	let mainIndex = 0;
 	cards.forEach((card) => {
-		// Sidebar cards move with the first main card instead of queueing behind it.
-		const index = card.closest('.site-sidebar') ? 0 : mainIndex++;
+		// Arriving secondary cards fade in after the main cards land, instead of sliding.
+		if (!out && isSecondary(card)) return;
+		// Departing sidebar cards move with the first main card instead of queueing behind it.
+		const index = isSecondary(card) ? 0 : mainIndex++;
 		const distance = window.innerWidth - card.getBoundingClientRect().left + GLOW_MARGIN;
 		const offscreen = `translateX(${distance}px)`;
 		const delay = Math.min(index * STAGGER, MAX_STAGGER);
@@ -110,7 +121,21 @@ async function slideCards(direction: 'out' | 'in') {
 		parked.forEach((animation) => animation.play());
 	}
 	await Promise.all(animations.map((animation) => animation.finished.catch(() => {})));
-	if (!out) clearSlide();
+	if (!out) {
+		const current = animations;
+		// Secondary cards can unhide late (e.g. the contents list), so they are looked up only now.
+		const fades = getCards().filter(isSecondary).map((card) => card.animate(
+			[{ opacity: 0 }, { opacity: 1 }],
+			{ duration: FADE_IN_DURATION, fill: 'both', easing: 'ease-in-out' },
+		));
+		if (animations !== current) {
+			fades.forEach((fade) => fade.cancel());
+			return;
+		}
+		animations.push(...fades);
+		await Promise.all(fades.map((fade) => fade.finished.catch(() => {})));
+		if (animations === current) clearSlide();
+	}
 }
 
 /** Shows the loading indicator while cards are parked off-screen waiting for the destination. */
