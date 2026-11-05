@@ -23,23 +23,28 @@ post-contents .contents-toggle { display: none; }
 }
 @media (max-width: 800px) {
 	.site-sidebar.site-sidebar-left { position: sticky; top: 0; z-index: 10; }
-	post-contents { position: relative; }
+	post-contents { position: relative; --contents-toggle-height: 3rem; }
 	/* Keeps the sticky mobile directory legible while the post scrolls beneath it. */
 	post-contents :is(.contents-toggle, .contents-panel) { background: var(--color-overlay-surface); }
 	post-contents .contents-toggle {
 		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-		min-height: 3rem; padding: 0.65rem 0.75rem 0.65rem 2rem;
+		height: var(--contents-toggle-height); padding: 0.65rem 0.75rem 0.65rem 2rem;
 		color: var(--color-heading);
+		z-index: 1;
 	}
+	/* Lets the open list grow from the closed card: the toggle becomes its header instead of a separate card. */
+	post-contents .contents-toggle[aria-expanded="true"]:not([inert]) { background: transparent; box-shadow: none; }
 	.contents-toggle > span:first-child { flex-shrink: 0; }
 	.contents-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }
 	.contents-chevron { display: inline-block; }
 	.contents-toggle[aria-expanded="true"] .contents-chevron { transform: rotate(180deg); }
 	post-contents .contents-panel {
-		display: none; position: absolute; inset: 100% 0 auto;
+		display: none; position: absolute; inset: 0 0 auto;
+		padding-top: var(--contents-toggle-height);
 		max-height: min(60dvh, 28rem);
 	}
-	.contents-toggle[aria-expanded="true"] + .contents-panel { display: flex; }
+	/* The click echo inserts an inert copy of the toggle beside it, so the sibling match must skip copies and not need adjacency. */
+	.contents-toggle[aria-expanded="true"]:not([inert]) ~ .contents-panel { display: flex; }
 	.contents-panel .contents-title { display: none; }
 	.contents-panel :is(.ui-link, .ui-button) { min-height: 2.75rem; padding-block: 0.65rem; }
 	.post-page :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 4rem; }

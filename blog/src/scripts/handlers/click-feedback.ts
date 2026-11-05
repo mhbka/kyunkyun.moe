@@ -82,7 +82,7 @@ export function calculateFeedbackScale(width: number, height: number): FeedbackS
 }
 
 /** Writes the target's size-adjusted feedback values to its CSS variables. */
-function applyFeedbackScale(element: Element) {
+export function applyFeedbackScale(element: Element) {
 	if (!(element instanceof HTMLElement)) return;
 	const { width, height } = element.getBoundingClientRect();
 	const { squash, stretch } = calculateFeedbackScale(width, height);
@@ -91,7 +91,7 @@ function applyFeedbackScale(element: Element) {
 }
 
 /** Plays the pop animation by toggling a class until the keyframes finish. */
-function playPop(element: Element) {
+export function playPop(element: Element) {
 	element.classList.remove('click-feedback-pressed');
 	element.classList.remove('click-feedback-pop');
 	// Restarts the animation when clicks land during an ongoing pop.
@@ -100,9 +100,9 @@ function playPop(element: Element) {
 	element.addEventListener('animationend', () => element.classList.remove('click-feedback-pop'), { once: true });
 }
 
-const ECHO_DURATION = 320;
-const ECHO_OPACITY = 0.3;
-const ECHO_GROWTH = 1.1;
+export const ECHO_DURATION = 320;
+export const ECHO_OPACITY = 0.3;
+export const ECHO_GROWTH = 1.1;
 // Large surfaces grow less so the echo stays a nudge.
 const ECHO_GROWTH_LARGE = 1.025;
 const LARGE_ECHO_AREA = 40000;

@@ -9,16 +9,66 @@
 <script>
 	import { onPointerMove } from '../../scripts/handlers/document-events';
 	import { bindPage } from '../../scripts/bind-page';
+	import {
+		applyFeedbackScale,
+		ECHO_DURATION,
+		ECHO_GROWTH,
+		ECHO_OPACITY,
+		playPop,
+	} from '../../scripts/handlers/click-feedback';
+
+	// Plays a faded copy that expands from the cursor and fades out, matching the afterimage on clickables.
+	function playEcho(cursor: HTMLImageElement) {
+		const ghost = cursor.cloneNode(true) as HTMLImageElement;
+		ghost.dataset.ghost = '';
+		ghost.removeAttribute('data-astro-transition-persist');
+		ghost.classList.remove('click-feedback-pressed', 'click-feedback-pop');
+		cursor.insertAdjacentElement('afterend', ghost);
+
+		const echo = ghost.animate(
+			[
+				{ scale: 1, opacity: ECHO_OPACITY },
+				{ scale: ECHO_GROWTH, opacity: 0 },
+			],
+			{ duration: ECHO_DURATION, easing: 'ease-out', fill: 'both' },
+		);
+		const remove = () => ghost.remove();
+		echo.addEventListener('finish', remove);
+		echo.addEventListener('cancel', remove);
+	}
 
 	// Swaps the native cursor for the follower once a real mouse has moved over the page.
-	bindPage<HTMLImageElement>('.site-cursor', (cursor) => {
+	bindPage<HTMLImageElement>('.site-cursor:not([data-ghost])', (cursor) => {
 		const root = document.documentElement;
 		const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+		const motionAllowed = () => window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+		// Holds the cursor smaller while the primary button stays down.
+		const onPointerDown = (event: PointerEvent) => {
+			if (event.button !== 0 || event.isPrimary === false || !motionAllowed()) return;
+			applyFeedbackScale(cursor);
+			cursor.classList.add('click-feedback-pressed');
+		};
+		const onPointerRelease = () => cursor.classList.remove('click-feedback-pressed');
+
+		// Pops the cursor with an afterimage on release, as clickables do.
+		const onClick = (event: MouseEvent) => {
+			if (event.button !== 0 || !finePointer.matches || !motionAllowed()) return;
+			applyFeedbackScale(cursor);
+			playEcho(cursor);
+			playPop(cursor);
+		};
+
+		document.addEventListener('pointerdown', onPointerDown, true);
+		document.addEventListener('pointerup', onPointerRelease, true);
+		document.addEventListener('pointercancel', onPointerRelease, true);
+		document.addEventListener('click', onClick, true);
 
 		const stopPointerTracking = onPointerMove((event) => {
 			if (!finePointer.matches || event.pointerType === 'touch') return;
 
-			cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+			// Uses the individual translate property so the feedback scale stays centred on the cursor.
+			cursor.style.translate = `${event.clientX}px ${event.clientY}px`;
 			cursor.dataset.visible = '';
 			root.classList.add('has-custom-cursor');
 		});
@@ -29,6 +79,10 @@
 
 		return () => {
 			stopPointerTracking();
+			document.removeEventListener('pointerdown', onPointerDown, true);
+			document.removeEventListener('pointerup', onPointerRelease, true);
+			document.removeEventListener('pointercancel', onPointerRelease, true);
+			document.removeEventListener('click', onClick, true);
 			root.removeEventListener('pointerleave', hide);
 			root.classList.remove('has-custom-cursor');
 		};
@@ -38,17 +92,21 @@
 <style>
 	.site-cursor {
 		--cursor-size: 6rem;
+		/* Click point as a fraction of the image: 0 0 is the top-left corner, 0.5 0.5 the centre. */
+		--cursor-hotspot-x: 0.33;
+		--cursor-hotspot-y: 0.33;
 		position: fixed;
 		top: 0;
 		left: 0;
 		z-index: 2147483647;
 		width: var(--cursor-size);
 		height: var(--cursor-size);
-		margin: calc(var(--cursor-size) / -2) 0 0 calc(var(--cursor-size) / -2);
+		margin: calc(var(--cursor-size) * var(--cursor-hotspot-y) * -1) 0 0 calc(var(--cursor-size) * var(--cursor-hotspot-x) * -1);
 		pointer-events: none;
 		opacity: 0;
 		user-select: none;
-		will-change: transform;
+		will-change: translate;
+		transform-origin: center center;
 	}
 
 	.site-cursor[data-visible] { opacity: 1; }

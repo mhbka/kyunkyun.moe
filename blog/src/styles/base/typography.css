@@ -18,6 +18,6 @@ hr { border: none; border-top: var(--border-width) solid var(--color-subtle); }
 .title-wave-letter { display: inline-block; animation: title-letter-wave 3.5s ease-in-out infinite; animation-delay: calc(var(--letter-index) * 120ms); will-change: transform; }
 @keyframes title-letter-wave { 0%, 100% { transform: translateY(var(--hover-offset, 0px)); } 50% { transform: translateY(calc(var(--hover-offset, 0px) - 0.16em)); } }
 @media (prefers-reduced-motion: reduce) { .title-wave-letter { animation: none; } }
-/* Scales every rem and em size at once: full size at 800px, down to 75% (12px body text) at 320px. */
-@media (max-width: 800px) { html { font-size: clamp(75%, calc(58.33% + 5.208vw), 100%); } }
+/* Scales every rem and em size at once: full size at 800px, down to 55% (8.8px body text) at 320px. */
+@media (max-width: 800px) { html { font-size: clamp(55%, calc(25% + 9.375vw), 100%); } }
 @media (max-width: 800px) { .page-title { font-size: clamp(2rem, 9.5vw, 2.5rem); } }
