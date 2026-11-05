@@ -4,7 +4,7 @@
 	box-sizing: border-box;
 	width: 100%;
 	min-width: 0;
-	padding: 1rem 2rem;
+	padding: 1rem 0.7rem 1rem 2rem;
 	background: var(--color-content-surface);
 	border-radius: var(--radius-panel) 0 0 var(--radius-panel);
 	box-shadow: var(--shadow-card-glow);
@@ -12,7 +12,7 @@
 
 /* Owns the combined card and content inset for primary and independently stacked cards. */
 .edge-card.page-content,
-.page-content--cards .edge-card { padding: calc(1rem + 0.5em) calc(2rem + 1em); }
+.page-content--cards .edge-card { padding: calc(1rem + 0.5em) calc(0.7rem + 1em) calc(1rem + 0.5em) calc(2rem + 1em); }
 
 /* Preserves the deeper desktop breathing room used by full post and editor surfaces. */
 .edge-card.page-content:has(> .post-page) { padding-block: 4rem; }

@@ -3,6 +3,7 @@
 	src="/images/cursors/rainbow.gif"
 	alt=""
 	aria-hidden="true"
+	popover="manual"
 	transition:persist="site-cursor"
 />
 
@@ -17,6 +18,13 @@
 		playPop,
 	} from '../../scripts/handlers/click-feedback';
 
+	// Modal dialogs render in the top layer, which z-index cannot beat; showing a popover last puts it above them.
+	function showOnTop(element: HTMLElement) {
+		if (!element.isConnected) return;
+		if (element.matches(':popover-open')) element.hidePopover();
+		element.showPopover();
+	}
+
 	// Plays a faded copy that expands from the cursor and fades out, matching the afterimage on clickables.
 	function playEcho(cursor: HTMLImageElement) {
 		const ghost = cursor.cloneNode(true) as HTMLImageElement;
@@ -24,6 +32,7 @@
 		ghost.removeAttribute('data-astro-transition-persist');
 		ghost.classList.remove('click-feedback-pressed', 'click-feedback-pop');
 		cursor.insertAdjacentElement('afterend', ghost);
+		showOnTop(ghost);
 
 		const echo = ghost.animate(
 			[
@@ -64,6 +73,13 @@
 		document.addEventListener('pointercancel', onPointerRelease, true);
 		document.addEventListener('click', onClick, true);
 
+		// Re-shows the cursor above any dialog that opens, and after a navigation moves it to the new document.
+		const promote = () => showOnTop(cursor);
+		const dialogWatcher = new MutationObserver(promote);
+		dialogWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true });
+		document.addEventListener('astro:after-swap', promote);
+		promote();
+
 		const stopPointerTracking = onPointerMove((event) => {
 			if (!finePointer.matches || event.pointerType === 'touch') return;
 
@@ -78,6 +94,8 @@
 		root.addEventListener('pointerleave', hide);
 
 		return () => {
+			dialogWatcher.disconnect();
+			document.removeEventListener('astro:after-swap', promote);
 			stopPointerTracking();
 			document.removeEventListener('pointerdown', onPointerDown, true);
 			document.removeEventListener('pointerup', onPointerRelease, true);
@@ -102,6 +120,10 @@
 		width: var(--cursor-size);
 		height: var(--cursor-size);
 		margin: calc(var(--cursor-size) * var(--cursor-hotspot-y) * -1) 0 0 calc(var(--cursor-size) * var(--cursor-hotspot-x) * -1);
+		padding: 0;
+		border: 0;
+		overflow: visible;
+		background: transparent;
 		pointer-events: none;
 		opacity: 0;
 		user-select: none;

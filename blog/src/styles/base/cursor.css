@@ -1,3 +1,17 @@
 /* Hides every native cursor type once the follower element (components/cursor/Cursor.astro) is active. */
 html.has-custom-cursor,
 html.has-custom-cursor * { cursor: none !important; }
+
+/* Native video controls live in a UA shadow tree, so the rule above cannot reach their own cursor styles. */
+html.has-custom-cursor video::-webkit-media-controls,
+html.has-custom-cursor video::-webkit-media-controls-enclosure,
+html.has-custom-cursor video::-webkit-media-controls-panel,
+html.has-custom-cursor video::-webkit-media-controls-overlay-enclosure,
+html.has-custom-cursor video::-webkit-media-controls-play-button,
+html.has-custom-cursor video::-webkit-media-controls-overlay-play-button,
+html.has-custom-cursor video::-webkit-media-controls-timeline,
+html.has-custom-cursor video::-webkit-media-controls-mute-button,
+html.has-custom-cursor video::-webkit-media-controls-volume-slider,
+html.has-custom-cursor video::-webkit-media-controls-fullscreen-button,
+html.has-custom-cursor video::-webkit-media-controls-current-time-display,
+html.has-custom-cursor video::-webkit-media-controls-time-remaining-display { cursor: none !important; }

@@ -19,13 +19,10 @@ and spend a lot of time on the sim in public servers on [Assetto Corsa](https://
 Of course, I am a car guy.
 
 I play [osu!](https://osu.ppy.sh/) and used to be a pretty OK [beatmapper](https://osu.ppy.sh/wiki/en/Beatmapping). 
-However, I'm no longer involved in the community and only play offline these days.
-I might write about beatmapping once in a while though.
+I might write about beatmapping once in a while.
 
-In a past life, I was fortunate to have been there for the golden ages of [Overwatch](https://www.youtube.com/watch?v=KjMJQQdUJvY) where I peaked 3.8k on Zarya/Roadhog,
+In a past life, I was there for the golden age of [Overwatch](https://www.youtube.com/watch?v=KjMJQQdUJvY) where I peaked 3.8k on Zarya/Roadhog,
 and [Fortnite](https://www.youtube.com/watch?v=e4-RaJGGFP4) where I didn't peak anywhere because I was quite bad.
-
-
 
 Lastly, I know a little bit of Japanese and am slowly working on it.  
 

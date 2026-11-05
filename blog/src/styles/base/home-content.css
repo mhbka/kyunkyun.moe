@@ -4,5 +4,5 @@
 
 @media (min-width: 801px) {
 	/* Tightens desktop cards while keeping their content clear of the glowing edge. */
-	.page-content--cards .home-update-card { padding-inline: 2rem; }
+	.page-content--cards .home-update-card { padding-inline: 2rem 0.7rem; }
 }
