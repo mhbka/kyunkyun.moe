@@ -24,6 +24,13 @@ body {
 	text-shadow: var(--text-outline);
 }
 
+/* Game-UI feel: images, links and media can't be dragged out; the editor keeps its own block dragging. */
+img, a, svg, video, canvas { -webkit-user-drag: none; user-drag: none; }
+.milkdown :is(img, a, svg, video, canvas, [draggable="true"]) { -webkit-user-drag: auto; user-drag: auto; }
+
+/* Removes the mobile tap highlight box. */
+* { -webkit-tap-highlight-color: transparent; }
+
 /* Keeps code block glyphs sharper than the surrounding prose. */
 pre, pre code, .mini-code-block, .mini-code-block code { text-shadow: var(--text-outline-code); }
 
