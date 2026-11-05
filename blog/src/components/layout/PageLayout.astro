@@ -4,6 +4,7 @@ import Header from './Header.astro';
 import MobileNotice from './MobileNotice.astro';
 import PageTop from './PageTop.astro';
 import Walker from '../walker/Walker.astro';
+import Cursor from '../cursor/Cursor.astro';
 import EdgeCard from '../ui/EdgeCard.astro';
 import TenshinRanmanLarp from '../nav_overlays/TenshinRanmanLarp.astro';
 
@@ -51,3 +52,4 @@ const Content = separateCards ? 'div' : EdgeCard;
 	</div>
 </div>
 {renderWalker && <Walker />}
+<Cursor />

@@ -1,0 +1,59 @@
+<img
+	class="site-cursor"
+	src="/images/cursors/rainbow.gif"
+	alt=""
+	aria-hidden="true"
+	transition:persist="site-cursor"
+/>
+
+<script>
+	import { onPointerMove } from '../../scripts/handlers/document-events';
+	import { bindPage } from '../../scripts/bind-page';
+
+	// Swaps the native cursor for the follower once a real mouse has moved over the page.
+	bindPage<HTMLImageElement>('.site-cursor', (cursor) => {
+		const root = document.documentElement;
+		const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+		const stopPointerTracking = onPointerMove((event) => {
+			if (!finePointer.matches || event.pointerType === 'touch') return;
+
+			cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+			cursor.dataset.visible = '';
+			root.classList.add('has-custom-cursor');
+		});
+
+		// Hides the follower while the pointer is outside the page.
+		const hide = () => delete cursor.dataset.visible;
+		root.addEventListener('pointerleave', hide);
+
+		return () => {
+			stopPointerTracking();
+			root.removeEventListener('pointerleave', hide);
+			root.classList.remove('has-custom-cursor');
+		};
+	});
+</script>
+
+<style>
+	.site-cursor {
+		--cursor-size: 6rem;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 2147483647;
+		width: var(--cursor-size);
+		height: var(--cursor-size);
+		margin: calc(var(--cursor-size) / -2) 0 0 calc(var(--cursor-size) / -2);
+		pointer-events: none;
+		opacity: 0;
+		user-select: none;
+		will-change: transform;
+	}
+
+	.site-cursor[data-visible] { opacity: 1; }
+
+	@media (hover: none), (pointer: coarse) {
+		.site-cursor { display: none; }
+	}
+</style>

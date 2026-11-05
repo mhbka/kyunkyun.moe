@@ -1,0 +1,3 @@
+/* Hides every native cursor type once the follower element (components/cursor/Cursor.astro) is active. */
+html.has-custom-cursor,
+html.has-custom-cursor * { cursor: none !important; }
